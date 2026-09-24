@@ -1,0 +1,11 @@
+# Images from a commercial map-asset pack: allowed for personal use, not redistributed.
+# The page runs without them (floors fall back to flat colour, walls and doors to the drawn style).
+assets/
+
+# Local Claude Code settings
+.claude/settings.local.json
+
+# OS clutter
+Thumbs.db
+desktop.ini
+.DS_Store

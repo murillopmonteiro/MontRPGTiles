@@ -1,0 +1,1910 @@
+<title>Flagstone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --ground:#141217; --panel:#1d1a21; --panel2:#27232c; --panel3:#312c37;
+  --line:#3a3440; --text:#ece5d8; --muted:#a2998b; --faint:#6f6874;
+  --accent:#d4a24c; --accent-ink:#1b1408; --danger:#d0583f;
+  --display:"Alegreya SC", "Palatino Linotype", Georgia, serif;
+  --body:"Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+html,body{height:100%}
+body{background:var(--ground);color:var(--text);font-family:var(--body);font-size:15px;overflow:hidden}
+*{box-sizing:border-box}
+button,input,select{font:inherit;color:inherit}
+.app{height:100%;display:grid;grid-template-columns:60px minmax(0,1fr) 292px;grid-template-rows:auto minmax(0,1fr)}
+/* top bar */
+.bar{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:8px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:.04em;color:var(--accent);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand svg{width:22px;height:22px}
+.mapname{background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 8px;font-size:16px;font-weight:500;min-width:0;width:220px}
+.mapname:hover{border-color:var(--line)}
+.mapname:focus{outline:none;border-color:var(--accent);background:var(--panel2)}
+.dims{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.spacer{flex:1}
+.grp{display:flex;align-items:center;gap:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:6px 10px;cursor:pointer;font-size:14px;white-space:nowrap}
+.btn:hover{background:var(--panel3)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.icon{padding:6px 7px}
+.btn svg{width:17px;height:17px}
+.btn.danger{color:#f0a896}
+.zoomv{font-family:var(--mono);font-size:12px;width:46px;text-align:center;color:var(--muted)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* rail */
+.rail{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0;overflow-y:auto}
+.rail .sep{width:28px;height:1px;background:var(--line);margin:5px 0}
+.tool{position:relative;width:44px;height:40px;border-radius:8px;border:1px solid transparent;background:transparent;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
+.tool svg{width:21px;height:21px}
+.tool:hover{background:var(--panel2);color:var(--text)}
+.tool.on{background:var(--panel3);border-color:var(--accent);color:var(--accent)}
+.tool kbd{position:absolute;right:3px;bottom:1px;font-family:var(--mono);font-size:9px;color:var(--faint)}
+.tool.on kbd{color:var(--accent)}
+/* stage */
+.stage{position:relative;overflow:hidden;background:radial-gradient(circle at 50% 40%, #1c1920, #0f0d12)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+.hud{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;pointer-events:none;flex-wrap:wrap}
+.chip{background:rgba(20,18,23,.86);border:1px solid var(--line);border-radius:6px;padding:4px 9px;font-family:var(--mono);font-size:12px;color:var(--text)}
+.chip b{color:var(--accent);font-weight:600}
+/* panel */
+.panel{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:16px 16px 28px;display:flex;flex-direction:column;gap:18px}
+.panel h2{font-family:var(--display);font-size:20px;font-weight:700;margin:0;letter-spacing:.02em;text-wrap:balance}
+.panel h3{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 8px;font-weight:700}
+.hint{color:var(--muted);font-size:14px;line-height:1.45;margin:4px 0 0}
+.hint kbd,.keys kbd{font-family:var(--mono);font-size:11px;background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--text)}
+.sw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sw{border:1px solid var(--line);border-radius:7px;background:var(--panel2);padding:4px 2px 3px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;color:var(--muted);min-width:0}
+.sw canvas,.sw img{width:44px;height:44px;border-radius:4px;display:block;object-fit:cover;background:var(--panel3)}
+.panel input[type=range]{width:100%;accent-color:var(--accent)}
+.fstatus{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{font-size:12px;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:999px;border:1px solid}
+.pill.ok{color:#9fd38a;border-color:#4d6b43;background:#1f2a1c}
+.pill.warn{color:#f0c878;border-color:#6b5a33;background:#2a2418}
+.maplist{display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto}
+.mapitem{display:flex;gap:10px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+.mapitem.on{border-color:var(--accent)}
+.mapitem img,.mapitem .nothumb{width:72px;height:54px;object-fit:cover;border-radius:4px;flex:none;background:var(--panel3)}
+.mapitem .mi{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.mapitem .mi b{font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mapitem .mi>span{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.mapitem .btn{padding:3px 9px;font-size:13px}
+.wallnow{display:flex;gap:10px;align-items:center;font-size:14px}
+.wallnow canvas{width:44px;height:44px;border-radius:4px;flex:none}
+.hint code{font-family:var(--mono);font-size:11px;word-break:break-all}
+.search{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 9px;color:var(--text);font-size:14.5px;width:100%}
+.search:focus{outline:none;border-color:var(--accent)}
+.bar{height:8px;border-radius:4px;background:var(--panel3);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.dropzone{position:fixed;inset:12px;border:2px dashed var(--accent);border-radius:14px;background:rgba(20,18,23,.82);display:grid;place-items:center;z-index:40;pointer-events:none}
+.dropzone[hidden]{display:none}
+.dropzone div{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:16px}
+.dropzone strong{font-family:var(--display);font-size:26px;color:var(--accent)}
+.dropzone span{color:var(--muted)}
+.sw span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
+.sw:hover{border-color:var(--faint);color:var(--text)}
+.sw.on{border-color:var(--accent);color:var(--accent);background:var(--panel3)}
+.seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:2px;gap:2px}
+.seg button{flex:1;border:0;background:transparent;border-radius:5px;padding:5px 6px;cursor:pointer;font-size:13.5px;color:var(--muted)}
+.seg button.on{background:var(--panel3);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.field input,.field select{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 8px;color:var(--text);font-size:14.5px;width:100%}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
+.row{display:flex;gap:8px;align-items:flex-end}
+.row>*{flex:1;min-width:0}
+.colors{display:flex;flex-wrap:wrap;gap:6px}
+.colors button{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.35)}
+.colors button.on{border-color:var(--text)}
+.tlist{display:flex;flex-direction:column;gap:2px;max-height:240px;overflow-y:auto}
+.titem{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:14px}
+.titem:hover{background:var(--panel2)}
+.titem.on{background:var(--panel3)}
+.titem .dot{width:14px;height:14px;border-radius:50%;flex:none;box-shadow:0 0 0 2px var(--ring,#000)}
+.titem .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.titem .meta{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.titem .x{border:0;background:transparent;color:var(--faint);cursor:pointer;padding:0 4px;font-size:16px;line-height:1}
+.titem .x:hover{color:var(--danger)}
+.check{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+.divider{height:1px;background:var(--line);margin:2px 0}
+.stack{display:flex;flex-direction:column;gap:10px}
+.btnrow{display:flex;flex-wrap:wrap;gap:6px}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:13px;color:var(--muted);align-items:center}
+.empty{font-size:13.5px;color:var(--faint);font-style:italic}
+/* toast + modal */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--panel3);border:1px solid var(--line);color:var(--text);padding:9px 16px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:20;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal{position:fixed;inset:0;background:rgba(8,6,10,.75);display:grid;place-items:center;z-index:30;padding:16px}
+.modal .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;max-width:min(900px,100%);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.modal img{max-width:100%;border-radius:4px}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+/* narrow */
+@media (max-width: 860px){
+  body{overflow:auto}
+  .app{height:auto;min-height:100%;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 64vh auto}
+  .rail{flex-direction:row;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;padding:6px 16px;justify-content:flex-start}
+  .rail .sep{width:1px;height:26px;margin:0 4px;flex:none}
+  .tool{flex:none}
+  .panel{border-left:0;border-top:1px solid var(--line)}
+  .mapname{width:150px}
+  .hide-sm{display:none}
+}
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="brand" aria-label="Flagstone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
+      Flagstone
+    </div>
+    <input id="mapName" class="mapname" aria-label="Map name" spellcheck="false">
+    <span class="dims" id="dims"></span>
+    <span class="spacer"></span>
+    <div class="grp">
+      <button class="btn icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
+      <button class="btn icon" id="redoBtn" title="Redo (Ctrl+Y)" aria-label="Redo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
+    </div>
+    <div class="grp">
+      <button class="btn icon" id="zoomOut" title="Zoom out (-)" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+      <span class="zoomv" id="zoomV">100%</span>
+      <button class="btn icon" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5v14"/></svg></button>
+      <button class="btn" id="fitBtn" title="Fit map to screen (0)">Fit</button>
+    </div>
+    <div class="grp">
+      <button class="btn" id="mapTabBtn" title="New, save and open maps (N)">Maps</button>
+      <button class="btn primary" id="exportBtn" title="Export the map as a PNG image">Export PNG</button>
+      <input type="file" id="fileIn" accept=".json,application/json" hidden>
+      <input type="file" id="dirIn" webkitdirectory directory multiple hidden>
+      <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp" multiple hidden>
+      <input type="file" id="wallDirIn" webkitdirectory directory multiple hidden>
+      <input type="file" id="propDirIn" webkitdirectory directory multiple hidden>
+      <input type="file" id="doorDirIn" webkitdirectory directory multiple hidden>
+    </div>
+  </header>
+
+  <nav class="rail" id="rail" aria-label="Tools"></nav>
+
+  <main class="stage" id="stage">
+    <canvas id="cv" aria-label="Battle map canvas"></canvas>
+    <div class="hud"><span class="chip" id="hudCell">—</span><span class="chip" id="hudInfo"></span></div>
+  </main>
+
+  <aside class="panel" id="panel"></aside>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div class="dropzone" id="dropZone" hidden><div><strong>Drop to import textures</strong><span>Folders keep their subfolders as categories</span></div></div>
+
+<script>
+(() => {
+"use strict";
+let TS = 64;                    // terrain texture px per square (set per map size)
+const FT = 5;                   // feet per square
+const $ = id => document.getElementById(id);
+
+/* ---------- helpers ---------- */
+function rng(a, b, k) {
+  let n = Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263) + Math.imul(k | 0, 1442695041);
+  n = Math.imul(n ^ (n >>> 13), 1274126177);
+  return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+}
+function hexRgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function shade(hex, amt){ // amt -1..1
+  const [r,g,b]=hexRgb(hex); const f=v=>Math.max(0,Math.min(255,Math.round(amt<0? v*(1+amt) : v+(255-v)*amt)));
+  return `rgb(${f(r)},${f(g)},${f(b)})`;
+}
+function lum(hex){ const [r,g,b]=hexRgb(hex); return (0.299*r+0.587*g+0.114*b)/255; }
+function colName(i){ let s=''; i++; while(i>0){ const m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26);} return s; }
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+let uid = Date.now() % 100000;
+const newId = () => 'i' + (uid++).toString(36);
+function circle(c,x,y,r){ c.beginPath(); c.arc(x,y,r,0,Math.PI*2); c.fill(); }
+function ellipse(c,x,y,rx,ry){ c.beginPath(); c.ellipse(x,y,rx,ry,0,0,Math.PI*2); c.fill(); }
+
+/* ---------- terrain ---------- */
+const WET = new Set([7,8]);
+const TERRAIN = [
+  { key:'grass', name:'Grass', draw(c,s,r){
+      c.fillStyle=shade('#5a7a39',(r(1)-.5)*.1); c.fillRect(0,0,s,s);
+      for(let i=0;i<9;i++){ const x=r(10+i)*s, y=r(30+i)*s, l=s*(.06+r(50+i)*.07);
+        c.strokeStyle= r(70+i)>.5 ? 'rgba(130,165,80,.7)' : 'rgba(55,80,35,.7)'; c.lineWidth=s*.025;
+        c.beginPath(); c.moveTo(x,y); c.lineTo(x-l*.4,y-l); c.moveTo(x,y); c.lineTo(x+l*.3,y-l*.9); c.stroke(); }
+  }},
+  { key:'dirt', name:'Dirt', draw(c,s,r){
+      c.fillStyle=shade('#77583a',(r(1)-.5)*.1); c.fillRect(0,0,s,s);
+      for(let i=0;i<14;i++){ c.fillStyle= r(40+i)>.5?'rgba(150,115,80,.55)':'rgba(60,42,25,.5)'; circle(c,r(i)*s,r(20+i)*s,s*(.015+r(60+i)*.03)); }
+  }},
+  { key:'sand', name:'Sand', draw(c,s,r){
+      c.fillStyle=shade('#cdb27b',(r(1)-.5)*.06); c.fillRect(0,0,s,s);
+      c.strokeStyle='rgba(160,130,80,.45)'; c.lineWidth=s*.02;
+      for(let i=0;i<3;i++){ const y=(i+.3+r(5+i)*.4)*s/3; c.beginPath(); c.moveTo(0,y); c.quadraticCurveTo(s*.5,y+s*.07*(r(9+i)-.5)*2,s,y); c.stroke(); }
+      for(let i=0;i<10;i++){ c.fillStyle='rgba(120,95,55,.35)'; circle(c,r(20+i)*s,r(40+i)*s,s*.012); }
+  }},
+  { key:'snow', name:'Snow', draw(c,s,r){
+      c.fillStyle='#e4eaee'; c.fillRect(0,0,s,s);
+      for(let i=0;i<4;i++){ c.fillStyle='rgba(150,175,200,.22)'; ellipse(c,r(i)*s,r(10+i)*s,s*(.12+r(20+i)*.15),s*(.05+r(30+i)*.06)); }
+      for(let i=0;i<6;i++){ c.fillStyle='rgba(255,255,255,.9)'; circle(c,r(40+i)*s,r(50+i)*s,s*.015); }
+  }},
+  { key:'stone', name:'Flagstone', draw(c,s,r){
+      c.fillStyle='#3d3a38'; c.fillRect(0,0,s,s);
+      const g=s*.035, tone=(r(1)-.5)*.16;
+      c.fillStyle=shade('#8b8680',tone); c.fillRect(g,g,s-2*g,s-2*g);
+      c.fillStyle='rgba(255,255,255,.08)'; c.fillRect(g,g,s-2*g,s*.05);
+      c.fillStyle='rgba(0,0,0,.12)'; c.fillRect(g,s-g-s*.05,s-2*g,s*.05);
+      if(r(2)>.6){ c.strokeStyle='rgba(40,38,36,.55)'; c.lineWidth=s*.018; c.beginPath(); const x=r(3)*s;
+        c.moveTo(x,g); c.lineTo(x+(r(4)-.5)*s*.3,s*.45); c.lineTo(x+(r(5)-.5)*s*.4,s*.7); c.stroke(); }
+      for(let i=0;i<5;i++){ c.fillStyle='rgba(60,56,52,.35)'; circle(c,g+r(10+i)*(s-2*g),g+r(20+i)*(s-2*g),s*.015); }
+  }},
+  { key:'cobble', name:'Cobbles', draw(c,s,r){
+      c.fillStyle='#403b36'; c.fillRect(0,0,s,s);
+      const n=3; for(let j=0;j<n;j++)for(let i=0;i<n;i++){ const k=j*n+i;
+        const cx=(i+.5+(r(10+k)-.5)*.25)*s/n, cy=(j+.5+(r(30+k)-.5)*.25)*s/n;
+        c.fillStyle=shade('#8a8177',(r(50+k)-.5)*.25); ellipse(c,cx,cy,s/n*.42,s/n*.38);
+        c.fillStyle='rgba(255,255,255,.1)'; ellipse(c,cx-s*.02,cy-s*.03,s/n*.25,s/n*.16); }
+  }},
+  { key:'wood', name:'Planks', draw(c,s,r){
+      const n=4, ph=s/n;
+      for(let i=0;i<n;i++){ c.fillStyle=shade('#8a6139',(r(5+i)-.5)*.22); c.fillRect(0,i*ph,s,ph);
+        c.strokeStyle='rgba(60,38,20,.35)'; c.lineWidth=s*.012; c.beginPath();
+        c.moveTo(0,i*ph+ph*(.35+r(15+i)*.3)); c.bezierCurveTo(s*.3,i*ph+ph*.3,s*.6,i*ph+ph*.7,s,i*ph+ph*(.35+r(25+i)*.3)); c.stroke();
+        if(r(35+i)>.5){ c.fillStyle='rgba(40,25,12,.8)'; c.fillRect(r(45+i)*s,i*ph,s*.02,ph); } }
+      c.fillStyle='rgba(35,22,10,.85)'; for(let i=0;i<=n;i++) c.fillRect(0,i*ph-s*.01,s,s*.02);
+  }},
+  { key:'water', name:'Water', draw(c,s,r,same){
+      c.fillStyle='#3a6d8c'; c.fillRect(0,0,s,s);
+      c.strokeStyle='rgba(170,210,230,.35)'; c.lineWidth=s*.025; c.lineCap='round';
+      for(let i=0;i<3;i++){ const x=r(i)*s*.7+s*.1, y=r(10+i)*s*.8+s*.1, w=s*(.12+r(20+i)*.12);
+        c.beginPath(); c.moveTo(x,y); c.quadraticCurveTo(x+w/2,y-s*.05,x+w,y); c.stroke(); }
+      foam(c,s,same,'rgba(215,235,240,.55)');
+  }},
+  { key:'deep', name:'Deep water', draw(c,s,r,same){
+      c.fillStyle='#22455d'; c.fillRect(0,0,s,s);
+      c.strokeStyle='rgba(120,170,200,.25)'; c.lineWidth=s*.025; c.lineCap='round';
+      for(let i=0;i<2;i++){ const x=r(i)*s*.6+s*.1, y=r(10+i)*s*.8+s*.1, w=s*(.15+r(20+i)*.15);
+        c.beginPath(); c.moveTo(x,y); c.quadraticCurveTo(x+w/2,y-s*.06,x+w,y); c.stroke(); }
+      foam(c,s,same,'rgba(215,235,240,.5)');
+  }},
+  { key:'lava', name:'Lava', draw(c,s,r){
+      const g=c.createRadialGradient(s/2,s/2,s*.1,s/2,s/2,s*.8); g.addColorStop(0,'#ffb347'); g.addColorStop(1,'#d9480f');
+      c.fillStyle=g; c.fillRect(0,0,s,s);
+      for(let i=0;i<4;i++){ c.fillStyle='rgba(60,22,12,.85)';
+        c.beginPath(); const cx=r(i)*s, cy=r(10+i)*s, rr=s*(.1+r(20+i)*.12);
+        for(let k=0;k<6;k++){ const a=k/6*Math.PI*2, d=rr*(.7+r(30+i*6+k)*.5); c[k?'lineTo':'moveTo'](cx+Math.cos(a)*d,cy+Math.sin(a)*d); }
+        c.closePath(); c.fill(); }
+  }},
+  { key:'pit', name:'Chasm', draw(c,s,r,same){
+      c.fillStyle='#0c0a0e'; c.fillRect(0,0,s,s);
+      const e=s*.28;
+      const side=(dx,dy,x0,y0,x1,y1)=>{ if(same(dx,dy)) return; const g=c.createLinearGradient(x0,y0,x1,y1);
+        g.addColorStop(0,'#4a4250'); g.addColorStop(1,'rgba(12,10,14,0)'); c.fillStyle=g; c.fillRect(Math.min(x0,x1),Math.min(y0,y1),Math.abs(x1-x0)||s,Math.abs(y1-y0)||s); };
+      side(0,-1, 0,0, 0,e); side(0,1, 0,s, 0,s-e); side(-1,0, 0,0, e,0); side(1,0, s,0, s-e,0);
+  }},
+];
+function foam(c,s,same,col){
+  const f=s*.07; c.fillStyle=col;
+  if(!same(0,-1)) c.fillRect(0,0,s,f);
+  if(!same(0,1))  c.fillRect(0,s-f,s,f);
+  if(!same(-1,0)) c.fillRect(0,0,f,s);
+  if(!same(1,0))  c.fillRect(s-f,0,f,s);
+}
+TERRAIN.forEach(t=>t.group='Painted');
+
+/* image textures: seamless floors laid world-aligned across the grid.
+   [file, name, squares one image covers, placeholder colour] */
+const TEX_DIR='assets/textures/';
+const TEXTURE_SETS = {
+  Brick: [
+    ['brick/brick_floor_c_01.jpg','Stone',2,'#6f6d62'],
+    ['brick/brick_floor_c_02.jpg','Limestone',2,'#a9a383'],
+    ['brick/brick_floor_c_03.jpg','Moss',2,'#6f6644'],
+    ['brick/brick_floor_c_04.jpg','Silver',2,'#a3a19c'],
+    ['brick/brick_floor_c_05.jpg','Umber',2,'#5e5234'],
+    ['brick/brick_floor_c_06.jpg','Slate',2,'#4e5b62'],
+    ['brick/brick_floor_c_07.jpg','Sandstone',2,'#b89e72'],
+    ['brick/brick_floor_a_01.jpg','Pale',3,'#b5ae9f'],
+    ['brick/brick_floor_a_02.jpg','Dusty',3,'#8a8474'],
+    ['brick/brick_floor_b_01.jpg','Chalk',3,'#b3ad9e'],
+    ['brick/brick_floor_b_02.jpg','Ash',3,'#7f7a6c'],
+    ['brick/brick_floor_b_03.jpg','Ochre',3,'#bfa577'],
+    ['brick/brick_dirt_a.jpg','Grimy',8,'#3d372e'],
+  ],
+};
+for(const [group,list] of Object.entries(TEXTURE_SETS))
+  for(const [src,name,sq,color] of list)
+    TERRAIN.push({ key:'tex:'+src.replace(/\.\w+$/,''), name, group, tex:{ src, sq, color, img:null, pat:null, patKey:'' } });
+const TI = key => Math.max(0, TERRAIN.findIndex(t=>t.key===key));
+const INCLUDED_GROUPS = Object.keys(TEXTURE_SETS);
+const texScale = t => (map && map.texScale && map.texScale[t.key]) || t.tex.sq;
+function texPattern(t){
+  const tx=t.tex; if(!tx.img) return null;
+  const sq=texScale(t), k=TS+'|'+sq; if(tx.pat && tx.patKey===k) return tx.pat;
+  const S=Math.round(sq*TS), c=document.createElement('canvas'); c.width=S; c.height=S;
+  const g=c.getContext('2d'); g.imageSmoothingQuality='high'; g.drawImage(tx.img,0,0,S,S);
+  tx.pat=tctx.createPattern(c,'repeat'); tx.patKey=k; return tx.pat;
+}
+const TERRAIN_TOOLS=['brush','fill','rect','room'];
+let texRefreshTimer=null;
+function texRefresh(){ clearTimeout(texRefreshTimer); texRefreshTimer=setTimeout(()=>{ for(const k in swatchCache) if(k[0]==='t') delete swatchCache[k]; rebuildTerrain(); draw(); },60); }
+function loadTextures(){
+  for(const t of TERRAIN) if(t.tex && t.tex.src){ const img=new Image();
+    img.onload=()=>{ t.tex.img=img; t.tex.pat=null; texRefresh(); if(TERRAIN_TOOLS.includes(tool)) fillTerrGrid(); };
+    img.onerror=()=>console.warn('Texture failed to load:',t.tex.src);
+    img.src=TEX_DIR+t.tex.src; }
+}
+
+/* ---------- texture library (the viewer's own images, kept in this browser) ---------- */
+const LIB=new Map();            // key -> meta {key,name,file,cat,group,catId,w,h,sq,color,thumb,bytes}
+const memFull=new Map();        // fallback when IndexedDB is unavailable
+let libPersistent=true, dbp=null, importing=null;
+function idb(){ return dbp ||= new Promise((res,rej)=>{ let r; try{ r=indexedDB.open('flagstone-library',5); }catch(e){ rej(e); return; }
+  r.onupgradeneeded=()=>{ const d=r.result;
+    if(!d.objectStoreNames.contains('meta')) d.createObjectStore('meta',{keyPath:'key'}); if(!d.objectStoreNames.contains('full')) d.createObjectStore('full');
+    if(!d.objectStoreNames.contains('wallmeta')) d.createObjectStore('wallmeta',{keyPath:'key'}); if(!d.objectStoreNames.contains('wallfull')) d.createObjectStore('wallfull');
+    for(const n of ['propfull','propthumb']) if(!d.objectStoreNames.contains(n)) d.createObjectStore(n);
+    if(!d.objectStoreNames.contains('propmeta')) d.createObjectStore('propmeta',{keyPath:'key'});
+    if(!d.objectStoreNames.contains('doormeta')) d.createObjectStore('doormeta',{keyPath:'key'}); if(!d.objectStoreNames.contains('doorfull')) d.createObjectStore('doorfull');
+    if(!d.objectStoreNames.contains('maps')) d.createObjectStore('maps',{keyPath:'id'}); };
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); r.onblocked=()=>rej(new Error('blocked')); }); }
+function idbRun(stores,mode,fn){ return idb().then(d=>new Promise((res,rej)=>{ const t=d.transaction(stores,mode); let out; try{ out=fn(t); }catch(e){ rej(e); return; }
+  t.oncomplete=()=>res(out && 'result' in out ? out.result : out); t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); })); }
+async function libInit(){
+  try{ const metas=await idbRun('meta','readonly',t=>t.objectStore('meta').getAll()); for(const m of metas) LIB.set(m.key,m);
+    const wm=await idbRun('wallmeta','readonly',t=>t.objectStore('wallmeta').getAll()); for(const m of wm) WLIB.set(m.key,m);
+    const pm=await idbRun('propmeta','readonly',t=>t.objectStore('propmeta').getAll()); for(const m of pm) PLIB.set(m.key,m);
+    for(const [k,r] of propImgs) if(!r.img) propImgs.delete(k);   // retry props asked for before the library opened
+    const dm=await idbRun('doormeta','readonly',t=>t.objectStore('doormeta').getAll()); for(const m of dm) DLIB.set(m.key,m);
+    for(const reg of [DOORSTYLES,FRAMESTYLES]) for(const st of reg.values()) if(st.lib){ const m=DLIB.get(st.key); if(m){ st.name=m.name; st.len=m.len||1; } if(st.missing){ st.missing=false; } }
+    await loadSavedMaps();
+    draw(); }
+  catch(e){ libPersistent=false; }
+  for(const t of TERRAIN) if(t.tex && t.tex.lib){ const m=LIB.get(t.key); if(m){ t.name=m.name; t.tex.color=m.color; } loadFull(t.key); }
+  for(const st of WALLSTYLES.values()) if(st.lib){ const m=WLIB.get(st.key); if(m){ st.name=m.name; st.cat=m.cat; } }
+  if(TERRAIN_TOOLS.includes(tool)||tool==='wall'||tool==='door'||tool==='prop'||tool==='select') renderPanel();
+}
+async function libPut(meta,blob){
+  if(libPersistent){ try{ await idbRun(['meta','full'],'readwrite',t=>{ t.objectStore('meta').put(meta); t.objectStore('full').put(blob,meta.key); }); LIB.set(meta.key,meta); return; }
+    catch(e){ if(e && e.name==='QuotaExceededError') throw e; libPersistent=false; } }
+  memFull.set(meta.key,blob); LIB.set(meta.key,meta);
+}
+async function libGetFull(key){ if(memFull.has(key)) return memFull.get(key); if(!libPersistent) return null;
+  try{ return await idbRun('full','readonly',t=>t.objectStore('full').get(key)); }catch(e){ return null; } }
+async function libDelete(keys){
+  if(libPersistent){ try{ await idbRun(['meta','full'],'readwrite',t=>{ for(const k of keys){ t.objectStore('meta').delete(k); t.objectStore('full').delete(k); } }); }catch(e){} }
+  for(const k of keys){ LIB.delete(k); memFull.delete(k); const u=thumbUrls.get(k); if(u){ URL.revokeObjectURL(u); thumbUrls.delete(k); } }
+}
+const thumbUrls=new Map();
+function thumbURL(key){ let u=thumbUrls.get(key); if(!u){ const m=LIB.get(key); if(!m||!m.thumb) return ''; u=URL.createObjectURL(m.thumb); thumbUrls.set(key,u); } return u; }
+const loadingFull=new Set();
+async function loadFull(key){
+  if(loadingFull.has(key)) return; loadingFull.add(key);
+  const blob=await libGetFull(key); const t=TERRAIN.find(x=>x.key===key);
+  if(!blob||!t){ loadingFull.delete(key); return; }
+  try{ const bmp=await createImageBitmap(blob); t.tex.img=bmp; t.tex.pat=null; texRefresh(); }catch(e){}
+  loadingFull.delete(key);
+}
+// Library textures join the terrain list only once a map uses them, so a huge library costs nothing.
+function ensureLibTerrain(key, info){
+  const i=TERRAIN.findIndex(t=>t.key===key); if(i>=0) return i;
+  const m=LIB.get(key)||info||{};
+  TERRAIN.push({ key, name:m.name||key.split('/').pop(), group:'Library', tex:{ src:null, lib:true, sq:m.sq||2, color:m.color||'#57524c', img:null, pat:null, patKey:'' } });
+  loadFull(key); return TERRAIN.length-1;
+}
+const prettify=s=>s.replace(/\.\w+$/,'').replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();
+function prettyName(file,cat){ let n=prettify(file); const c=prettify(cat); if(c && n.toLowerCase().startsWith(c.toLowerCase()+' ')) n=n.slice(c.length+1); return n||prettify(file); }
+function encodeCanvas(src,w,h,q){ const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(w)); c.height=Math.max(1,Math.round(h));
+  const g=c.getContext('2d'); g.imageSmoothingQuality='high'; g.drawImage(src,0,0,c.width,c.height);
+  return new Promise(res=>c.toBlob(b=>{ if(b && b.type==='image/webp') res({blob:b,canvas:c}); else c.toBlob(j=>res({blob:j,canvas:c}),'image/jpeg',q); },'image/webp',q)); }
+function avgColor(src){ const c=document.createElement('canvas'); c.width=c.height=1; const g=c.getContext('2d'); g.drawImage(src,0,0,1,1); const d=g.getImageData(0,0,1,1).data;
+  return '#'+[d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join(''); }
+async function importOne({file,path}){
+  const parts=path.replace(/^\/+/,'').split('/'); const fileName=parts.pop(); const cat=parts.pop()||'Imported'; const group=parts.pop()||'';
+  const catId=(group?group+'/':'')+cat, key=('lib:'+catId+'/'+fileName.replace(/\.\w+$/,'')).toLowerCase();
+  const bmp=await createImageBitmap(file); const w=bmp.width, h=bmp.height, sc=Math.min(1,settings.libQuality/Math.max(w,h));
+  const full=await encodeCanvas(bmp,w*sc,h*sc,.86);
+  const thumb=await encodeCanvas(full.canvas,96,96*h/w,.8);
+  const meta={ key, name:prettyName(fileName,cat), file:fileName, cat:prettify(cat), group:prettify(group), catId, w, h, sq:clamp(Math.round(w/300),1,8), color:avgColor(full.canvas), thumb:thumb.blob, bytes:full.blob.size };
+  if(bmp.close) bmp.close();
+  await libPut(meta, full.blob);
+  const old=thumbUrls.get(key); if(old){ URL.revokeObjectURL(old); thumbUrls.delete(key); }
+  const t=TERRAIN.find(x=>x.key===key); if(t){ t.name=meta.name; t.tex.color=meta.color; t.tex.sq=meta.sq; loadingFull.delete(key); loadFull(key); }
+  return meta;
+}
+async function importFiles(list){
+  if(importing){ toast('An import is already running'); return; }
+  const imgs=list.filter(x=>/\.(jpe?g|png|webp)$/i.test(x.path));
+  if(!imgs.length){ toast('No JPG, PNG or WebP images found there'); return; }
+  importing={ total:imgs.length, done:0, failed:0, cancel:false, current:'', firstCat:null };
+  if(!TERRAIN_TOOLS.includes(tool)) setTool('brush'); else renderPanel();
+  if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+  let i=0, quota=false;
+  const worker=async()=>{ while(i<imgs.length && !importing.cancel && !quota){ const it=imgs[i++]; importing.current=prettify(it.path.split('/').pop());
+      try{ const m=await importOne(it); if(!importing.firstCat) importing.firstCat=m.catId; }
+      catch(e){ importing.failed++; if(e && e.name==='QuotaExceededError') quota=true; }
+      importing.done++; updateImportUI(); } };
+  await Promise.all([worker(),worker(),worker()]);
+  const ok=importing.done-importing.failed, failed=importing.failed, cancelled=importing.cancel, first=importing.firstCat; importing=null;
+  if(first && (cur.cat==='painted'||cur.cat.startsWith('inc:'))) cur.cat='lib:'+first;
+  renderPanel();
+  const n=ok.toLocaleString();
+  toast(quota ? `Browser storage is full — ${n} textures imported. Remove some categories to make room.`
+    : cancelled ? `Import stopped — ${n} textures added`
+    : `Imported ${n} textures`+(failed?` · ${failed} couldn’t be read`:''));
+}
+let importUiQueued=false;
+function updateImportUI(){ if(importUiQueued) return; importUiQueued=true; requestAnimationFrame(()=>{ importUiQueued=false; const el=$('libProg'); if(!el||!importing) return;
+  el.querySelector('.bar i').style.width=(importing.done/importing.total*100).toFixed(1)+'%';
+  el.querySelector('.ptext').textContent=`Importing ${importing.done.toLocaleString()} of ${importing.total.toLocaleString()} · ${importing.current}`; }); }
+async function entriesToFiles(entries){
+  const out=[];
+  const walk=async entry=>{ if(entry.isFile){ try{ const f=await new Promise((res,rej)=>entry.file(res,rej)); out.push({file:f,path:entry.fullPath}); }catch(e){} }
+    else if(entry.isDirectory){ const r=entry.createReader(); let batch; do{ batch=await new Promise((res,rej)=>r.readEntries(res,rej)).catch(()=>[]); for(const e of batch) await walk(e); }while(batch.length); } };
+  for(const e of entries) await walk(e); return out;
+}
+/* ---------- wall styles: modular kits (200px per square, wall band on the piece's centre line) ---------- */
+const WALL_DIR='assets/walls/';
+const WALL_PIECES={ straightA:['straight_a',3], straightB:['straight_b',2], straightC:['straight_c',1], ending:['ending',1], cornerA:['corner_a',1], jointA:['joint_a',1], jointB:['joint_b',1], connectorA:['connector_a',1] };
+const INCLUDED_WALLS={ Stone:['stone_a',['Earthy','Sandstone','Slate']], Brick:['brick_a',['Earthy','Sandstone','Slate']] };
+const WALLSTYLES=new Map();
+WALLSTYLES.set('drawn',{ key:'drawn', name:'Drawn', cat:'Drawn', drawn:true });
+for(const [cat,[dir,cols]] of Object.entries(INCLUDED_WALLS)) for(const col of cols){
+  const key=`inc:${dir}/${col.toLowerCase()}`;
+  WALLSTYLES.set(key,{ key, name:col, cat, group:'Included', src:`${WALL_DIR}${dir}/${col.toLowerCase()}/`, imgs:{}, dims:{}, loaded:false, loading:false }); }
+const WLIB=new Map();           // key -> meta {key,name,cat,group,catId,thumb}
+const memWalls=new Map();
+function ensureWallStyle(key,info){
+  let st=WALLSTYLES.get(key); if(st) return st;
+  const m=WLIB.get(key)||info||{};
+  st={ key, name:m.name||'Missing style', cat:m.cat||'Library', group:m.group||'', lib:true, imgs:{}, dims:{}, loaded:false, loading:false };
+  WALLSTYLES.set(key,st); return st;
+}
+const wallReady=st=> !!(st && st.loaded && st.imgs.straightC);
+async function loadWallStyle(st){
+  if(!st || st.drawn || st.loaded || st.loading || st.missing) return; st.loading=true;
+  try{
+    if(st.lib){
+      let stored=memWalls.get(st.key);
+      if(!stored && libPersistent){ try{ stored=await idbRun('wallfull','readonly',t=>t.objectStore('wallfull').get(st.key)); }catch(e){} }
+      if(!stored){ st.loading=false; st.missing=true; return; }   // not in this browser's library: stays as drawn walls
+      for(const [nm,p] of Object.entries(stored)){ st.imgs[nm]=await createImageBitmap(p.blob); st.dims[nm]=[p.w,p.h]; }
+    } else {
+      await Promise.all(Object.entries(WALL_PIECES).map(([nm,[file,len]])=>new Promise(res=>{ const img=new Image();
+        img.onload=()=>{ st.imgs[nm]=img; st.dims[nm]=[len,1]; res(); }; img.onerror=()=>res(); img.src=st.src+file+'.png'; })));
+    }
+    st.loaded=true;
+  }catch(e){}
+  st.loading=false; draw(); if(tool==='wall'||tool==='door'||tool==='room') fillWallGrid();
+}
+function wallStyleAt(idx){ const k=(map.wallKeys&&map.wallKeys[idx])||'drawn'; const st=WALLSTYLES.get(k)||ensureWallStyle(k); if(!st.drawn && !st.loaded) loadWallStyle(st); return st; }
+function curWallIdx(){ const k=settings.wallStyle||'drawn'; let i=map.wallKeys.indexOf(k); if(i<0){ map.wallKeys.push(k); i=map.wallKeys.length-1; } return i; }
+function edgeAt(o,x,y){ const W=map.w, H=map.h;
+  if(o==='h'){ if(x<0||x>=W||y<0||y>H) return null; const i=y*W+x, v=map.hw[i]; return v ? {v, st:wallStyleAt(map.hws[i])} : null; }
+  if(x<0||x>W||y<0||y>=H) return null; const i=y*(W+1)+x, v=map.vw[i]; return v ? {v, st:wallStyleAt(map.vws[i])} : null; }
+function drawWallSample(c,st,size){
+  const s=size/2.4, o=size*.3;
+  c.fillStyle='#4a4540'; c.fillRect(0,0,size,size);
+  const E=(d,x,y)=> ((d==='h'&&y===1&&(x===1||x===2))||(d==='v'&&x===1&&(y===1||y===2))) ? {v:1,st} : null;
+  c.save(); c.translate(o-s,o-s); drawWalls(c,s,E,3,3); c.restore();
+}
+const WALL_KEEP={ straight_a_3x1:'straightA', straight_b_2x1:'straightB', straight_c_1x1:'straightC', ending_a_1x1:'ending', ending_a1_1x1:'ending1', corner_a_1x1:'cornerA', joint_a_1x1:'jointA', joint_b_1x1:'jointB', connector_a_1x1:'connectorA' };
+const WALL_RE=/^(.*?)_((?:straight|ending|corner|joint|connector)_[a-z0-9]+)_(\d+)x(\d+)\.png$/i;
+async function importWalls(list){
+  if(importing){ toast('An import is already running'); return; }
+  const styles=new Map();
+  for(const {file,path} of list){
+    const parts=path.replace(/^\/+/,'').split('/'), fileName=parts.pop(), m=WALL_RE.exec(fileName); if(!m) continue;
+    const piece=WALL_KEEP[(m[2]+'_'+m[3]+'x'+m[4]).toLowerCase()]; if(!piece) continue;
+    const folder=parts.pop()||'Walls', parent=parts.pop()||'', id=folder+'/'+m[1];
+    let g=styles.get(id); if(!g) styles.set(id,g={prefix:m[1],folder,parent,pieces:{}});
+    g.pieces[piece]={file,w:+m[3],h:+m[4]};
+  }
+  const valid=[...styles.values()].filter(g=>g.pieces.straightC);
+  for(const g of valid){ if(!g.pieces.ending && g.pieces.ending1) g.pieces.ending=g.pieces.ending1; delete g.pieces.ending1; }
+  if(!valid.length){ toast('No wall pieces found there — try your Walls_and_Curbs folder'); return; }
+  importing={ kind:'walls', total:valid.length, done:0, failed:0, cancel:false, current:'', firstCat:null };
+  if(tool!=='wall') setTool('wall'); else renderPanel();
+  if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+  let i=0, quota=false;
+  const worker=async()=>{ while(i<valid.length && !importing.cancel && !quota){ const g=valid[i++]; importing.current=prettify(g.prefix);
+      try{ const meta=await importWallStyle(g); if(!importing.firstCat) importing.firstCat=meta.catId; }
+      catch(e){ importing.failed++; if(e && e.name==='QuotaExceededError') quota=true; }
+      importing.done++; updateImportUI(); } };
+  await Promise.all([worker(),worker(),worker()]);
+  const ok=importing.done-importing.failed, failed=importing.failed, cancelled=importing.cancel, first=importing.firstCat; importing=null;
+  if(first && !settings.wallCat.startsWith('lib:')) settings.wallCat='lib:'+first;
+  renderPanel();
+  const n=ok.toLocaleString();
+  toast(quota ? `Browser storage is full — ${n} wall styles imported` : cancelled ? `Import stopped — ${n} wall styles added` : `Imported ${n} wall styles`+(failed?` · ${failed} couldn’t be read`:''));
+}
+async function importWallStyle(g){
+  const key=('lib:'+g.folder+'/'+g.prefix).toLowerCase(), stored={}, imgs={}, dims={};
+  for(const [nm,p] of Object.entries(g.pieces)){ stored[nm]={blob:p.file,w:p.w,h:p.h}; imgs[nm]=await createImageBitmap(p.file); dims[nm]=[p.w,p.h]; }
+  const skip=new Set(g.folder.toLowerCase().split(/[_\s]+/));
+  const name=g.prefix.split('_').filter(t=>!skip.has(t.toLowerCase())).join(' ')||prettify(g.prefix);
+  const tc=document.createElement('canvas'); tc.width=tc.height=96; drawWallSample(tc.getContext('2d'),{imgs,dims,loaded:true},96);
+  const thumb=await new Promise(res=>tc.toBlob(b=>res(b),'image/png'));
+  const meta={ key, name, cat:prettify(g.folder).replace(/^Wall\s+/i,''), group:prettify(g.parent)||'My walls', catId:g.folder.toLowerCase(), thumb };
+  let saved=false;
+  if(libPersistent){ try{ await idbRun(['wallmeta','wallfull'],'readwrite',t=>{ t.objectStore('wallmeta').put(meta); t.objectStore('wallfull').put(stored,key); }); saved=true; }
+    catch(e){ if(e && e.name==='QuotaExceededError') throw e; } }
+  if(!saved) memWalls.set(key,stored);
+  WLIB.set(key,meta);
+  const old=thumbUrls.get('w|'+key); if(old){ URL.revokeObjectURL(old); thumbUrls.delete('w|'+key); }
+  const st=WALLSTYLES.get(key);
+  if(st){ st.imgs=imgs; st.dims=dims; st.loaded=true; st.missing=false; st.name=name; draw(); } else for(const b of Object.values(imgs)) if(b.close) b.close();
+  return meta;
+}
+async function wallDelete(keys){
+  if(libPersistent){ try{ await idbRun(['wallmeta','wallfull'],'readwrite',t=>{ for(const k of keys){ t.objectStore('wallmeta').delete(k); t.objectStore('wallfull').delete(k); } }); }catch(e){} }
+  for(const k of keys){ WLIB.delete(k); memWalls.delete(k); const u=thumbUrls.get('w|'+k); if(u){ URL.revokeObjectURL(u); thumbUrls.delete('w|'+k); } }
+}
+function wallThumbURL(key){ const k='w|'+key; let u=thumbUrls.get(k); if(!u){ const m=WLIB.get(key); if(!m||!m.thumb) return ''; u=URL.createObjectURL(m.thumb); thumbUrls.set(k,u); } return u; }
+function wallCatalog(){ const cats=new Map(); for(const m of WLIB.values()){ let c=cats.get(m.catId); if(!c) cats.set(m.catId,c={id:m.catId,cat:m.cat,group:m.group,count:0}); c.count++; }
+  return [...cats.values()].sort((a,b)=>a.group.localeCompare(b.group)||a.cat.localeCompare(b.cat,undefined,{numeric:true})); }
+
+/* ---------- doors: a leaf image along the edge (1 or 2 squares), plus an optional frame of two posts ---------- */
+const DOOR_DIR='assets/doors/';
+const DOORSTYLES=new Map(), FRAMESTYLES=new Map();
+DOORSTYLES.set('drawn',{ key:'drawn', name:'Drawn', cat:'Drawn', drawn:true, len:1 });
+FRAMESTYLES.set('none',{ key:'none', name:'No frame', none:true });
+for(const [file,name,len] of [['wood_ashen_a','Ashen wood',1],['wood_dark_a','Dark wood',1],['wood_light_a','Light wood',1],['stone_earthy_a','Earthy stone',1],['metal_gray_a','Gray metal',1],['large_wood_ashen_a','Large ashen',2],['large_wood_dark_a','Large dark',2]])
+  DOORSTYLES.set('inc:'+file,{ key:'inc:'+file, name, cat:'Included', len, src:DOOR_DIR+file+'.png', loaded:false });
+for(const [file,name] of [['stone_earthy_a','Earthy stone'],['wood_dark_a','Dark wood']])
+  FRAMESTYLES.set('inc:'+file,{ key:'inc:'+file, name, cat:'Included', src:{ single:DOOR_DIR+'frame_'+file+'.png', double:DOOR_DIR+'frame_double_'+file+'.png' }, imgs:{}, loaded:false });
+const DLIB=new Map();           // key -> meta {key,kind:'door'|'frame',name,cat,group,catId,len,thumb}
+const memDoors=new Map();
+function doorStyleFor(key,frames){ const reg=frames?FRAMESTYLES:DOORSTYLES; let st=reg.get(key);
+  if(!st){ const m=DLIB.get(key)||{}; st={ key, name:m.name||'Missing', cat:m.cat||'Library', len:m.len||1, lib:true, imgs:{}, loaded:false }; reg.set(key,st); }
+  if(!st.drawn && !st.none && !st.loaded && !st.loading && !st.missing) loadDoorStyle(st,frames);
+  return st; }
+async function loadDoorStyle(st,frames){
+  st.loading=true;
+  try{
+    if(st.lib){ let v=memDoors.get(st.key);
+      if(!v && libPersistent){ try{ v=await idbRun('doorfull','readonly',t=>t.objectStore('doorfull').get(st.key)); }catch(e){} }
+      if(!v){ st.missing=true; st.loading=false; return; }
+      if(frames){ for(const k of ['single','double']) if(v[k]) st.imgs[k]=await createImageBitmap(v[k]); }
+      else st.img=await createImageBitmap(v.img);
+    } else {
+      const load=src=>new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; });
+      if(frames){ st.imgs.single=await load(st.src.single); st.imgs.double=await load(st.src.double); } else st.img=await load(st.src);
+    }
+    st.loaded=true;
+  }catch(e){}
+  st.loading=false; draw(); if(tool==='door') fillDoorGrid();
+}
+const doorKey=(o,x,y)=>o+':'+x+':'+y;
+function doorAt(o,x,y){ const d=map.doors[doorKey(o,x,y)]; return d || {s:0,f:0,m:0}; }
+function curDoorData(){ const put=(arr,k)=>{ let i=arr.indexOf(k); if(i<0){ arr.push(k); i=arr.length-1; } return i; };
+  return { s:put(map.doorKeys,settings.doorStyle||'drawn'), f:put(map.frameKeys,settings.doorFrame||'none'), m:0 }; }
+// draw one run of n door edges starting at (x0,y0) along o ('h' runs in x, 'v' in y)
+function drawDoorRun(c,s,o,x0,y0,n,d){
+  const st=doorStyleFor(map.doorKeys[d.s]||'drawn'), fr=doorStyleFor(map.frameKeys[d.f]||'none',true), vert=o==='v';
+  const at=(p,L)=> vert ? [x0, y0+p+L/2] : [x0+p+L/2, y0];
+  const put=(img,cx,cy,L,flip)=>{ c.save(); c.translate(cx*s,cy*s); if(vert) c.rotate(Math.PI/2); c.scale(flip&1?-1:1, flip&2?-1:1); c.drawImage(img,-L/2*s,-.5*s,L*s,s); c.restore(); };
+  if(st.img){ let p=0; while(p<n){ const L = st.len===2 && n-p>=2 ? 2 : 1; const [cx,cy]=at(p,L); put(st.img,cx,cy,L,d.m||0); p+=L; } }
+  else for(let p=0;p<n;p++){ const [cx,cy]=at(p,1); drawnDoor(c,s,cx,cy,vert); }
+  const fimg = n===1 ? fr.imgs&&fr.imgs.single : n===2 ? fr.imgs&&fr.imgs.double : null;
+  if(fimg){ const [cx,cy]=at(0,n); put(fimg,cx,cy,n+1,0); }
+}
+function drawnDoor(c,s,cx,cy,vert){ c.save(); c.translate(cx*s,cy*s); if(vert) c.rotate(Math.PI/2);
+  c.fillStyle='#1c1a1d'; c.fillRect(-.5*s,-.1*s,.12*s,.2*s); c.fillRect(.38*s,-.1*s,.12*s,.2*s);
+  c.fillStyle='#8b5a2b'; c.fillRect(-.38*s,-.08*s,.76*s,.16*s); c.strokeStyle='#3a2210'; c.lineWidth=Math.max(1,s*.03); c.strokeRect(-.38*s,-.08*s,.76*s,.16*s);
+  c.beginPath(); c.moveTo(0,-.08*s); c.lineTo(0,.08*s); c.stroke(); c.fillStyle='#d9b45a'; circle(c,.26*s,0,s*.025); c.restore(); }
+function drawDoors(c,s){
+  const W=map.w, H=map.h, same=(a,b)=>a.s===b.s&&a.f===b.f&&(a.m||0)===(b.m||0);
+  for(let y=0;y<=H;y++){ let x=0; while(x<W){ if(map.hw[y*W+x]!==2){ x++; continue; } const d=doorAt('h',x,y); let x1=x+1;
+    while(x1<W && map.hw[y*W+x1]===2 && same(doorAt('h',x1,y),d)) x1++; drawDoorRun(c,s,'h',x,y,x1-x,d); x=x1; } }
+  for(let x=0;x<=W;x++){ let y=0; while(y<H){ if(map.vw[y*(W+1)+x]!==2){ y++; continue; } const d=doorAt('v',x,y); let y1=y+1;
+    while(y1<H && map.vw[y1*(W+1)+x]===2 && same(doorAt('v',x,y1),d)) y1++; drawDoorRun(c,s,'v',x,y,y1-y,d); y=y1; } }
+}
+const DOOR_RE=/^(.+?)_(\d+)x(\d+)$/i;
+async function importDoors(list){
+  if(importing){ toast('An import is already running'); return; }
+  const doors=[], frames=new Map();
+  for(const {file,path} of list){
+    const parts=path.replace(/^\/+/,'').split('/'), fileName=parts.pop(); if(!/\.(png|webp)$/i.test(fileName)) continue;
+    const base=fileName.replace(/\.\w+$/,''), m=DOOR_RE.exec(base); if(!m || +m[3]!==1 || !/^door/i.test(base) || /trapdoor|cellar/i.test(path)) continue;
+    const folder=parts.pop()||'Doors', parent=parts.pop()||'';
+    const fm=/^Door_Frame_(Double_)?(.+)$/i.exec(m[1]);
+    if(fm){ const id=fm[2].toLowerCase(); let g=frames.get(id); if(!g) frames.set(id,g={stem:fm[2],folder,parent}); g[fm[1]?'double':'single']=file; }
+    else if(+m[2]<=2) doors.push({file,base:m[1],len:+m[2],folder,parent});
+  }
+  const jobs=[...doors.map(d=>({kind:'door',...d})), ...[...frames.values()].map(f=>({kind:'frame',...f}))];
+  if(!jobs.length){ toast('No door images found there — try your Structures/Doors folder'); return; }
+  importing={ kind:'doors', total:jobs.length, done:0, failed:0, cancel:false, current:'', firstCat:null };
+  if(tool!=='door') setTool('door'); else renderPanel();
+  let i=0, quota=false;
+  const worker=async()=>{ while(i<jobs.length && !importing.cancel && !quota){ const j=jobs[i++]; importing.current=prettify(j.base||j.stem);
+      try{ const meta=await importDoorOne(j); if(meta.kind==='door' && !importing.firstCat) importing.firstCat=meta.catId; }
+      catch(e){ importing.failed++; if(e && e.name==='QuotaExceededError') quota=true; }
+      importing.done++; updateImportUI(); } };
+  await Promise.all([worker(),worker(),worker()]);
+  const ok=importing.done-importing.failed, failed=importing.failed, first=importing.firstCat, cancelled=importing.cancel; importing=null;
+  if(first && !settings.doorCat.startsWith('lib:')) settings.doorCat='lib:'+first;
+  renderPanel(); draw();
+  toast(quota ? `Browser storage is full — ${ok} door pieces imported` : cancelled ? `Import stopped — ${ok} added` : `Imported ${doors.length} doors and ${frames.size} frames`+(failed?` · ${failed} couldn’t be read`:''));
+}
+async function importDoorOne(j){
+  let key, value, meta, thumbSrc=[];
+  const tc=document.createElement('canvas'); tc.width=tc.height=96; const g=tc.getContext('2d'); g.fillStyle='#4a4540'; g.fillRect(0,0,96,96);
+  if(j.kind==='door'){
+    key=('lib:door/'+j.folder+'/'+j.base).toLowerCase(); value={img:j.file};
+    const b=await createImageBitmap(j.file), L=j.len, sz=88/L; g.drawImage(b,48-L*sz/2,48-sz/2,L*sz,sz); if(b.close) b.close();
+    const skip=new Set(['door','large']); const name=j.base.split('_').filter(t=>!skip.has(t.toLowerCase())).join(' ')||prettify(j.base);
+    meta={ key, kind:'door', name, cat:prettify(j.folder), group:prettify(j.parent)||'Doors', catId:('door/'+j.folder).toLowerCase(), len:L };
+  } else {
+    key=('lib:frame/'+j.stem).toLowerCase(); value={}; if(j.single) value.single=j.single; if(j.double) value.double=j.double;
+    const f=j.single||j.double, n=j.single?2:3, b=await createImageBitmap(f), sz=92/n; g.drawImage(b,48-n*sz/2,48-sz/2,n*sz,sz); if(b.close) b.close();
+    meta={ key, kind:'frame', name:prettify(j.stem), cat:'Frames', group:prettify(j.parent)||'Doors', catId:'frame' };
+  }
+  meta.thumb=await new Promise(res=>tc.toBlob(res,'image/png'));
+  let saved=false;
+  if(libPersistent){ try{ await idbRun(['doormeta','doorfull'],'readwrite',t=>{ t.objectStore('doormeta').put(meta); t.objectStore('doorfull').put(value,key); }); saved=true; }
+    catch(e){ if(e && e.name==='QuotaExceededError') throw e; } }
+  if(!saved) memDoors.set(key,value);
+  DLIB.set(key,meta);
+  const st=(meta.kind==='frame'?FRAMESTYLES:DOORSTYLES).get(key); if(st){ st.loaded=false; st.missing=false; st.imgs={}; st.img=null; loadDoorStyle(st,meta.kind==='frame'); }
+  return meta;
+}
+async function doorDelete(keys){
+  if(libPersistent){ try{ await idbRun(['doormeta','doorfull'],'readwrite',t=>{ for(const k of keys){ t.objectStore('doormeta').delete(k); t.objectStore('doorfull').delete(k); } }); }catch(e){} }
+  for(const k of keys){ DLIB.delete(k); memDoors.delete(k); for(const reg of [DOORSTYLES,FRAMESTYLES]){ const st=reg.get(k); if(st){ st.img=null; st.imgs={}; st.loaded=false; st.missing=true; } }
+    const u=thumbUrls.get('d|'+k); if(u){ URL.revokeObjectURL(u); thumbUrls.delete('d|'+k); } }
+}
+function doorThumbURL(key){ const k='d|'+key; let u=thumbUrls.get(k); if(!u){ const m=DLIB.get(key); if(!m||!m.thumb) return ''; u=URL.createObjectURL(m.thumb); thumbUrls.set(k,u); } return u; }
+function doorCatalog(){ const cats=new Map(); for(const m of DLIB.values()) if(m.kind==='door'){ let c=cats.get(m.catId); if(!c) cats.set(m.catId,c={id:m.catId,cat:m.cat,group:m.group,count:0}); c.count++; }
+  return [...cats.values()].sort((a,b)=>a.cat.localeCompare(b.cat)); }
+
+/* ---------- prop library: transparent images, 200px per square, footprint in the name (…_2x1.png) ---------- */
+const PLIB=new Map();          // key -> meta {key,name,cat,group,catId,sw,sh,bytes}; thumbs load lazily
+const memProps=new Map(), memPropThumbs=new Map();
+const PROP_SIZE_RE=/_(\d+)x(\d+)$/i;
+function encodeAlpha(src,w,h){ const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(w)); c.height=Math.max(1,Math.round(h));
+  const g=c.getContext('2d'); g.imageSmoothingQuality='high'; g.drawImage(src,0,0,c.width,c.height);
+  return new Promise(res=>c.toBlob(b=>{ if(b && b.type==='image/webp') res(b); else c.toBlob(res,'image/png'); },'image/webp',.9)); }
+async function importPropOne({file,path}){
+  const parts=path.replace(/^\/+/,'').split('/'), fileName=parts.pop(), cat=parts.pop()||'Imported', group=parts.pop()||'';
+  const base=fileName.replace(/\.\w+$/,''), m=PROP_SIZE_RE.exec(base);
+  const key=('lib:'+(group?group+'/':'')+cat+'/'+base).toLowerCase();
+  const bmp=await createImageBitmap(file); const w=bmp.width, h=bmp.height;
+  const sw=m ? +m[1] : Math.max(.25,Math.round(w/200*4)/4), sh=m ? +m[2] : Math.max(.25,Math.round(h/200*4)/4);
+  const cap=Math.max(512,settings.libQuality), sc=Math.min(1,cap/Math.max(w,h));
+  const full = sc<1 ? await encodeAlpha(bmp,w*sc,h*sc) : file;
+  const tk=96/Math.max(w,h), thumb=await encodeAlpha(bmp,w*tk,h*tk);
+  if(bmp.close) bmp.close();
+  const meta={ key, name:prettyName(base.replace(PROP_SIZE_RE,''),cat), cat:prettify(cat), group:prettify(group)||'My props', catId:((group?group+'/':'')+cat).toLowerCase(), sw, sh, bytes:full.size };
+  let saved=false;
+  if(libPersistent){ try{ await idbRun(['propmeta','propfull','propthumb'],'readwrite',t=>{ t.objectStore('propmeta').put(meta); t.objectStore('propfull').put(full,key); t.objectStore('propthumb').put(thumb,key); }); saved=true; }
+    catch(e){ if(e && e.name==='QuotaExceededError') throw e; } }
+  if(!saved){ memProps.set(key,full); memPropThumbs.set(key,thumb); }
+  PLIB.set(key,meta); propImgs.delete(key);
+  const old=thumbUrls.get('p|'+key); if(old){ URL.revokeObjectURL(old); thumbUrls.delete('p|'+key); }
+  return meta;
+}
+async function importProps(list){
+  if(importing){ toast('An import is already running'); return; }
+  const imgs=list.filter(x=>/\.(png|webp)$/i.test(x.path));
+  if(!imgs.length){ toast('No PNG or WebP images found there — props need transparent images'); return; }
+  importing={ kind:'props', total:imgs.length, done:0, failed:0, cancel:false, current:'', firstCat:null };
+  if(tool!=='prop') setTool('prop'); else renderPanel();
+  if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+  let i=0, quota=false;
+  const worker=async()=>{ while(i<imgs.length && !importing.cancel && !quota){ const it=imgs[i++]; importing.current=prettify(it.path.split('/').pop());
+      try{ const m=await importPropOne(it); if(!importing.firstCat) importing.firstCat=m.catId; }
+      catch(e){ importing.failed++; if(e && e.name==='QuotaExceededError') quota=true; }
+      importing.done++; updateImportUI(); } };
+  await Promise.all([worker(),worker(),worker(),worker()]);
+  const ok=importing.done-importing.failed, failed=importing.failed, cancelled=importing.cancel, first=importing.firstCat; importing=null;
+  if(first && !settings.propCat.startsWith('lib:')) settings.propCat='lib:'+first;
+  renderPanel(); draw();
+  const n=ok.toLocaleString();
+  toast(quota ? `Browser storage is full — ${n} props imported. Remove some categories to make room.` : cancelled ? `Import stopped — ${n} props added` : `Imported ${n} props`+(failed?` · ${failed} couldn’t be read`:''));
+}
+async function propDelete(keys){
+  if(libPersistent){ try{ await idbRun(['propmeta','propfull','propthumb'],'readwrite',t=>{ for(const k of keys){ t.objectStore('propmeta').delete(k); t.objectStore('propfull').delete(k); t.objectStore('propthumb').delete(k); } }); }catch(e){} }
+  for(const k of keys){ const m=PLIB.get(k); if(m) propInfoCache[k]={name:m.name,sw:m.sw,sh:m.sh}; PLIB.delete(k); memProps.delete(k); memPropThumbs.delete(k); propImgs.delete(k);
+    const u=thumbUrls.get('p|'+k); if(u){ URL.revokeObjectURL(u); thumbUrls.delete('p|'+k); } }
+}
+// thumbnails load only when their swatch scrolls into view
+const thumbObserver = 'IntersectionObserver' in window ? new IntersectionObserver(es=>{ for(const e of es) if(e.isIntersecting){ thumbObserver.unobserve(e.target); loadPropThumb(e.target); } },{root:null,rootMargin:'200px'}) : null;
+async function loadPropThumb(img){
+  const key=img.dataset.pthumb, k='p|'+key; let u=thumbUrls.get(k);
+  if(!u){ let b=memPropThumbs.get(key); if(!b && libPersistent){ try{ b=await idbRun('propthumb','readonly',t=>t.objectStore('propthumb').get(key)); }catch(e){} }
+    if(!b) return; u=URL.createObjectURL(b); thumbUrls.set(k,u); }
+  img.src=u;
+}
+function propCatalog(){ const cats=new Map(); for(const m of PLIB.values()){ let c=cats.get(m.catId); if(!c) cats.set(m.catId,c={id:m.catId,cat:m.cat,group:m.group,count:0,bytes:0}); c.count++; c.bytes+=m.bytes||0; }
+  return [...cats.values()].sort((a,b)=>a.group.localeCompare(b.group)||a.cat.localeCompare(b.cat,undefined,{numeric:true})); }
+
+function libCatalog(){ const cats=new Map(); for(const m of LIB.values()){ let c=cats.get(m.catId); if(!c) cats.set(m.catId,c={id:m.catId,cat:m.cat,group:m.group,count:0,bytes:0}); c.count++; c.bytes+=m.bytes||0; }
+  return [...cats.values()].sort((a,b)=>a.group.localeCompare(b.group)||a.cat.localeCompare(b.cat)); }
+
+function drawTerrainCell(c, t, x, y, s, sameFn){
+  c.save(); c.beginPath(); c.rect(0,0,s,s); c.clip();
+  TERRAIN[t].draw(c, s, k=>rng(x,y,k+t*97), sameFn);
+  c.restore();
+}
+
+/* ---------- props (drawn in unit space, centred on the square) ---------- */
+function poly(c, pts){ c.beginPath(); pts.forEach((p,i)=>c[i?'lineTo':'moveTo'](p[0],p[1])); c.closePath(); }
+function blob(c,r,rad,k,n=7){ const pts=[]; for(let i=0;i<n;i++){ const a=i/n*Math.PI*2+r(k); const d=rad*(.75+r(k+i+1)*.4); pts.push([Math.cos(a)*d,Math.sin(a)*d]); } poly(c,pts); }
+const PROPS = {
+  rug:{ name:'Rug', layer:0, draw(c){ c.fillStyle='#7a2e2e'; c.fillRect(-.46,-.46,.92,.92); c.strokeStyle='#c9a24a'; c.lineWidth=.04; c.strokeRect(-.39,-.39,.78,.78);
+    c.fillStyle='#c9a24a'; poly(c,[[0,-.22],[.22,0],[0,.22],[-.22,0]]); c.fill(); c.fillStyle='#7a2e2e'; poly(c,[[0,-.1],[.1,0],[0,.1],[-.1,0]]); c.fill(); }},
+  rubble:{ name:'Rubble', layer:0, draw(c,r){ for(let i=0;i<7;i++){ c.save(); c.translate((r(i)-.5)*.75,(r(10+i)-.5)*.75); c.fillStyle=shade('#7d7770',(r(20+i)-.5)*.4);
+    blob(c,r,.07+r(30+i)*.08,40+i*9,5); c.fill(); c.strokeStyle='rgba(30,28,26,.6)'; c.lineWidth=.02; c.stroke(); c.restore(); } }},
+  bones:{ name:'Bones', layer:0, draw(c,r){ c.strokeStyle='#e5dcc6'; c.fillStyle='#e5dcc6'; c.lineCap='round';
+    for(let i=0;i<3;i++){ c.save(); c.rotate(r(i)*Math.PI*2); c.translate((r(5+i)-.5)*.3,(r(9+i)-.5)*.3); c.lineWidth=.05; c.beginPath(); c.moveTo(-.18,0); c.lineTo(.18,0); c.stroke();
+      circle(c,-.19,-.03,.035); circle(c,-.19,.03,.035); circle(c,.19,-.03,.035); circle(c,.19,.03,.035); c.restore(); }
+    circle(c,.2,.2,.1); c.fillStyle='#2a2522'; circle(c,.17,.19,.022); circle(c,.23,.19,.022); }},
+  stairs:{ name:'Stairs', layer:0, draw(c){ const n=6; for(let i=0;i<n;i++){ c.fillStyle=shade('#8b8680',-.08-i*.1); c.fillRect(-.46,-.46+i*.92/n,.92,.92/n); }
+    c.strokeStyle='rgba(20,18,16,.7)'; c.lineWidth=.02; for(let i=0;i<=n;i++){ c.beginPath(); c.moveTo(-.46,-.46+i*.92/n); c.lineTo(.46,-.46+i*.92/n); c.stroke(); }
+    c.strokeRect(-.46,-.46,.92,.92); c.fillStyle='rgba(236,229,216,.7)'; poly(c,[[0,.3],[-.1,.14],[.1,.14]]); c.fill(); }},
+  crate:{ name:'Crate', layer:1, draw(c){ shadow(c,.36); c.fillStyle='#9a6b3a'; c.fillRect(-.34,-.34,.68,.68); c.strokeStyle='#4b3017'; c.lineWidth=.045; c.strokeRect(-.34,-.34,.68,.68);
+    c.lineWidth=.03; c.beginPath(); c.moveTo(-.34,-.34); c.lineTo(.34,.34); c.moveTo(.34,-.34); c.lineTo(-.34,.34); c.stroke(); c.strokeRect(-.27,-.27,.54,.54); }},
+  barrel:{ name:'Barrel', layer:1, draw(c){ shadow(c,.33); c.fillStyle='#8a5a2e'; circle(c,0,0,.32); c.strokeStyle='#3b2a1a'; c.lineWidth=.04; c.beginPath(); c.arc(0,0,.32,0,7); c.stroke();
+    c.lineWidth=.03; c.beginPath(); c.arc(0,0,.24,0,7); c.stroke(); c.fillStyle='#a67443'; circle(c,0,0,.12); c.fillStyle='rgba(255,255,255,.12)'; circle(c,-.1,-.1,.07); }},
+  chest:{ name:'Chest', layer:1, draw(c){ shadow(c,.36); c.fillStyle='#7b4a22'; c.fillRect(-.34,-.23,.68,.46); c.strokeStyle='#3a2210'; c.lineWidth=.04; c.strokeRect(-.34,-.23,.68,.46);
+    c.fillStyle='#c9a24a'; c.fillRect(-.34,-.05,.68,.1); c.fillRect(-.26,-.23,.07,.46); c.fillRect(.19,-.23,.07,.46); c.fillStyle='#f0d27a'; c.fillRect(-.05,-.08,.1,.16); }},
+  table:{ name:'Table', layer:1, draw(c){ shadow(c,.44); c.fillStyle='#8b5e34'; c.beginPath(); c.roundRect(-.43,-.3,.86,.6,.05); c.fill(); c.strokeStyle='#3e2814'; c.lineWidth=.04; c.stroke();
+    c.strokeStyle='rgba(60,38,20,.45)'; c.lineWidth=.02; for(const y of [-.12,.05,.18]){ c.beginPath(); c.moveTo(-.38,y); c.lineTo(.38,y); c.stroke(); }
+    c.fillStyle='#d8cfbd'; circle(c,-.18,-.02,.07); c.fillStyle='#6b4a2a'; circle(c,.2,.06,.05); }},
+  bed:{ name:'Bed', layer:1, draw(c){ shadow(c,.4); c.fillStyle='#6b4424'; c.fillRect(-.32,-.46,.64,.92); c.fillStyle='#8c3b3b'; c.fillRect(-.27,-.12,.54,.53);
+    c.fillStyle='#e5dcc6'; c.fillRect(-.23,-.4,.46,.2); c.strokeStyle='rgba(0,0,0,.35)'; c.lineWidth=.02; c.strokeRect(-.27,-.12,.54,.53); }},
+  pillar:{ name:'Pillar', layer:1, draw(c){ shadow(c,.42); c.fillStyle='#5f5a55'; circle(c,0,0,.4); c.fillStyle='#9c968e'; circle(c,0,0,.32);
+    c.strokeStyle='#6f6a64'; c.lineWidth=.03; c.beginPath(); c.arc(0,0,.21,0,7); c.stroke(); c.fillStyle='rgba(255,255,255,.15)'; circle(c,-.1,-.1,.1); }},
+  statue:{ name:'Statue', layer:1, draw(c){ shadow(c,.42); c.fillStyle='#66615b'; c.fillRect(-.4,-.4,.8,.8); c.strokeStyle='#3b3834'; c.lineWidth=.035; c.strokeRect(-.4,-.4,.8,.8);
+    c.fillStyle='#b8b0a4'; ellipse(c,0,.04,.26,.14); circle(c,0,-.02,.13); c.fillStyle='rgba(0,0,0,.2)'; circle(c,.04,.02,.09); }},
+  rock:{ name:'Rock', layer:1, draw(c,r){ shadow(c,.38); c.fillStyle='#78746f'; blob(c,r,.36,1,8); c.fill(); c.strokeStyle='#44413d'; c.lineWidth=.035; c.stroke();
+    c.save(); c.translate(-.07,-.08); c.fillStyle='#98938c'; blob(c,r,.18,20,6); c.fill(); c.restore(); }},
+  campfire:{ name:'Campfire', layer:1, draw(c){ glow(c,1.7,'rgba(255,150,60,.28)');
+    c.fillStyle='#75706a'; for(let i=0;i<9;i++){ const a=i/9*Math.PI*2; circle(c,Math.cos(a)*.3,Math.sin(a)*.3,.075); }
+    c.strokeStyle='#5a3a1e'; c.lineWidth=.08; c.lineCap='round'; c.beginPath(); c.moveTo(-.18,-.12); c.lineTo(.18,.12); c.moveTo(-.18,.12); c.lineTo(.18,-.12); c.stroke();
+    c.fillStyle='#f0801f'; circle(c,0,0,.16); c.fillStyle='#ffd166'; circle(c,0,.02,.08); }},
+  torch:{ name:'Torch', layer:1, draw(c){ glow(c,1.4,'rgba(255,170,70,.25)'); c.fillStyle='#3b2a1a'; c.fillRect(-.05,-.05,.1,.28); c.fillStyle='#f08a24'; circle(c,0,-.08,.1); c.fillStyle='#ffe08a'; circle(c,0,-.08,.05); }},
+  bush:{ name:'Bush', layer:2, draw(c,r){ c.fillStyle='rgba(0,0,0,.25)'; ellipse(c,.05,.07,.4,.36);
+    c.fillStyle='#3a6530'; for(let i=0;i<5;i++){ const a=i/5*Math.PI*2+r(1); circle(c,Math.cos(a)*.17,Math.sin(a)*.17,.2); }
+    c.fillStyle='#52843f'; for(let i=0;i<4;i++){ circle(c,(r(10+i)-.6)*.3,(r(20+i)-.6)*.3,.08); } }},
+  tree:{ name:'Tree', layer:2, draw(c,r){ c.fillStyle='rgba(0,0,0,.3)'; ellipse(c,.1,.12,.62,.56);
+    c.fillStyle='#2c5227'; for(let i=0;i<7;i++){ const a=i/7*Math.PI*2+r(1); circle(c,Math.cos(a)*.3,Math.sin(a)*.3,.28+r(i+2)*.06); } circle(c,0,0,.4);
+    c.fillStyle='#3f6d35'; for(let i=0;i<5;i++){ const a=i/5*Math.PI*2+r(9); circle(c,Math.cos(a)*.2-.06,Math.sin(a)*.2-.06,.18); }
+    c.fillStyle='#5a8a45'; for(let i=0;i<5;i++){ circle(c,(r(20+i)-.65)*.5,(r(30+i)-.65)*.5,.06+r(40+i)*.04); } }},
+};
+const PROP_KEYS = Object.keys(PROPS);
+// A placed prop: {id, type, cx, cy (centre, in squares — free, not snapped), rot (deg), scale, flip, layer}.
+// type is a drawn prop key, or 'lib:…' for an image from the viewer's prop library.
+const LAYERS=[['Ground',0],['Standard',1],['Above walls',2]];
+const propLayer=p=> p.layer ?? (PROPS[p.type] ? PROPS[p.type].layer : 1);
+const propSize=p=>{ if(PROPS[p.type]) return [1,1]; const m=PLIB.get(p.type)||propInfoCache[p.type]; return m ? [m.sw,m.sh] : [1,1]; };
+const propName=type=> PROPS[type] ? PROPS[type].name : ((PLIB.get(type)||propInfoCache[type]||{}).name || 'Missing prop');
+const propInfoCache={};   // name/size of library props a loaded map uses, for when this browser lacks them
+function propLocal(p,fx,fy){ const a=-(p.rot||0)*Math.PI/180, dx=fx-p.cx, dy=fy-p.cy; return [dx*Math.cos(a)-dy*Math.sin(a), dx*Math.sin(a)+dy*Math.cos(a)]; }
+function propHit(p,fx,fy){ const [w,h]=propSize(p), k=(p.scale||1)*(PROPS[p.type]?.4:.5), [lx,ly]=propLocal(p,fx,fy); return Math.abs(lx)<=w*k && Math.abs(ly)<=h*k; }
+function propOrder(){ return map.props.map((p,i)=>({p,i})).sort((a,b)=>propLayer(a.p)-propLayer(b.p)||a.i-b.i).map(x=>x.p); }
+function propAt(fx,fy){ const ps=propOrder(); for(let i=ps.length-1;i>=0;i--) if(propHit(ps[i],fx,fy)) return ps[i]; return null; }
+function snapProp(p,cx,cy){ // align the footprint to the grid when the prop sits square-on
+  const [w,h]=propSize(p), sc=p.scale||1, a=(((p.rot||0)%180)+180)%180, side=Math.abs(a-90)<45;
+  const fw=(side?h:w)*sc, fh=(side?w:h)*sc;
+  const sn=(c,f)=>{ const r=Math.round(f); return (r>=1 && Math.abs(f-r)<.02) ? Math.round(c-f/2)+f/2 : Math.round(c*2)/2; };
+  return [sn(cx,fw), sn(cy,fh)];
+}
+const normDeg=d=>{ d=Math.round(d*10)/10%360; return d<0?d+360:d; };
+// images for library props, loaded on first draw
+const propImgs=new Map();
+function propImg(key){
+  let r=propImgs.get(key); if(r) return r.img;
+  r={img:null}; propImgs.set(key,r);
+  (async()=>{ let blob=memProps.get(key);
+    if(!blob && libPersistent){ try{ blob=await idbRun('propfull','readonly',t=>t.objectStore('propfull').get(key)); }catch(e){} }
+    if(blob){ try{ r.img=await createImageBitmap(blob); draw(); }catch(e){} } })();
+  return null;
+}
+function shadow(c,rad){ c.fillStyle='rgba(0,0,0,.3)'; ellipse(c,.05,.07,rad,rad); }
+function glow(c,rad,col){ const g=c.createRadialGradient(0,0,0,0,0,rad); g.addColorStop(0,col); g.addColorStop(1,'rgba(255,150,60,0)'); c.fillStyle=g; c.fillRect(-rad,-rad,rad*2,rad*2); }
+
+/* ---------- tokens ---------- */
+const KINDS = { hero:{name:'Hero',ring:'#d9a441'}, foe:{name:'Foe',ring:'#c23b2e'}, ally:{name:'Ally',ring:'#5a9ad6'} };
+const SIZES = [ {k:.5,name:'Tiny',n:1,r:.3}, {k:1,name:'Small / Medium',n:1,r:.42}, {k:2,name:'Large',n:2,r:.9}, {k:3,name:'Huge',n:3,r:1.36}, {k:4,name:'Gargantuan',n:4,r:1.82} ];
+const COLORS = ['#b8433a','#c7792b','#c9a227','#5a8f3c','#2f7d7a','#3d6fb3','#6b4fa0','#a34d7c','#5b5550','#e8dfcc'];
+const sizeOf = t => SIZES.find(z=>z.k===t.size) || SIZES[1];
+function initials(name){
+  const m=name.trim().match(/^(.*?)\s*(\d+)$/);
+  if(m && m[1]) return m[1][0].toUpperCase()+m[2];
+  const w=name.trim().split(/\s+/).filter(Boolean);
+  if(!w.length) return '?';
+  return (w.length>1 ? w[0][0]+w[1][0] : w[0].slice(0,2)).toUpperCase();
+}
+
+/* ---------- map model ---------- */
+function blankMap(w,h,t=0){
+  return { v:1, id:newId(), name:'Untitled map', w, h, terrain:new Array(w*h).fill(t), hw:new Array(w*(h+1)).fill(0), vw:new Array((w+1)*h).fill(0), props:[], tokens:[], fog:new Array(w*h).fill(0), texScale:{},
+    hws:new Array(w*(h+1)).fill(0), vws:new Array((w+1)*h).fill(0), wallKeys:['drawn'],   // wall style per edge, as indices into wallKeys
+    doors:{}, doorKeys:['drawn'], frameKeys:['none'] };   // doors: 'h:x:y' -> {s: door style, f: frame, m: flip bits}
+}
+function sampleMap(){
+  const m=blankMap(28,20,0); m.name='The Ruined Keep at Hollow Ford';
+  const W=m.w, H=m.h, set=(x,y,t)=>{ if(x>=0&&y>=0&&x<W&&y<H) m.terrain[y*W+x]=t; };
+  const streamX=y=>5+Math.round(2*Math.sin(y*.45));
+  for(let y=0;y<H;y++){ const cx=streamX(y); set(cx-2,y,2); set(cx+2,y,2); set(cx-1,y,7); set(cx,y,8); set(cx+1,y,7); }
+  for(let x=0;x<15;x++){ set(x,9,1); set(x,10,1); }
+  for(const y of [9,10]){ const cx=streamX(y); for(let x=cx-2;x<=cx+2;x++) set(x,y,6); }
+  const bx0=streamX(9)-2, bx1=streamX(9)+2;
+  for(let x=bx0;x<=bx1;x++){ m.hw[9*W+x]=1; m.hw[11*W+x]=1; }
+  m.wallKeys=['drawn','inc:stone_a/earthy'];
+  // keep
+  const room=(x0,y0,x1,y1,t)=>{ for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++) set(x,y,t);
+    for(let x=x0;x<=x1;x++){ m.hw[y0*W+x]=1; m.hw[(y1+1)*W+x]=1; } for(let y=y0;y<=y1;y++){ m.vw[y*(W+1)+x0]=1; m.vw[y*(W+1)+x1+1]=1; } };
+  room(15,3,24,15,TI('tex:brick/brick_floor_c_01'));
+  for(let y=3;y<=15;y++) m.vw[y*(W+1)+21]=1;
+  for(let y=3;y<=15;y++) for(let x=21;x<=24;x++) set(x,y,6);
+  m.vw[9*(W+1)+15]=2; m.vw[10*(W+1)+15]=2; m.vw[6*(W+1)+21]=2; m.vw[12*(W+1)+21]=2;
+  m.hw[3*W+17]=0; m.hw[3*W+18]=0; m.hw[16*W+23]=0; set(17,3,5); set(18,3,5);
+  const P=(type,x,y,rot=0)=>m.props.push({id:newId(),type,cx:x+.5,cy:y+.5,rot,scale:1});
+  P('rubble',17,3); P('rubble',18,3); P('rubble',17,2); P('rubble',23,16); P('rubble',19,4);
+  for(const [x,y] of [[16,5],[19,5],[16,13],[19,13]]) P('pillar',x,y);
+  P('statue',17,15); P('torch',15,4); P('torch',20,4);
+  P('rug',22,9); P('rug',23,9); P('rug',22,10); P('rug',23,10);
+  P('chest',24,3); P('bed',24,14); P('table',22,6); P('crate',21,3); P('barrel',21,15); P('bones',18,11); P('stairs',24,8,90);
+  P('campfire',3,15); P('crate',2,13); P('rock',4,17);
+  let placed=0;
+  for(let i=0;i<400 && placed<30;i++){ const x=Math.floor(rng(i,3,1)*W), y=Math.floor(rng(i,7,2)*H);
+    if(m.terrain[y*W+x]!==0) continue; if(x>=13&&x<=26&&y>=1&&y<=17) continue; if(y>=8&&y<=11) continue;
+    if(Math.abs(x-3)<=2 && Math.abs(y-15)<=2) continue;
+    if(m.props.some(p=>Math.abs(p.cx-.5-x)<=1&&Math.abs(p.cy-.5-y)<=1)) continue;
+    const roll=rng(i,11,3); P(roll<.62?'tree':roll<.85?'bush':'rock',x,y,Math.round(rng(i,13,4)*360));
+    const pl=m.props[m.props.length-1]; pl.cx+=(rng(i,17,5)-.5)*.5; pl.cy+=(rng(i,19,6)-.5)*.5; pl.scale=.85+rng(i,23,7)*.45; placed++; }
+  const T=(name,kind,color,size,x,y)=>m.tokens.push({id:newId(),name,kind,color,size,x,y});
+  T('Brannoc','hero','#3d6fb3',1,10,9); T('Ilse','hero','#6b4fa0',1,11,10); T('Tamsin','hero','#2f7d7a',1,9,10); T('Quill','hero','#c7792b',1,12,9);
+  T('Goblin','foe','#5a8f3c',1,17,8); T('Goblin 2','foe','#5a8f3c',1,18,11); T('Goblin 3','foe','#5a8f3c',1,16,10);
+  T('Ogre','foe','#8a5a3c',2,22,11); T('Sister Wren','ally','#e8dfcc',1,4,14);
+  for(let y=3;y<=15;y++) for(let x=21;x<=24;x++) m.fog[y*W+x]=1;
+  m.hws=m.hw.map(v=>v?1:0); m.vws=m.vw.map(v=>v?1:0);
+  m.doorKeys=['drawn','inc:large_wood_dark_a','inc:wood_dark_a']; m.frameKeys=['none','inc:stone_earthy_a'];
+  m.doors={ 'v:15:9':{s:1,f:1,m:0}, 'v:15:10':{s:1,f:1,m:0}, 'v:21:6':{s:2,f:1,m:0}, 'v:21:12':{s:2,f:1,m:1} };
+  return m;
+}
+
+/* ---------- state ---------- */
+let map;
+const settings = { grid:true, names:true, diag:'5', fogView:'gm', exportPx:100, libQuality:1024, recent:[], cat:'painted',
+  wallStyle:'inc:stone_a/earthy', wallCat:'inc:Stone', wallRecent:[], wallQ:'',
+  propCat:'drawn', propQ:'', propRecent:[], propSnap:false, propRandom:false, rotStep:15,
+  doorStyle:'inc:wood_dark_a', doorFrame:'inc:stone_earthy_a', doorCat:'inc', doorRecent:[] };
+const cur = { terrain:4, q:'', get cat(){ return settings.cat; }, set cat(v){ settings.cat=v; }, prop:'tree', rot:0, scale:1, flip:false, brush:1, fogMode:'hide', token:{ name:'Goblin', kind:'foe', color:'#5a8f3c', size:1 } };
+let tool='select', sel=null, hover=null, action=null, spaceDown=false;
+const undoStack=[], redoStack=[];
+const view={ s:32, ox:0, oy:0 };
+const tcan=document.createElement('canvas'), tctx=tcan.getContext('2d');
+const cv=$('cv'), ctx=cv.getContext('2d'), stage=$('stage');
+let cw=0, ch=0, dpr=1;
+
+const TOOLS = [
+  { id:'file', key:'N', name:'Maps', hint:'Start a new map, save this one, or open one you saved. <kbd>Ctrl S</kbd> saves.',
+    icon:'<path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2z"/><path d="M9 4v14M15 6v14"/>' },
+  'sep',
+  { id:'select', key:'V', name:'Select & move', hint:'Drag tokens and props to move them. A selected prop shows handles: the circle above rotates it, the square at the corner resizes it. Drag empty ground to pan. <kbd>Del</kbd> removes the selection.',
+    icon:'<path d="M5 3l14 8-6.5 1.8L9.5 19z"/>' },
+  { id:'pan', key:'H', name:'Pan', hint:'Drag to move around the map. Hold <kbd>Space</kbd> with any tool to pan, scroll or pinch to zoom.',
+    icon:'<path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/>' },
+  'sep',
+  { id:'brush', key:'B', name:'Paint terrain', hint:'Drag to paint the chosen ground.', icon:'<path d="M18 3l3 3-9 9-3-3z"/><path d="M9 12c-3 0-5 2-5 5 0 1-1 3-2 4 4 0 8-1 9-4 .5-1.5 0-3-2-5z"/>' },
+  { id:'fill', key:'F', name:'Fill area', hint:'Click to flood-fill connected ground of the same kind. Walls and doors stop the fill, so you can fill a room.', icon:'<path d="M5 11l7-7 7 7-7 7z"/><path d="M5 11h14"/><path d="M20 16s-1.5 2-1.5 3a1.5 1.5 0 0 0 3 0c0-1-1.5-3-1.5-3z"/>' },
+  { id:'rect', key:'U', name:'Terrain rectangle', hint:'Drag a rectangle of ground.', icon:'<rect x="4" y="5" width="16" height="14" rx="1"/><path d="M4 12h16" opacity=".4"/>' },
+  { id:'room', key:'O', name:'Room', hint:'Drag to lay a floor and wall it in at once. Add doors with the Door tool.', icon:'<path d="M4 4h16v16H4z"/><path d="M4 4h16v16H4z" stroke-width="3.2" stroke-dasharray="7 4" opacity=".55"/>' },
+  'sep',
+  { id:'wall', key:'W', name:'Walls', hint:'Drag along grid lines to build walls. Click a single edge to add or remove one.', icon:'<rect x="3" y="5" width="18" height="14"/><path d="M3 9.7h18M3 14.3h18M9 5v4.7M15 5v4.7M6 9.7v4.6M12 9.7v4.6M18 9.7v4.6M9 14.3V19M15 14.3V19"/>' },
+  { id:'door', key:'D', name:'Doors', hint:'Click any grid edge to place a door with the style and frame below. Shift+click a door to flip which side it hinges and swings.', icon:'<path d="M6 21V4h12v17M3 21h18"/><circle cx="14.5" cy="12.5" r=".6" fill="currentColor"/>' },
+  { id:'prop', key:'P', name:'Props', hint:'Click to place a prop anywhere — keep holding to slide it into position. Drag the handles to rotate or resize it. <kbd>R</kbd> rotates, <kbd>[ ]</kbd> resizes.', icon:'<path d="M12 2.5a6 6 0 0 1 6 6.2 5 5 0 0 1-6 7.3 5 5 0 0 1-6-7.3 6 6 0 0 1 6-6.2z"/><path d="M12 16v5.5"/>' },
+  { id:'token', key:'T', name:'Tokens', hint:'Click a square to place a creature. Repeat names get numbered: Goblin, Goblin 2…', icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.2-2.3 3.2-3.5 5.5-3.5s4.3 1.2 5.5 3.5"/>' },
+  'sep',
+  { id:'erase', key:'E', name:'Eraser', hint:'Drag over tokens, props and walls to remove them. Paint terrain to change the ground.', icon:'<path d="M15.5 3.5l5 5-10 10H6l-3-3z"/><path d="M9 10l5 5M10.5 18.5H21"/>' },
+  { id:'measure', key:'M', name:'Measure', hint:'Drag to measure distance in feet using the diagonal rule below.', icon:'<path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/>' },
+  { id:'fog', key:'K', name:'Fog of war', hint:'Paint fog over unexplored areas, then reveal as the party explores.', icon:'<path d="M7 17a4 4 0 0 1-.5-8A6 6 0 0 1 18 10a3.5 3.5 0 0 1 0 7z"/><path d="M4 21h16" opacity=".6"/>' },
+];
+const TOOL_BY = Object.fromEntries(TOOLS.filter(t=>t!=='sep').map(t=>[t.id,t]));
+
+/* ---------- persistence ---------- */
+// terrain is stored as indices plus the key list they refer to, so maps survive palette changes
+// texInfo keeps a name and colour for library textures, so a map opened without them still reads
+const serialize = () => { const texInfo={}, wallInfo={}; for(const t of TERRAIN) if(t.tex && t.tex.lib) texInfo[t.key]={name:t.name,color:t.tex.color,sq:t.tex.sq};
+  for(const k of map.wallKeys){ const st=WALLSTYLES.get(k); if(st && st.lib) wallInfo[k]={name:st.name,cat:st.cat}; }
+  const propInfo={}; for(const p of map.props) if(!PROPS[p.type] && !propInfo[p.type]){ const [sw,sh]=propSize(p); propInfo[p.type]={name:propName(p.type),sw,sh}; }
+  return JSON.stringify({ ...map, terrainKeys:TERRAIN.map(t=>t.key), texInfo, wallInfo, propInfo }); };
+function loadMapObj(o){
+  if(!o || !o.w || !o.h || !Array.isArray(o.terrain) || o.terrain.length!==o.w*o.h) throw new Error('bad map');
+  const b=blankMap(o.w,o.h);
+  let terrain=o.terrain.map(i=> (i>=0&&i<TERRAIN.length) ? i : 0);
+  if(Array.isArray(o.terrainKeys)){
+    const used=new Set(o.terrain);
+    const idx=o.terrainKeys.map((k,i)=>{ const j=TERRAIN.findIndex(t=>t.key===k); if(j>=0) return j;
+      return (used.has(i) && typeof k==='string' && k.startsWith('lib:')) ? ensureLibTerrain(k,(o.texInfo||{})[k]) : -1; });
+    terrain=o.terrain.map(i=> idx[i]>=0 ? idx[i] : 0); }
+  const { terrainKeys, texInfo, wallInfo, settings:_s, ...rest } = o;
+  if(Array.isArray(o.wallKeys)) for(const k of o.wallKeys) if(typeof k==='string' && k.startsWith('lib:')) ensureWallStyle(k,(wallInfo||{})[k]);
+  Object.assign(propInfoCache, o.propInfo||{});
+  const props=(o.props||[]).filter(p=>p && (PROPS[p.type] || (typeof p.type==='string' && p.type.startsWith('lib:')))).map(p=>{
+    const q={ id:p.id||newId(), type:p.type, cx: p.cx ?? (p.x+.5), cy: p.cy ?? (p.y+.5), rot:+p.rot||0, scale:+p.scale||1 };   // older maps stored x,y squares
+    if(p.flip) q.flip=true; if(p.layer!==undefined) q.layer=p.layer; return q; }).filter(p=>isFinite(p.cx)&&isFinite(p.cy));
+  const { propInfo, ...rest2 } = rest;
+  map={ ...b, ...rest2, terrain, texScale:{...(o.texScale||{})}, props, tokens:o.tokens||[] };
+  if(!Array.isArray(map.fog)||map.fog.length!==map.w*map.h) map.fog=b.fog;
+  if(!Array.isArray(map.hw)||map.hw.length!==b.hw.length) map.hw=b.hw;
+  if(!Array.isArray(map.vw)||map.vw.length!==b.vw.length) map.vw=b.vw;
+  if(!Array.isArray(map.hws)||map.hws.length!==b.hws.length) map.hws=b.hws.slice();
+  if(!Array.isArray(map.vws)||map.vws.length!==b.vws.length) map.vws=b.vws.slice();
+  if(!Array.isArray(map.wallKeys)||!map.wallKeys.length) map.wallKeys=['drawn'];
+  if(typeof map.id!=='string' || !map.id) map.id=newId();
+  if(!map.doors || typeof map.doors!=='object' || Array.isArray(map.doors)) map.doors={};
+  if(!Array.isArray(map.doorKeys)||!map.doorKeys.length) map.doorKeys=['drawn'];
+  if(!Array.isArray(map.frameKeys)||!map.frameKeys.length) map.frameKeys=['none'];
+}
+let saveTimer=null;
+function autosave(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{ localStorage.setItem('flagstone.map', serialize()); localStorage.setItem('flagstone.settings', JSON.stringify(settings)); }catch(e){} }, 400); }
+function pushUndo(){ undoStack.push(serialize()); if(undoStack.length>80) undoStack.shift(); redoStack.length=0; updateUndo(); }
+function restore(json){ loadMapObj(JSON.parse(json)); if(sel && !findSel()) sel=null; rebuildTerrain(); afterChange(true); }
+function undo(){ if(!undoStack.length) return; redoStack.push(serialize()); restore(undoStack.pop()); }
+function redo(){ if(!redoStack.length) return; undoStack.push(serialize()); restore(redoStack.pop()); }
+function updateUndo(){ $('undoBtn').disabled=!undoStack.length; $('redoBtn').disabled=!redoStack.length; }
+function afterChange(panelToo){ autosave(); updateUndo(); updateDims(); if(panelToo) renderPanel(); draw(); }
+
+/* ---------- terrain canvas ---------- */
+const tAt=(x,y)=> (x<0||y<0||x>=map.w||y>=map.h) ? -1 : map.terrain[y*map.w+x];
+function sameFn(x,y){ const t=tAt(x,y); return (dx,dy)=>{ const n=tAt(x+dx,y+dy); if(n<0) return true; if(WET.has(t)) return WET.has(n); return n===t; }; }
+function paintCell(x,y){ const t=TERRAIN[tAt(x,y)];
+  if(t.tex){ tctx.fillStyle=texPattern(t)||t.tex.color; tctx.fillRect(x*TS,y*TS,TS,TS); return; }
+  tctx.save(); tctx.translate(x*TS,y*TS); drawTerrainCell(tctx,tAt(x,y),x,y,TS,sameFn(x,y)); tctx.restore(); }
+function rebuildTerrain(){ TS=clamp(Math.floor(4096/Math.max(map.w,map.h)),24,128); tcan.width=map.w*TS; tcan.height=map.h*TS; for(let y=0;y<map.h;y++)for(let x=0;x<map.w;x++) paintCell(x,y); }
+function setTerrain(x,y,t){
+  if(x<0||y<0||x>=map.w||y>=map.h || map.terrain[y*map.w+x]===t) return false;
+  map.terrain[y*map.w+x]=t;
+  for(const [dx,dy] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]) if(tAt(x+dx,y+dy)>=0) paintCell(x+dx,y+dy);
+  return true;
+}
+
+/* ---------- geometry ---------- */
+const toWorld=(sx,sy)=>({ fx:(sx-view.ox)/view.s, fy:(sy-view.oy)/view.s });
+const inMap=(x,y)=> x>=0&&y>=0&&x<map.w&&y<map.h;
+function nearestEdge(fx,fy){
+  const dH=Math.abs(fy-Math.round(fy)), dV=Math.abs(fx-Math.round(fx));
+  if(dH<=dV){ const ex=Math.floor(fx), ey=Math.round(fy); if(ex>=0&&ex<map.w&&ey>=0&&ey<=map.h) return {o:'h',x:ex,y:ey,d:dH}; }
+  { const ex=Math.round(fx), ey=Math.floor(fy); if(ex>=0&&ex<=map.w&&ey>=0&&ey<map.h) return {o:'v',x:ex,y:ey,d:dV}; }
+  return null;
+}
+const edgeIdx=e=> e.o==='h' ? e.y*map.w+e.x : e.y*(map.w+1)+e.x;
+const edgeGet=e=> (e.o==='h'?map.hw:map.vw)[edgeIdx(e)];
+const edgeSet=(e,v)=>{ (e.o==='h'?map.hw:map.vw)[edgeIdx(e)]=v; };
+function blocked(x,y,dx,dy){
+  if(dx===1) return map.vw[y*(map.w+1)+x+1]>0; if(dx===-1) return map.vw[y*(map.w+1)+x]>0;
+  if(dy===1) return map.hw[(y+1)*map.w+x]>0; return map.hw[y*map.w+x]>0;
+}
+function tokenAt(fx,fy){ for(let i=map.tokens.length-1;i>=0;i--){ const t=map.tokens[i], n=sizeOf(t).n; if(fx>=t.x&&fx<t.x+n&&fy>=t.y&&fy<t.y+n) return t; } return null; }
+function distFt(dx,dy){
+  dx=Math.abs(dx); dy=Math.abs(dy); const d=Math.min(dx,dy), st=Math.max(dx,dy)-d;
+  if(settings.diag==='5') return Math.max(dx,dy)*FT;
+  if(settings.diag==='5-10') return (st+d+Math.floor(d/2))*FT;
+  return Math.round(Math.hypot(dx,dy))*FT;
+}
+function findSel(){ if(!sel) return null; return (sel.type==='token'?map.tokens:map.props).find(o=>o.id===sel.id)||null; }
+
+/* ---------- rendering ---------- */
+function drawScene(c, s, opts={}){
+  const W=map.w, H=map.h;
+  c.imageSmoothingEnabled=true; c.imageSmoothingQuality='high';
+  c.fillStyle='rgba(0,0,0,.5)'; c.fillRect(s*.12,s*.16,W*s,H*s);
+  c.drawImage(tcan,0,0,W*s,H*s);
+  if(settings.grid){ c.strokeStyle='rgba(20,16,12,.32)'; c.lineWidth=Math.max(1,s*.02); c.beginPath();
+    for(let x=0;x<=W;x++){ c.moveTo(x*s,0); c.lineTo(x*s,H*s); } for(let y=0;y<=H;y++){ c.moveTo(0,y*s); c.lineTo(W*s,y*s); } c.stroke(); }
+  const props=propOrder();
+  for(const p of props) if(propLayer(p)<2) drawProp(c,p,s,1);
+  drawWalls(c,s);
+  for(const p of props) if(propLayer(p)>=2) drawProp(c,p,s,1);
+  for(const t of map.tokens) drawToken(c,t,t.x,t.y,s,1, !opts.export && sel && sel.type==='token' && sel.id===t.id);
+  if(map.fog.some(v=>v)){
+    const pv = opts.export ? settings.fogView==='player' : settings.fogView==='player';
+    c.fillStyle= pv ? '#0d0b10' : 'rgba(12,10,16,.58)';
+    c.beginPath(); for(let y=0;y<H;y++)for(let x=0;x<W;x++) if(map.fog[y*W+x]) c.rect(x*s-.5,y*s-.5,s+1,s+1); c.fill();
+    if(!pv){ c.save(); c.clip(); c.strokeStyle='rgba(180,170,200,.12)'; c.lineWidth=Math.max(1,s*.03); c.beginPath();
+      for(let k=-H;k<W;k++){ c.moveTo(k*s,0); c.lineTo((k+H)*s,H*s); } c.stroke(); c.restore(); }
+  }
+  c.strokeStyle='rgba(0,0,0,.6)'; c.lineWidth=2; c.strokeRect(0,0,W*s,H*s);
+}
+function drawProp(c,p,s,alpha){
+  const sc=p.scale||1;
+  c.save(); c.globalAlpha=alpha; c.translate(p.cx*s,p.cy*s); c.rotate((p.rot||0)*Math.PI/180); c.scale(p.flip?-sc:sc,sc);
+  if(PROPS[p.type]){ c.scale(s,s); let seed=7; for(const ch of (p.id||'x')) seed=seed*31+ch.charCodeAt(0)|0; PROPS[p.type].draw(c,k=>rng(seed,k,7)); }
+  else { const [w,h]=propSize(p), img=propImg(p.type);
+    if(img) c.drawImage(img,-w/2*s,-h/2*s,w*s,h*s);
+    else { c.fillStyle='rgba(212,162,76,.12)'; c.strokeStyle='rgba(212,162,76,.6)'; c.lineWidth=2/sc; c.setLineDash([6/sc,4/sc]); c.fillRect(-w/2*s,-h/2*s,w*s,h*s); c.strokeRect(-w/2*s,-h/2*s,w*s,h*s); c.setLineDash([]); } }
+  c.restore();
+}
+// selection frame with a rotate handle above and a scale handle at the corner (screen px)
+const HANDLE_GAP=26, HANDLE_R=8;
+function propFrame(p,s){ const [w,h]=propSize(p), sc=p.scale||1; return { hw:w*sc/2*s, hh:h*sc/2*s }; }
+function drawPropHandles(c,p,s){
+  const {hw,hh}=propFrame(p,s);
+  c.save(); c.translate(p.cx*s,p.cy*s); c.rotate((p.rot||0)*Math.PI/180);
+  c.strokeStyle='#f4d58a'; c.lineWidth=1.5; c.setLineDash([6,4]); c.strokeRect(-hw,-hh,hw*2,hh*2); c.setLineDash([]);
+  c.beginPath(); c.moveTo(0,-hh); c.lineTo(0,-hh-HANDLE_GAP); c.stroke();
+  c.fillStyle='#1d1a21'; c.lineWidth=2;
+  c.beginPath(); c.arc(0,-hh-HANDLE_GAP,HANDLE_R,0,7); c.fill(); c.stroke();
+  c.beginPath(); c.arc(0,-hh-HANDLE_GAP,HANDLE_R*.45,-.3,4.2); c.stroke();
+  c.fillRect(hw-HANDLE_R,hh-HANDLE_R,HANDLE_R*2,HANDLE_R*2); c.strokeRect(hw-HANDLE_R,hh-HANDLE_R,HANDLE_R*2,HANDLE_R*2);
+  c.restore();
+}
+function propHandleAt(p,fx,fy){ const s=view.s, {hw,hh}=propFrame(p,s), [lx,ly]=propLocal(p,fx,fy).map(v=>v*s);
+  if(Math.hypot(lx,ly+hh+HANDLE_GAP)<=HANDLE_R+4) return 'rotate';
+  if(Math.abs(lx-hw)<=HANDLE_R+3 && Math.abs(ly-hh)<=HANDLE_R+3) return 'scale';
+  return null; }
+// Walls sit on grid lines. Kit styles: straights fill each run (3/2/1-square pieces), then a cap
+// piece at every vertex chosen by which arms meet there (E=1,S=2,W=4,N=8).
+function wallPiece(c,s,st,nm,cx,cy,ang){ const img=st.imgs[nm]; if(!img) return false; const [dw,dh]=st.dims[nm];
+  c.save(); c.translate(cx*s,cy*s); if(ang) c.rotate(ang*Math.PI/180); c.drawImage(img,-dw/2*s,-dh/2*s,dw*s,dh*s); c.restore(); return true; }
+function wallRun(c,s,st,x0,y0,len,vert){ let p=0;
+  while(p<len){ const left=len-p, r=rng(x0*7+(vert?p:0)+3, y0*5+(vert?0:p), vert?91:17); let L=1, nm='straightC';
+    if(left>=3 && st.imgs.straightA && r<.45){ L=3; nm='straightA'; } else if(left>=2 && st.imgs.straightB && r<.75){ L=2; nm='straightB'; }
+    wallPiece(c,s,st,nm, vert?x0:x0+p+L/2, vert?y0+p+L/2:y0, vert?90:0); p+=L; } }
+function wallCap(c,s,st,x,y,bits){
+  const n=(bits&1)+(bits>>1&1)+(bits>>2&1)+(bits>>3&1);
+  const plug=()=>{ wallPiece(c,s,st,'connectorA',x,y,0); wallPiece(c,s,st,'connectorA',x,y,90); };
+  // the ending piece's solid face is on its left and it fades to the right, so it lies over the wall's last square
+  if(n===1) wallPiece(c,s,st,'ending',x,y,{1:0,2:90,4:180,8:270}[bits]);
+  else if(bits===5) wallPiece(c,s,st,'connectorA',x,y,0);
+  else if(bits===10) wallPiece(c,s,st,'connectorA',x,y,90);
+  else if(n===2){ if(!wallPiece(c,s,st,'cornerA',x,y,{3:0,6:90,12:180,9:270}[bits])) plug(); }
+  else if(n===3){ if(!wallPiece(c,s,st,'jointB',x,y,{8:0,1:90,2:180,4:270}[15^bits])) plug(); }
+  else if(!wallPiece(c,s,st,'jointA',x,y,0)) plug();
+}
+function drawWalls(c,s,E=edgeAt,W=map.w,H=map.h){
+  const segs=[], doors=[], kit=e=> e && e.v===1 && wallReady(e.st);
+  for(let y=0;y<=H;y++)for(let x=0;x<W;x++){ const e=E('h',x,y); if(!e) continue; if(e.v===2) doors.push(['h',x,y]); else if(!kit(e)) segs.push([x,y,x+1,y]); }
+  for(let y=0;y<H;y++)for(let x=0;x<=W;x++){ const e=E('v',x,y); if(!e) continue; if(e.v===2) doors.push(['v',x,y]); else if(!kit(e)) segs.push([x,y,x,y+1]); }
+  c.imageSmoothingEnabled=true;
+  for(let y=0;y<=H;y++){ let x=0; while(x<W){ const e=E('h',x,y); if(!kit(e)){ x++; continue; } let x1=x+1; while(x1<W){ const f=E('h',x1,y); if(!kit(f)||f.st!==e.st) break; x1++; } wallRun(c,s,e.st,x,y,x1-x,false); x=x1; } }
+  for(let x=0;x<=W;x++){ let y=0; while(y<H){ const e=E('v',x,y); if(!kit(e)){ y++; continue; } let y1=y+1; while(y1<H){ const f=E('v',x,y1); if(!kit(f)||f.st!==e.st) break; y1++; } wallRun(c,s,e.st,x,y,y1-y,true); y=y1; } }
+  for(let y=0;y<=H;y++)for(let x=0;x<=W;x++){ let bits=0, st=null; [E('h',x,y),E('v',x,y),E('h',x-1,y),E('v',x,y-1)].forEach((e,i)=>{ if(kit(e)){ bits|=1<<i; st=st||e.st; } }); if(bits) wallCap(c,s,st,x,y,bits); }
+  const stroke=(w,col)=>{ c.strokeStyle=col; c.lineWidth=w; c.lineCap='square'; c.beginPath(); for(const q of segs){ c.moveTo(q[0]*s,q[1]*s); c.lineTo(q[2]*s,q[3]*s); } c.stroke(); };
+  if(segs.length){ c.save(); c.shadowColor='rgba(0,0,0,.5)'; c.shadowBlur=s*.15; stroke(s*.24,'#1c1a1d'); c.restore(); stroke(s*.14,'#6e6862'); c.globalAlpha=.5; stroke(s*.04,'#9a938a'); c.globalAlpha=1; }
+  if(E===edgeAt) drawDoors(c,s);
+}
+function drawToken(c,t,x,y,s,alpha,selected){
+  const z=sizeOf(t), n=z.n, cx=(x+n/2)*s, cy=(y+n/2)*s, r=z.r*s, ring=(KINDS[t.kind]||KINDS.foe).ring;
+  c.save(); c.globalAlpha=alpha;
+  c.fillStyle='rgba(0,0,0,.4)'; circle(c,cx+s*.04,cy+s*.07,r);
+  c.fillStyle=t.color; circle(c,cx,cy,r);
+  const g=c.createRadialGradient(cx-r*.4,cy-r*.5,0,cx,cy,r); g.addColorStop(0,'rgba(255,255,255,.28)'); g.addColorStop(1,'rgba(0,0,0,.15)'); c.fillStyle=g; circle(c,cx,cy,r);
+  c.strokeStyle=ring; c.lineWidth=Math.max(2,r*.16); c.beginPath(); c.arc(cx,cy,r-c.lineWidth/2,0,7); c.stroke();
+  c.strokeStyle='rgba(0,0,0,.55)'; c.lineWidth=Math.max(1,s*.02); c.beginPath(); c.arc(cx,cy,r,0,7); c.stroke();
+  const lab=initials(t.name); c.fillStyle= lum(t.color)>.62 ? '#1d1a17' : '#fbf6ec';
+  c.font=`700 ${Math.max(7, r*(lab.length>2?.62:.78))}px ${getComputedStyle(document.body).getPropertyValue('--body')}`; c.textAlign='center'; c.textBaseline='middle';
+  c.fillText(lab,cx,cy+r*.04);
+  if(selected){ c.setLineDash([s*.12,s*.08]); c.strokeStyle='#f4d58a'; c.lineWidth=Math.max(1.5,s*.04); c.beginPath(); c.arc(cx,cy,r+s*.1,0,7); c.stroke(); c.setLineDash([]); }
+  if(settings.names && s>=18){ const fs=Math.max(10,Math.min(14,s*.26)); c.font=`600 ${fs}px ${getComputedStyle(document.body).getPropertyValue('--body')}`;
+    const tw=c.measureText(t.name).width+fs*.8, ly=cy+r+fs*.25; c.fillStyle='rgba(20,18,23,.82)'; c.beginPath(); c.roundRect(cx-tw/2,ly,tw,fs*1.35,fs*.3); c.fill();
+    c.fillStyle='#ece5d8'; c.textBaseline='top'; c.fillText(t.name,cx,ly+fs*.18); }
+  c.restore();
+}
+function label(c,text,x,y){ c.font='600 12px '+getComputedStyle(document.body).getPropertyValue('--mono'); const w=c.measureText(text).width+14;
+  c.fillStyle='rgba(20,18,23,.92)'; c.strokeStyle='#d4a24c'; c.lineWidth=1; c.beginPath(); c.roundRect(x-w/2,y-26,w,21,5); c.fill(); c.stroke();
+  c.fillStyle='#f4e7c8'; c.textAlign='center'; c.textBaseline='middle'; c.fillText(text,x,y-15.5); }
+
+let rafQueued=false;
+function draw(){ if(rafQueued) return; rafQueued=true; requestAnimationFrame(()=>{ rafQueued=false; render(); }); }
+function render(){
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,cw,ch);
+  ctx.save(); ctx.translate(view.ox,view.oy); drawScene(ctx,view.s); drawOverlay(ctx,view.s); ctx.restore();
+  $('zoomV').textContent=Math.round(view.s/48*100)+'%';
+}
+function drawOverlay(c,s){
+  const a=action;
+  const hl=(x,y,w,h,col='rgba(244,213,138,.9)',fill='rgba(244,213,138,.14)')=>{ c.fillStyle=fill; c.fillRect(x*s,y*s,w*s,h*s); c.strokeStyle=col; c.lineWidth=2; c.strokeRect(x*s,y*s,w*s,h*s); };
+  const sp=sel&&sel.type==='prop'?findSel():null;
+  if(sp && (tool==='select'||tool==='prop')) drawPropHandles(c,sp,s);
+  if(a && (a.type==='rotateProp'||a.type==='scaleProp') && sp){ const {hh}=propFrame(sp,s);
+    label(c, a.type==='rotateProp' ? `${normDeg(sp.rot)}°` : `${Math.round(sp.scale*100)}%`, sp.cx*s, sp.cy*s-hh-HANDLE_GAP-12); return; }
+  if(a && a.type==='moveProp' && a.moved) return;
+  if(a && (a.type==='rect'||a.type==='room')){
+    const x0=Math.min(a.x0,a.x1), y0=Math.min(a.y0,a.y1), w=Math.abs(a.x1-a.x0)+1, h=Math.abs(a.y1-a.y0)+1;
+    hl(x0,y0,w,h); if(a.type==='room'){ c.strokeStyle='rgba(28,26,29,.85)'; c.lineWidth=s*.2; c.strokeRect(x0*s,y0*s,w*s,h*s); }
+    label(c,`${w*FT} × ${h*FT} ft`,(x0+w/2)*s,y0*s); return;
+  }
+  if(a && a.type==='wall'){ const p=wallPath(a); c.strokeStyle='rgba(244,213,138,.9)'; c.lineWidth=s*.16; c.lineCap='square'; c.beginPath(); c.moveTo(a.vx*s,a.vy*s); c.lineTo(p.ex*s,p.ey*s); c.stroke();
+    const len=Math.abs(p.ex-a.vx)+Math.abs(p.ey-a.vy); if(len) label(c,`${len*FT} ft`,(a.vx+p.ex)/2*s,(a.vy+p.ey)/2*s); return; }
+  if(a && a.type==='measure'){ const x0=(a.x0+.5)*s, y0=(a.y0+.5)*s, x1=(a.x1+.5)*s, y1=(a.y1+.5)*s;
+    hl(a.x0,a.y0,1,1); hl(a.x1,a.y1,1,1); c.strokeStyle='#f4d58a'; c.lineWidth=3; c.setLineDash([8,6]); c.beginPath(); c.moveTo(x0,y0); c.lineTo(x1,y1); c.stroke(); c.setLineDash([]);
+    label(c,`${distFt(a.x1-a.x0,a.y1-a.y0)} ft`,x1,y1-s*.3); return; }
+  if(a && a.type==='moveToken' && a.moved){ const t=a.obj, n=sizeOf(t).n;
+    drawToken(c,{...t},a.sx,a.sy,s,.3,false);
+    c.strokeStyle='rgba(244,213,138,.85)'; c.lineWidth=3; c.setLineDash([8,6]); c.beginPath(); c.moveTo((a.sx+n/2)*s,(a.sy+n/2)*s); c.lineTo((t.x+n/2)*s,(t.y+n/2)*s); c.stroke(); c.setLineDash([]);
+    label(c,`${distFt(t.x-a.sx,t.y-a.sy)} ft`,(t.x+n/2)*s,t.y*s-4); return; }
+  if(!hover || action) return;
+  const {fx,fy}=hover, x=Math.floor(fx), y=Math.floor(fy);
+  if(tool==='brush'||tool==='fog'){ const b=cur.brush, o=Math.floor((b-1)/2); hl(x-o,y-o,b,b); }
+  else if(tool==='fill'||tool==='rect'||tool==='room'||tool==='measure'){ if(inMap(x,y)) hl(x,y,1,1); }
+  else if(tool==='prop'){ if(!inMap(x,y)) return; if(sp && (propHandleAt(sp,fx,fy) || propHit(sp,fx,fy))) return; drawProp(c,ghostProp(fx,fy,false),s,.55); }
+  else if(tool==='token'){ const n=SIZES.find(z=>z.k===cur.token.size).n; if(inMap(x,y)) drawToken(c,{...cur.token,name:nextTokenName(cur.token.name)},clamp(x,0,map.w-n),clamp(y,0,map.h-n),s,.5,false); }
+  else if(tool==='wall'){ const vx=Math.round(fx), vy=Math.round(fy); if(vx>=0&&vy>=0&&vx<=map.w&&vy<=map.h){ c.fillStyle='#f4d58a'; circle(c,vx*s,vy*s,Math.max(3,s*.09)); } }
+  else if(tool==='door'||tool==='erase'){
+    if(tool==='erase'){ const t=tokenAt(fx,fy); if(t){ const n=sizeOf(t).n; hl(t.x,t.y,n,n,'#e0735a','rgba(224,115,90,.2)'); return; }
+      const p=propAt(fx,fy); if(p){ const {hw,hh}=propFrame(p,s); c.save(); c.translate(p.cx*s,p.cy*s); c.rotate((p.rot||0)*Math.PI/180);
+        c.fillStyle='rgba(224,115,90,.2)'; c.fillRect(-hw,-hh,hw*2,hh*2); c.strokeStyle='#e0735a'; c.lineWidth=2; c.strokeRect(-hw,-hh,hw*2,hh*2); c.restore(); return; } }
+    const e=nearestEdge(fx,fy); if(e && (tool==='door' || (e.d<.22 && edgeGet(e)))){ c.strokeStyle= tool==='erase'?'#e0735a':'#f4d58a'; c.lineWidth=s*.18; c.lineCap='butt'; c.beginPath();
+      if(e.o==='h'){ c.moveTo(e.x*s,e.y*s); c.lineTo((e.x+1)*s,e.y*s); } else { c.moveTo(e.x*s,e.y*s); c.lineTo(e.x*s,(e.y+1)*s); } c.globalAlpha=.7; c.stroke(); c.globalAlpha=1; }
+  }
+}
+function wallPath(a){ let ex=a.ex, ey=a.ey; if(Math.abs(ex-a.vx)>=Math.abs(ey-a.vy)) ey=a.vy; else ex=a.vx; return {ex,ey}; }
+
+/* ---------- editing ops ---------- */
+function paintBrush(fx,fy){ const b=cur.brush, o=Math.floor((b-1)/2), x0=Math.floor(fx)-o, y0=Math.floor(fy)-o; let ch=false;
+  for(let y=y0;y<y0+b;y++)for(let x=x0;x<x0+b;x++){ if(tool==='fog'){ if(inMap(x,y)){ const v=cur.fogMode==='hide'?1:0; if(map.fog[y*map.w+x]!==v){ map.fog[y*map.w+x]=v; ch=true; } } } else if(setTerrain(x,y,cur.terrain)) ch=true; }
+  return ch; }
+function floodFill(x,y){ if(!inMap(x,y)) return false; const from=tAt(x,y); if(from===cur.terrain) return false;
+  const seen=new Uint8Array(map.w*map.h), st=[[x,y]]; seen[y*map.w+x]=1; const cells=[];
+  while(st.length){ const [cx,cy]=st.pop(); cells.push([cx,cy]);
+    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=cx+dx, ny=cy+dy; if(!inMap(nx,ny)||seen[ny*map.w+nx]||tAt(nx,ny)!==from||blocked(cx,cy,dx,dy)) continue; seen[ny*map.w+nx]=1; st.push([nx,ny]); } }
+  for(const [cx,cy] of cells) map.terrain[cy*map.w+cx]=cur.terrain; rebuildTerrain(); return true; }
+function fillRect(a, room){
+  const x0=clamp(Math.min(a.x0,a.x1),0,map.w-1), x1=clamp(Math.max(a.x0,a.x1),0,map.w-1), y0=clamp(Math.min(a.y0,a.y1),0,map.h-1), y1=clamp(Math.max(a.y0,a.y1),0,map.h-1);
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++) map.terrain[y*map.w+x]=cur.terrain;
+  if(room){ const W=map.w, wi=curWallIdx(); const put=(arr,sarr,i)=>{ if(arr[i]!==2) arr[i]=1; sarr[i]=wi; };
+    for(let x=x0;x<=x1;x++){ put(map.hw,map.hws,y0*W+x); put(map.hw,map.hws,(y1+1)*W+x); } for(let y=y0;y<=y1;y++){ put(map.vw,map.vws,y*(W+1)+x0); put(map.vw,map.vws,y*(W+1)+x1+1); } }
+  rebuildTerrain();
+}
+function commitWall(a){
+  const p=wallPath(a);
+  const wi=curWallIdx();
+  if(p.ex===a.vx && p.ey===a.vy){ // single click: add, restyle, or remove (same style) one edge
+    const e=nearestEdge(a.fx,a.fy); if(!e) return false; const i=edgeIdx(e), sarr=e.o==='h'?map.hws:map.vws, v=edgeGet(e);
+    if(v && sarr[i]===wi) edgeSet(e,0); else { if(!v) edgeSet(e,1); sarr[i]=wi; } return true; }
+  if(p.ey===a.vy){ const y=a.vy; if(y<0||y>map.h) return false; for(let x=Math.min(a.vx,p.ex);x<Math.max(a.vx,p.ex);x++) if(x>=0&&x<map.w){ const i=y*map.w+x; if(map.hw[i]!==2) map.hw[i]=1; map.hws[i]=wi; } }
+  else { const x=a.vx; if(x<0||x>map.w) return false; for(let y=Math.min(a.vy,p.ey);y<Math.max(a.vy,p.ey);y++) if(y>=0&&y<map.h){ const i=y*(map.w+1)+x; if(map.vw[i]!==2) map.vw[i]=1; map.vws[i]=wi; } }
+  return true;
+}
+let shiftHeld=false;
+const snapOn=()=> !!settings.propSnap !== shiftHeld;   // Shift flips the snap setting while held
+function ghostProp(fx,fy,commit){
+  const p={ type:cur.prop, cx:fx, cy:fy, rot:cur.rot, scale:cur.scale };
+  if(cur.flip) p.flip=true;
+  if(commit && settings.propRandom){ p.rot=normDeg(Math.random()*360); p.scale=Math.round(cur.scale*(.85+Math.random()*.3)*100)/100; if(Math.random()<.5) p.flip=!p.flip; }
+  if(snapOn()) [p.cx,p.cy]=snapProp(p,fx,fy);
+  return p;
+}
+function placePropAt(fx,fy){ const p=ghostProp(fx,fy,true); p.id=newId(); p.cx=clamp(p.cx,0,map.w); p.cy=clamp(p.cy,0,map.h); map.props.push(p);
+  settings.propRecent=[p.type,...(settings.propRecent||[]).filter(k=>k!==p.type)].slice(0,8); return p; }
+function nextTokenName(base){ base=base.trim()||'Creature'; const b=base.replace(/\s+\d+$/,''); const same=map.tokens.filter(t=>t.name===b||new RegExp('^'+b.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+' \\d+$').test(t.name));
+  if(!same.length) return base; let n=1; for(const t of same){ const m=t.name.match(/ (\d+)$/); n=Math.max(n,m?+m[1]:1); } return b+' '+(n+1); }
+function eraseAt(fx,fy){ const t=tokenAt(fx,fy); if(t){ map.tokens=map.tokens.filter(o=>o!==t); if(sel&&sel.id===t.id) sel=null; return 'token'; }
+  const p=propAt(fx,fy); if(p){ map.props=map.props.filter(o=>o!==p); if(sel&&sel.id===p.id) sel=null; return 'prop'; }
+  const e=nearestEdge(fx,fy); if(e && e.d<.22 && edgeGet(e)){ edgeSet(e,0); return 'edge'; } return null; }
+function resizeMap(w,h){ w=clamp(w|0,4,120); h=clamp(h|0,4,120); if(w===map.w&&h===map.h) return; pushUndo();
+  const o=map, n=blankMap(w,h,0); n.name=o.name;
+  for(let y=0;y<Math.min(h,o.h);y++)for(let x=0;x<Math.min(w,o.w);x++){ n.terrain[y*w+x]=o.terrain[y*o.w+x]; n.fog[y*w+x]=o.fog[y*o.w+x]; }
+  for(let y=0;y<=Math.min(h,o.h);y++)for(let x=0;x<Math.min(w,o.w);x++){ n.hw[y*w+x]=o.hw[y*o.w+x]; n.hws[y*w+x]=o.hws[y*o.w+x]; }
+  for(let y=0;y<Math.min(h,o.h);y++)for(let x=0;x<=Math.min(w,o.w);x++){ n.vw[y*(w+1)+x]=o.vw[y*(o.w+1)+x]; n.vws[y*(w+1)+x]=o.vws[y*(o.w+1)+x]; }
+  n.wallKeys=o.wallKeys.slice(); n.texScale={...o.texScale};
+  n.doorKeys=o.doorKeys.slice(); n.frameKeys=o.frameKeys.slice(); n.doors={...o.doors};
+  n.props=o.props.filter(p=>p.cx<=w&&p.cy<=h); n.tokens=o.tokens.filter(t=>t.x+sizeOf(t).n<=w&&t.y+sizeOf(t).n<=h);
+  map=n; rebuildTerrain(); fit(); afterChange(true); }
+
+/* ---------- pointer input ---------- */
+const pointers=new Map(); let pinch=null;
+function spos(e){ const r=cv.getBoundingClientRect(); return {sx:e.clientX-r.left, sy:e.clientY-r.top}; }
+cv.addEventListener('pointerdown',e=>{
+  cv.setPointerCapture(e.pointerId); const p=spos(e); pointers.set(e.pointerId,p);
+  if(pointers.size===2){ endAction(); const [a,b]=[...pointers.values()];
+    pinch={ d:Math.hypot(a.sx-b.sx,a.sy-b.sy)||1, s:view.s, mx:(a.sx+b.sx)/2, my:(a.sy+b.sy)/2, ox:view.ox, oy:view.oy }; return; }
+  if(pointers.size>2) return;
+  const {fx,fy}=toWorld(p.sx,p.sy); hover={fx,fy}; const x=Math.floor(fx), y=Math.floor(fy); shiftHeld=e.shiftKey;
+  if(e.button===1 || e.button===2 || spaceDown || tool==='pan'){ action={type:'pan',sx:p.sx,sy:p.sy,ox:view.ox,oy:view.oy}; cv.style.cursor='grabbing'; return; }
+  if(e.button!==0) return;
+  // handles of the selected prop win over everything under them
+  const sp=(tool==='select'||tool==='prop') && sel && sel.type==='prop' ? findSel() : null, hnd=sp && propHandleAt(sp,fx,fy);
+  if(hnd==='rotate'){ action={type:'rotateProp',obj:sp,moved:false}; draw(); return; }
+  if(hnd==='scale'){ action={type:'scaleProp',obj:sp,d0:Math.max(.05,Math.hypot(fx-sp.cx,fy-sp.cy)),s0:sp.scale||1,moved:false}; draw(); return; }
+  if(tool==='prop' && sp && propHit(sp,fx,fy)){ action={type:'moveProp',obj:sp,offX:fx-sp.cx,offY:fy-sp.cy,moved:false}; draw(); return; }
+  switch(tool){
+    case 'select': {
+      const t=tokenAt(fx,fy); if(t){ sel={type:'token',id:t.id}; map.tokens=map.tokens.filter(o=>o!==t).concat(t); action={type:'moveToken',obj:t,sx:t.x,sy:t.y,offX:fx-t.x,offY:fy-t.y,moved:false}; renderPanel(); break; }
+      const pr=propAt(fx,fy); if(pr){ sel={type:'prop',id:pr.id}; action={type:'moveProp',obj:pr,offX:fx-pr.cx,offY:fy-pr.cy,moved:false}; renderPanel(); break; }
+      if(sel){ sel=null; renderPanel(); } action={type:'pan',sx:p.sx,sy:p.sy,ox:view.ox,oy:view.oy}; cv.style.cursor='grabbing'; break; }
+    case 'brush': case 'fog': { const snap=serialize(); action={type:'paint',snap,changed:paintBrush(fx,fy)}; break; }
+    case 'fill': { const snap=serialize(); if(floodFill(x,y)){ undoStack.push(snap); redoStack.length=0; afterChange(); } break; }
+    case 'rect': case 'room': if(inMap(x,y)) action={type:tool,x0:x,y0:y,x1:x,y1:y}; break;
+    case 'wall': { const vx=Math.round(fx), vy=Math.round(fy); action={type:'wall',vx,vy,ex:vx,ey:vy,fx,fy}; break; }
+    case 'door': { const e2=nearestEdge(fx,fy); if(!e2) break; pushUndo();
+      const was=edgeGet(e2), k=doorKey(e2.o,e2.x,e2.y), want=curDoorData(), have=map.doors[k];
+      if(was===2 && e.shiftKey && have){ have.m=((have.m||0)+1)%4; }                      // Shift+click: flip hinge / swing side
+      else if(was===2 && have && (have.s!==want.s || have.f!==want.f)){ have.s=want.s; have.f=want.f; }   // restyle
+      else if(was===2){ edgeSet(e2,1); delete map.doors[k]; }                            // back to wall
+      else { edgeSet(e2,2); map.doors[k]=want; if(!was) (e2.o==='h'?map.hws:map.vws)[edgeIdx(e2)]=curWallIdx(); }
+      afterChange(); break; }
+    case 'prop': { if(!inMap(x,y)) break; pushUndo(); const np=placePropAt(fx,fy); sel={type:'prop',id:np.id};
+      // keep holding to slide the new prop into place
+      action={type:'moveProp',obj:np,offX:fx-np.cx,offY:fy-np.cy,moved:true}; afterChange(true); break; }
+    case 'token': { if(!inMap(x,y)) break; pushUndo(); const n=SIZES.find(z=>z.k===cur.token.size).n;
+      const t={id:newId(),...cur.token,name:nextTokenName(cur.token.name),x:clamp(x,0,map.w-n),y:clamp(y,0,map.h-n)}; map.tokens.push(t); sel={type:'token',id:t.id}; afterChange(true); break; }
+    case 'erase': { const snap=serialize(); action={type:'erase',snap,changed:!!eraseAt(fx,fy)}; break; }
+    case 'measure': if(inMap(x,y)) action={type:'measure',x0:x,y0:y,x1:x,y1:y}; break;
+  }
+  draw();
+});
+cv.addEventListener('pointermove',e=>{
+  const p=spos(e); if(pointers.has(e.pointerId)) pointers.set(e.pointerId,p);
+  if(pinch && pointers.size>=2){ const [a,b]=[...pointers.values()]; const d=Math.hypot(a.sx-b.sx,a.sy-b.sy)||1, mx=(a.sx+b.sx)/2, my=(a.sy+b.sy)/2;
+    const ns=clamp(pinch.s*d/pinch.d,6,200); const wx=(pinch.mx-pinch.ox)/pinch.s, wy=(pinch.my-pinch.oy)/pinch.s;
+    view.s=ns; view.ox=mx-wx*ns; view.oy=my-wy*ns; draw(); return; }
+  const {fx,fy}=toWorld(p.sx,p.sy); hover={fx,fy}; updateHud(fx,fy); shiftHeld=e.shiftKey;
+  const a=action, x=Math.floor(fx), y=Math.floor(fy);
+  if(!a){ draw(); return; }
+  switch(a.type){
+    case 'pan': view.ox=a.ox+p.sx-a.sx; view.oy=a.oy+p.sy-a.sy; break;
+    case 'paint': if(paintBrush(fx,fy)) a.changed=true; break;
+    case 'erase': if(eraseAt(fx,fy)) a.changed=true; break;
+    case 'rect': case 'room': case 'measure': a.x1=clamp(x,0,map.w-1); a.y1=clamp(y,0,map.h-1); break;
+    case 'wall': a.ex=clamp(Math.round(fx),0,map.w); a.ey=clamp(Math.round(fy),0,map.h); break;
+    case 'moveToken': { const n=sizeOf(a.obj).n, nx=clamp(Math.round(fx-a.offX),0,map.w-n), ny=clamp(Math.round(fy-a.offY),0,map.h-n);
+      if(nx!==a.obj.x||ny!==a.obj.y){ if(!a.moved){ pushUndo(); a.moved=true; } a.obj.x=nx; a.obj.y=ny; } break; }
+    case 'moveProp': { const o=a.obj; let nx=clamp(fx-a.offX,0,map.w), ny=clamp(fy-a.offY,0,map.h);
+      if(snapOn()) [nx,ny]=snapProp(o,nx,ny);
+      if(Math.abs(nx-o.cx)>1e-6||Math.abs(ny-o.cy)>1e-6){ if(!a.moved){ pushUndo(); a.moved=true; } o.cx=nx; o.cy=ny; } break; }
+    case 'rotateProp': { const o=a.obj; let d=Math.atan2(fy-o.cy,fx-o.cx)*180/Math.PI+90; if(e.shiftKey) d=Math.round(d/15)*15; d=normDeg(d);
+      if(d!==o.rot){ if(!a.moved){ pushUndo(); a.moved=true; } o.rot=d; } break; }
+    case 'scaleProp': { const o=a.obj; let k=clamp(a.s0*Math.hypot(fx-o.cx,fy-o.cy)/a.d0,.1,10); k=e.shiftKey ? Math.round(k*10)/10 : Math.round(k*100)/100;
+      if(k!==o.scale){ if(!a.moved){ pushUndo(); a.moved=true; } o.scale=k; } break; }
+  }
+  draw();
+});
+function endAction(){
+  const a=action; action=null; cv.style.cursor=''; if(!a) return;
+  if((a.type==='rotateProp'||a.type==='scaleProp') && a.moved){ afterChange(true); }
+  else if((a.type==='paint'||a.type==='erase') && a.changed){ undoStack.push(a.snap); if(undoStack.length>80) undoStack.shift(); redoStack.length=0; afterChange(a.type==='erase'); }
+  else if(a.type==='rect'||a.type==='room'){ pushUndo(); fillRect(a,a.type==='room'); afterChange(); }
+  else if(a.type==='wall'){ const snap=serialize(); if(commitWall(a)){ undoStack.push(snap); redoStack.length=0; afterChange(); } }
+  else if((a.type==='moveToken'||a.type==='moveProp') && a.moved){ afterChange(true); }
+  draw();
+}
+const up=e=>{ pointers.delete(e.pointerId); if(pinch){ if(pointers.size<2) pinch=null; return; } endAction(); };
+cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+cv.addEventListener('pointerleave',()=>{ if(!action){ hover=null; draw(); $('hudCell').textContent='—'; } });
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('wheel',e=>{ e.preventDefault(); const p=spos(e); zoomAt(p.sx,p.sy,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015))); },{passive:false});
+function zoomAt(sx,sy,f){ const ns=clamp(view.s*f,6,200); const wx=(sx-view.ox)/view.s, wy=(sy-view.oy)/view.s; view.s=ns; view.ox=sx-wx*ns; view.oy=sy-wy*ns; draw(); }
+function fit(){ const pad=36; view.s=clamp(Math.min((cw-pad*2)/map.w,(ch-pad*2)/map.h),6,200); view.ox=(cw-map.w*view.s)/2; view.oy=(ch-map.h*view.s)/2; draw(); }
+function updateHud(fx,fy){ const x=Math.floor(fx), y=Math.floor(fy);
+  $('hudCell').innerHTML = inMap(x,y) ? `<b>${colName(x)}${y+1}</b> · ${TERRAIN[tAt(x,y)].name}` : '—'; }
+
+/* ---------- keyboard ---------- */
+window.addEventListener('keydown',e=>{
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='select'||tag==='textarea') return;
+  const k=e.key.toLowerCase();
+  if((e.ctrlKey||e.metaKey)&&k==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); return; }
+  if((e.ctrlKey||e.metaKey)&&k==='y'){ e.preventDefault(); redo(); return; }
+  if((e.ctrlKey||e.metaKey)&&k==='s'){ e.preventDefault(); saveLocal(false); return; }
+  if((e.ctrlKey||e.metaKey)&&k==='d'){ const o=findSel(); if(o && sel.type==='prop'){ e.preventDefault(); duplicateProp(o); } return; }
+  if(e.key==='Shift' && !shiftHeld){ shiftHeld=true; draw(); }
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(e.code==='Space'){ if(!spaceDown){ spaceDown=true; cv.style.cursor='grab'; } e.preventDefault(); return; }
+  if(k==='delete'||k==='backspace'){ const o=findSel(); if(o){ pushUndo(); if(sel.type==='token') map.tokens=map.tokens.filter(t=>t!==o); else map.props=map.props.filter(p=>p!==o); sel=null; afterChange(true); } return; }
+  if(k==='escape'){ sel=null; action=null; renderPanel(); draw(); return; }
+  if(k==='r'){ rotate(e.shiftKey?-1:1); return; }
+  const selProp = sel && sel.type==='prop' && (tool==='select'||tool==='prop') ? findSel() : null;
+  if(selProp && e.key.startsWith('Arrow')){ e.preventDefault(); const st=e.shiftKey?1:.1, d={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key];
+    if(!nudgeTimer) pushUndo(); clearTimeout(nudgeTimer); nudgeTimer=setTimeout(()=>{ nudgeTimer=null; afterChange(true); },500);
+    selProp.cx=Math.round(clamp(selProp.cx+d[0],0,map.w)*100)/100; selProp.cy=Math.round(clamp(selProp.cy+d[1],0,map.h)*100)/100; draw(); return; }
+  if(k==='x' && (selProp || tool==='prop')){ if(selProp){ pushUndo(); selProp.flip=!selProp.flip; afterChange(true); } else { cur.flip=!cur.flip; renderPanel(); draw(); } return; }
+  if((k==='pageup'||k==='pagedown') && selProp){ e.preventDefault(); reorderProp(selProp, k==='pageup'?'front':'back'); return; }
+  if((k==='['||k===']') && (selProp || tool==='prop')){ const f=k===']'?1.1:1/1.1;
+    if(selProp){ pushUndo(); selProp.scale=clamp(Math.round(selProp.scale*f*100)/100,.1,10); afterChange(true); } else { cur.scale=clamp(Math.round(cur.scale*f*100)/100,.1,10); renderPanel(); draw(); } return; }
+  if(k==='+'||k==='='){ zoomAt(cw/2,ch/2,1.25); return; } if(k==='-'){ zoomAt(cw/2,ch/2,.8); return; } if(k==='0'){ fit(); return; }
+  if(k==='['||k===']'){ if(tool==='brush'||tool==='fog'){ cur.brush=clamp(cur.brush+(k===']'?1:-1),1,5); renderPanel(); draw(); } return; }
+  const t=TOOLS.find(t=>t!=='sep'&&t.key.toLowerCase()===k); if(t) setTool(t.id);
+});
+window.addEventListener('keyup',e=>{ if(e.code==='Space'){ spaceDown=false; cv.style.cursor=''; } if(e.key==='Shift'){ shiftHeld=false; draw(); } });
+let nudgeTimer=null;
+function rotate(dir){
+  const step=(settings.rotStep||15)*dir;
+  let p=sel&&sel.type==='prop'&&(tool==='select'||tool==='prop')?findSel():null;
+  if(!p && tool==='prop'){ cur.rot=normDeg(cur.rot+step); renderPanel(); draw(); return; }
+  if(!p&&hover) p=propAt(hover.fx,hover.fy);
+  if(p){ pushUndo(); p.rot=normDeg((p.rot||0)+step); afterChange(true); }
+}
+function duplicateProp(o){ pushUndo(); const n={...o,id:newId(),cx:clamp(o.cx+.5,0,map.w),cy:clamp(o.cy+.5,0,map.h)}; map.props.push(n); sel={type:'prop',id:n.id}; afterChange(true); }
+function reorderProp(o,where){ pushUndo(); map.props=map.props.filter(p=>p!==o); if(where==='front') map.props.push(o); else map.props.unshift(o); afterChange(true); toast(where==='front'?'Brought to front':'Sent to back'); }
+
+/* ---------- UI ---------- */
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast.h); toast.h=setTimeout(()=>t.classList.remove('show'),2400); }
+function buildRail(){
+  $('rail').innerHTML=TOOLS.map(t=> t==='sep' ? '<span class="sep"></span>' :
+    `<button class="tool" data-tool="${t.id}" title="${t.name} (${t.key})" aria-label="${t.name}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg><kbd>${t.key}</kbd></button>`).join('');
+  $('rail').addEventListener('click',e=>{ const b=e.target.closest('[data-tool]'); if(b) setTool(b.dataset.tool); });
+}
+function setTool(id){ tool=id; if(id!=='select'&&id!=='token'&&!(id==='prop'&&sel&&sel.type==='prop')) sel=null; document.querySelectorAll('.tool').forEach(b=>b.classList.toggle('on',b.dataset.tool===id)); renderPanel(); draw(); }
+function updateDims(){ $('dims').textContent=`${map.w}×${map.h} squares · ${map.w*FT}×${map.h*FT} ft`; if(document.activeElement!==$('mapName')) $('mapName').value=map.name; }
+
+function swatchCanvas(drawFn){ const c=document.createElement('canvas'); c.width=88; c.height=88; drawFn(c.getContext('2d')); return c; }
+const swatchCache={};
+function terrainSwatch(i){ const t=TERRAIN[i];
+  if(t.tex){ // show a 2×2-square patch at the texture's current scale
+    if(!t.tex.img) return swatchCanvas(c=>{ c.fillStyle=t.tex.color; c.fillRect(0,0,88,88); });
+    const k='t'+i+'|'+texScale(t); return swatchCache[k] ||= swatchCanvas(c=>{ const d=44*texScale(t); c.imageSmoothingQuality='high'; c.drawImage(t.tex.img,0,0,d,d); }); }
+  return swatchCache['t'+i] ||= swatchCanvas(c=>{ for(let y=0;y<2;y++)for(let x=0;x<2;x++){ c.save(); c.translate(x*44,y*44); drawTerrainCell(c,i,x+3,y+5,44,()=>true); c.restore(); } }); }
+function propSwatch(k){ return swatchCache['p'+k] ||= swatchCanvas(c=>{ c.fillStyle='#4a4540'; c.fillRect(0,0,88,88); c.save(); c.translate(44,44); c.scale(56,56); PROPS[k].draw(c,n=>rng(5,9,n)); c.restore(); }); }
+
+function sec(title, inner){ return `<div class="stack"><h3>${title}</h3>${inner}</div>`; }
+function renderPanel(){
+  const P=$('panel'), t=TOOL_BY[tool]; let h=`<div><h2>${t.name}</h2><p class="hint">${t.hint}</p></div>`;
+  if(TERRAIN_TOOLS.includes(tool)){
+    h+=terrainPicker();
+    const ct=TERRAIN[cur.terrain];
+    if(ct.tex){ const sq=texScale(ct); h+=sec('Texture scale', seg('texScale',[1,2,3,4,6,8].map(n=>[n,n+'×'+n]),sq)+`<p class="hint">One image of <b style="color:var(--text)">${ct.name}</b> covers ${sq}×${sq} squares (${sq*FT}×${sq*FT} ft). Changes every ${ct.name} floor on this map.</p>`); }
+    if(tool==='brush') h+=sec('Brush size', seg('brush',[1,2,3,5].map(n=>[n,`${n*FT} ft`]),cur.brush));
+    if(tool==='room'){ const ws=WALLSTYLES.get(settings.wallStyle)||WALLSTYLES.get('drawn');
+      h+=sec('Walls',`<div class="wallnow"><i data-w="${esc(ws.key)}"></i><span><b>${esc(ws.name)}</b> · ${esc(ws.cat)}<br><span class="hint" style="margin:0">Change the wall style with the Walls tool (W).</span></span></div>`); }
+    h+=librarySection();
+  }
+  if(tool==='wall'){
+    h+=wallPicker();
+    h+=`<div class="btnrow"><button class="btn" data-act="restyleAll">Use this style for every wall</button></div>`;
+    h+=wallLibrarySection();
+  }
+  if(tool==='door'){
+    h+=doorPicker();
+    h+=`<div class="btnrow"><button class="btn" data-act="restyleDoors">Use this door and frame for every door</button></div>`;
+    h+=doorLibrarySection();
+  }
+  if(tool==='prop'){
+    const o=findSel(); if(o && sel.type==='prop') h+=propEditor(o);
+    h+=propPicker();
+    h+=sec('Placing',`<div class="row"><label class="field">Rotation °<input id="curRot" type="number" step="any" value="${cur.rot}"></label><label class="field">Scale %<input id="curScale" type="number" min="10" max="1000" step="any" value="${Math.round(cur.scale*100)}"></label></div>
+      <label class="check"><input type="checkbox" id="curFlip" ${cur.flip?'checked':''}> Flip horizontally <kbd style="margin-left:auto">X</kbd></label>
+      <label class="check"><input type="checkbox" id="optRandom" ${settings.propRandom?'checked':''}> Vary rotation, size and flip on each placement</label>`);
+    h+=propLibrarySection();
+  }
+  if(tool==='prop') h+=propMoveSection();
+  if(tool==='fog'){
+    h+=sec('Brush', seg('fogMode',[['hide','Hide'],['reveal','Reveal']],cur.fogMode)+seg('brush',[1,2,3,5].map(n=>[n,`${n*FT} ft`]),cur.brush));
+    h+=sec('Fog shows as', seg('fogView',[['gm','GM view'],['player','Player view']],settings.fogView)+`<p class="hint">Player view makes fog opaque. Exported PNGs use the view you pick here.</p>`);
+    h+=`<div class="btnrow"><button class="btn" data-act="fogAll">Fog whole map</button><button class="btn" data-act="fogNone">Clear all fog</button></div>`;
+  }
+  if(tool==='token') h+=tokenForm();
+  if(tool==='select'){ const o=findSel();
+    if(o && sel.type==='token') h+=tokenEditor(o);
+    else if(o && sel.type==='prop') h+=propEditor(o)+propMoveSection(); }
+  if(tool==='select'||tool==='token') h+=tokenList();
+  if(tool==='measure'||tool==='select'||tool==='token') h+=sec('Diagonal rule', seg('diag',[['5','Every 5 ft'],['5-10','5 / 10 ft'],['euclid','True']],settings.diag)+`<p class="hint">“5 / 10” alternates diagonal costs, as in older editions and many variant rules.</p>`);
+  if(tool==='wall'||tool==='door'||tool==='pan') h+=sec('Shortcuts',`<div class="keys"><kbd>Ctrl Z</kbd><span>Undo</span><kbd>Space</kbd><span>Hold and drag to pan</span><kbd>0</kbd><span>Fit map</span><kbd>R</kbd><span>Rotate prop</span><kbd>[ ]</kbd><span>Brush size</span></div>`);
+  if(tool==='file') h+=fileTab();
+  P.innerHTML=h;
+  if($('terrGrid')) fillTerrGrid();
+  if($('wallGrid')) fillWallGrid();
+  if($('propGrid')) fillPropGrid();
+  if($('doorGrid')) fillDoorGrid();
+  hydrate(P);
+  if(importing) updateImportUI();
+}
+function propMoveSection(){
+  return sec('Moving & rotating',`<label class="check"><input type="checkbox" id="optSnap" ${settings.propSnap?'checked':''}> Snap props to the grid</label>
+      <p class="hint" style="margin:0">Hold <kbd>Shift</kbd> while dragging to do the opposite. Shift on the rotate handle snaps to 15°.</p>
+      <div class="stack" style="gap:6px"><span class="field">Rotation step for <kbd>R</kbd> / <kbd>Shift R</kbd></span>${seg('rotStep',[[1,'1°'],[5,'5°'],[15,'15°'],[45,'45°'],[90,'90°']],settings.rotStep)}</div>
+      <div class="keys"><kbd>[ ]</kbd><span>Smaller / larger</span><kbd>X</kbd><span>Flip</span><kbd>Arrows</kbd><span>Nudge (Shift: a whole square)</span><kbd>Ctrl D</kbd><span>Duplicate</span><kbd>PgUp PgDn</kbd><span>Bring to front / send to back</span></div>`);
+}
+function wallSwatch(key){ const st=WALLSTYLES.get(key)||ensureWallStyle(key);
+  if(!st.drawn && !st.loaded){ loadWallStyle(st); return swatchCanvas(c=>{ c.fillStyle='#4a4540'; c.fillRect(0,0,88,88); }); }
+  return swatchCache['w'+key] ||= swatchCanvas(c=>drawWallSample(c,st,88)); }
+function hydrate(root){
+  root.querySelectorAll('i[data-w]').forEach(el=>{ const c=wallSwatch(el.dataset.w), k=document.createElement('canvas'); k.width=k.height=88; k.getContext('2d').drawImage(c,0,0); el.replaceWith(k); });
+  root.querySelectorAll('i[data-c]').forEach(el=>{ const k=el.dataset.c; const c=k[0]==='t'?terrainSwatch(+k.slice(1)):propSwatch(k.slice(1)); const clone=document.createElement('canvas'); clone.width=88; clone.height=88; clone.getContext('2d').drawImage(c,0,0); el.replaceWith(clone); }); }
+
+/* terrain picker: category dropdown + search + recents + swatch grid */
+function terrainPicker(){
+  const lib=libCatalog();
+  if(cur.cat.startsWith('lib:') && !lib.some(c=>'lib:'+c.id===cur.cat)) cur.cat='painted';
+  let opts=`<option value="painted" ${cur.cat==='painted'?'selected':''}>Painted ground (${TERRAIN.filter(t=>t.group==='Painted').length})</option>`;
+  opts+=`<optgroup label="Included">${INCLUDED_GROUPS.map(g=>`<option value="inc:${esc(g)}" ${cur.cat==='inc:'+g?'selected':''}>${esc(g)} (${TEXTURE_SETS[g].length})</option>`).join('')}</optgroup>`;
+  let lastG=null;
+  for(const c of lib){ if(c.group!==lastG){ if(lastG!==null) opts+='</optgroup>'; opts+=`<optgroup label="${esc(c.group||'My textures')}">`; lastG=c.group; }
+    opts+=`<option value="lib:${esc(c.id)}" ${cur.cat==='lib:'+c.id?'selected':''}>${esc(c.cat)} (${c.count})</option>`; }
+  if(lastG!==null) opts+='</optgroup>';
+  const total=TERRAIN.filter(t=>!(t.tex&&t.tex.lib)).length+LIB.size;
+  return `<div class="stack"><h3>${tool==='room'?'Floor':'Ground'}</h3>
+    <label class="field">Category<select id="terrCat">${opts}</select></label>
+    <input id="terrQ" class="search" type="search" placeholder="Search ${total.toLocaleString()} textures" value="${esc(cur.q)}" aria-label="Search textures" autocomplete="off">
+    <div id="terrRecent"></div>
+    <div class="sw-grid" id="terrGrid"></div><p class="hint" id="terrMore" hidden></p></div>`;
+}
+function itemFor(key){ if(key.startsWith('lib:') && LIB.has(key)) return {key,lib:true}; const i=TERRAIN.findIndex(t=>t.key===key); return i>=0 && !(TERRAIN[i].tex&&TERRAIN[i].tex.lib) ? {key,idx:i} : null; }
+function gridItems(){
+  const q=cur.q.trim().toLowerCase(), base=TERRAIN.map((t,i)=>({t,i})).filter(x=>!(x.t.tex&&x.t.tex.lib));
+  const byName=(a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true});
+  if(q){ const words=q.split(/\s+/), hit=s=>words.every(w=>s.includes(w));
+    const a=base.filter(x=>hit((x.t.name+' '+x.t.group).toLowerCase())).map(x=>({key:x.t.key,idx:x.i}));
+    for(const m of [...LIB.values()].sort(byName)) if(hit((m.name+' '+m.cat+' '+m.group+' '+m.file).toLowerCase())) a.push({key:m.key,lib:true});
+    return a; }
+  if(cur.cat==='painted') return base.filter(x=>x.t.group==='Painted').map(x=>({key:x.t.key,idx:x.i}));
+  if(cur.cat.startsWith('inc:')){ const g=cur.cat.slice(4); return base.filter(x=>x.t.group===g).map(x=>({key:x.t.key,idx:x.i})); }
+  if(cur.cat.startsWith('lib:')){ const id=cur.cat.slice(4); return [...LIB.values()].filter(m=>m.catId===id).sort(byName).map(m=>({key:m.key,lib:true})); }
+  return [];
+}
+function swatchHTML(it){
+  const on=TERRAIN[cur.terrain] && TERRAIN[cur.terrain].key===it.key ? 'on' : '';
+  if(it.lib){ const m=LIB.get(it.key); return `<button class="sw ${on}" data-lib="${esc(it.key)}" title="${esc(m.cat+' · '+m.name)}"><img src="${thumbURL(it.key)}" loading="lazy" alt=""><span>${esc(m.name)}</span></button>`; }
+  const t=TERRAIN[it.idx]; return `<button class="sw ${on}" data-terr="${it.idx}" title="${esc(t.group==='Painted'?t.name:t.group+' · '+t.name)}"><i data-c="t${it.idx}"></i><span>${esc(t.name)}</span></button>`;
+}
+const GRID_LIMIT=240;
+function fillTerrGrid(){
+  const g=$('terrGrid'); if(!g) return;
+  const items=gridItems(), shown=items.slice(0,GRID_LIMIT), more=$('terrMore');
+  g.innerHTML=shown.length ? shown.map(swatchHTML).join('') : `<p class="empty" style="grid-column:1/-1">${cur.q.trim()?'No textures match that search.':'Nothing here yet.'}</p>`;
+  more.hidden=items.length<=GRID_LIMIT; more.textContent=`Showing ${GRID_LIMIT} of ${items.length.toLocaleString()} — search to narrow it down.`;
+  const rec=(settings.recent||[]).map(itemFor).filter(Boolean);
+  $('terrRecent').innerHTML= rec.length && !cur.q.trim() ? `<div class="stack" style="gap:6px"><span class="field">Recently used</span><div class="sw-grid recent">${rec.map(swatchHTML).join('')}</div></div>` : '';
+  hydrate(g.parentElement);
+}
+function pickTerrain(key){
+  cur.terrain = key.startsWith('lib:') ? ensureLibTerrain(key) : TI(key);
+  settings.recent=[key,...(settings.recent||[]).filter(k=>k!==key)].slice(0,8); autosave();
+}
+/* props: editor for the selected prop, picker, library */
+function propEditor(o){
+  const [w,h]=propSize(o), sc=o.scale||1, ly=propLayer(o), cat=PROPS[o.type]?'Drawn':((PLIB.get(o.type)||{}).cat||'Library');
+  const fw=Math.round(w*sc*FT*10)/10, fh=Math.round(h*sc*FT*10)/10;
+  return sec('Selected prop',`<div style="font-size:15px"><b>${esc(propName(o.type))}</b> <span class="hint" style="margin:0">· ${esc(cat)}</span><br>
+      <span class="hint" style="margin:0">at <b style="font-family:var(--mono);color:var(--accent)">${colName(Math.floor(o.cx))}${Math.floor(o.cy)+1}</b> · ${fw} × ${fh} ft</span></div>
+    <div class="row"><label class="field">Rotation °<input id="edRot" type="number" step="any" value="${normDeg(o.rot||0)}"></label>
+      <label class="field">Scale %<input id="edScale" type="number" min="10" max="1000" step="any" value="${Math.round(sc*100)}"></label></div>
+    <input id="edRotR" type="range" min="0" max="359" step="1" value="${Math.round(normDeg(o.rot||0))}" aria-label="Rotation">
+    <input id="edScaleR" type="range" min="10" max="400" step="1" value="${Math.round(sc*100)}" aria-label="Scale">
+    <div class="btnrow"><button class="btn" data-act="rotL" title="Rotate back (Shift R)">↺ ${settings.rotStep}°</button><button class="btn" data-act="rotR" title="Rotate (R)">↻ ${settings.rotStep}°</button>
+      <button class="btn" data-act="flipSel" title="Flip (X)">Flip</button><button class="btn" data-act="resetSel" title="Rotation 0°, scale 100%">Reset</button></div>
+    <div class="stack" style="gap:6px"><span class="field">Draw order</span>${seg('propLayer',LAYERS.map(([l,v])=>[v,l]),ly)}</div>
+    <div class="btnrow"><button class="btn" data-act="frontSel">To front</button><button class="btn" data-act="backSel">To back</button><button class="btn" data-act="dupProp">Duplicate</button><button class="btn danger" data-act="delSel">Remove</button></div>`);
+}
+function propPicker(){
+  const lib=propCatalog();
+  if(settings.propCat.startsWith('lib:') && !lib.some(c=>'lib:'+c.id===settings.propCat)) settings.propCat='drawn';
+  const sel_=v=>settings.propCat===v?'selected':'';
+  let opts=`<option value="drawn" ${sel_('drawn')}>Drawn props (${PROP_KEYS.length})</option>`, lastG=null;
+  for(const c of lib){ if(c.group!==lastG){ if(lastG!==null) opts+='</optgroup>'; opts+=`<optgroup label="${esc(c.group)}">`; lastG=c.group; }
+    opts+=`<option value="lib:${esc(c.id)}" ${sel_('lib:'+c.id)}>${esc(c.cat)} (${c.count})</option>`; }
+  if(lastG!==null) opts+='</optgroup>';
+  return `<div class="stack"><h3>Prop</h3>
+    <label class="field">Category<select id="propCat">${opts}</select></label>
+    <input id="propQ" class="search" type="search" placeholder="Search ${(PROP_KEYS.length+PLIB.size).toLocaleString()} props" value="${esc(settings.propQ)}" aria-label="Search props" autocomplete="off">
+    <div id="propRecent"></div><div class="sw-grid" id="propGrid"></div><p class="hint" id="propMore" hidden></p></div>`;
+}
+function propItems(){
+  const q=settings.propQ.trim().toLowerCase(), byName=(a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true});
+  if(q){ const words=q.split(/\s+/), hit=s=>words.every(w=>s.includes(w)), out=PROP_KEYS.filter(k=>hit(PROPS[k].name.toLowerCase()));
+    for(const m of PLIB.values()){ if(hit((m.name+' '+m.cat+' '+m.group).toLowerCase())){ out.push(m.key); if(out.length>2000) break; } }
+    return out; }
+  if(settings.propCat==='drawn') return PROP_KEYS;
+  const id=settings.propCat.slice(4); return [...PLIB.values()].filter(m=>m.catId===id).sort(byName).map(m=>m.key);
+}
+function propSwatchHTML(k){
+  const on=cur.prop===k?'on':'';
+  if(PROPS[k]) return `<button class="sw ${on}" data-prop="${k}" title="${PROPS[k].name}"><i data-c="p${k}"></i><span>${PROPS[k].name}</span></button>`;
+  const m=PLIB.get(k); if(!m) return '';
+  return `<button class="sw ${on}" data-prop="${esc(k)}" title="${esc(m.cat+' · '+m.name+' · '+m.sw+'×'+m.sh)}"><img data-pthumb="${esc(k)}" alt=""><span>${esc(m.name)}</span></button>`;
+}
+function fillPropGrid(){
+  const g=$('propGrid'); if(!g) return;
+  const items=propItems(), more=$('propMore');
+  g.innerHTML=items.length ? items.slice(0,GRID_LIMIT).map(propSwatchHTML).join('') : `<p class="empty" style="grid-column:1/-1">${settings.propQ.trim()?'No props match that search.':'Nothing here yet.'}</p>`;
+  more.hidden=items.length<=GRID_LIMIT; more.textContent=`Showing ${GRID_LIMIT} of ${items.length>2000?'2,000+':items.length.toLocaleString()} — search to narrow it down.`;
+  const rec=(settings.propRecent||[]).filter(k=>PROPS[k]||PLIB.has(k));
+  $('propRecent').innerHTML= rec.length && !settings.propQ.trim() ? `<div class="stack" style="gap:6px"><span class="field">Recently used</span><div class="sw-grid">${rec.map(propSwatchHTML).join('')}</div></div>` : '';
+  hydrate(g.parentElement);
+  g.parentElement.querySelectorAll('img[data-pthumb]').forEach(img=>{ const u=thumbUrls.get('p|'+img.dataset.pthumb); if(u) img.src=u; else if(thumbObserver) thumbObserver.observe(img); else loadPropThumb(img); });
+}
+function propLibrarySection(){
+  const cats=propCatalog(), bytes=cats.reduce((s,c)=>s+c.bytes,0), mb=(bytes/1048576).toFixed(bytes>1048576*10?0:1);
+  let h=`<div class="stack" id="libSec"><h3>Your prop library</h3>`;
+  if(importing){
+    h+=`<div id="libProg" class="stack" style="gap:6px"><div class="bar"><i style="width:${(importing.done/importing.total*100).toFixed(1)}%"></i></div><span class="ptext hint" style="margin:0">Importing…</span><div><button class="btn" data-act="cancelImport">Stop import</button></div></div>`;
+  } else {
+    h+= PLIB.size ? `<p class="hint" style="margin:0">${PLIB.size.toLocaleString()} props in ${cats.length} categories · ${mb} MB saved in this browser.</p>`
+      : `<p class="hint" style="margin:0">Import transparent PNGs — furniture, trees, decor. A size in the name like <code>Table_Round_2x2.png</code> sets the footprint; otherwise 200 px = one square. Each folder becomes a category.</p>`;
+    h+=`<div class="btnrow"><button class="btn primary" data-act="importProps">Import prop folder…</button></div>`;
+    if(settings.propCat.startsWith('lib:')){ const c=cats.find(c=>'lib:'+c.id===settings.propCat);
+      if(c) h+=`<div class="btnrow" id="propDelRow"><button class="btn danger" data-act="delPropCat">Remove “${esc(c.cat)}” (${c.count})</button></div>`; }
+    if(!libPersistent) h+=`<p class="hint" style="margin:0;color:#f0a896">This browser won’t let the page store files, so imported props last only until you close it.</p>`;
+  }
+  return h+'</div>';
+}
+
+/* door picker: door leaves in a grid, frame in a dropdown */
+function doorPicker(){
+  const cats=doorCatalog();
+  if(settings.doorCat.startsWith('lib:') && !cats.some(c=>'lib:'+c.id===settings.doorCat)) settings.doorCat='inc';
+  const sel_=v=>settings.doorCat===v?'selected':'';
+  let opts=`<option value="drawn" ${sel_('drawn')}>Drawn (1)</option><option value="inc" ${sel_('inc')}>Included (${[...DOORSTYLES.values()].filter(s=>s.cat==='Included').length})</option>`;
+  if(cats.length) opts+=`<optgroup label="Your doors">${cats.map(c=>`<option value="lib:${esc(c.id)}" ${sel_('lib:'+c.id)}>${esc(c.cat)} (${c.count})</option>`).join('')}</optgroup>`;
+  const frames=[...FRAMESTYLES.values()].filter(f=>!f.lib).concat([...DLIB.values()].filter(m=>m.kind==='frame').sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true})));
+  const fopts=frames.map(f=>`<option value="${esc(f.key)}" ${settings.doorFrame===f.key?'selected':''}>${esc(f.name)}${f.cat==='Included'?' (included)':''}</option>`).join('');
+  return `<div class="stack"><h3>Door</h3>
+    <label class="field">Category<select id="doorCat">${opts}</select></label>
+    <div id="doorRecent"></div><div class="sw-grid" id="doorGrid"></div>
+    <label class="field">Frame<select id="doorFrame">${fopts}</select></label>
+    <p class="hint" style="margin:0">Click a wall or an open edge to place a door; click it again to restyle it, or to turn it back into wall. <kbd>Shift</kbd>+click flips it. Two doors side by side join into a double door.</p></div>`;
+}
+function doorItems(){ const c=settings.doorCat;
+  if(c==='drawn') return ['drawn'];
+  if(c==='inc') return [...DOORSTYLES.values()].filter(s=>s.cat==='Included').map(s=>s.key);
+  const id=c.slice(4); return [...DLIB.values()].filter(m=>m.kind==='door'&&m.catId===id).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true})).map(m=>m.key); }
+function doorSwatchHTML(key){
+  const on=settings.doorStyle===key?'on':'', m=DLIB.get(key);
+  if(m) return `<button class="sw ${on}" data-door="${esc(key)}" title="${esc(m.cat+' · '+m.name)}"><img src="${doorThumbURL(key)}" loading="lazy" alt=""><span>${esc(m.name)}</span></button>`;
+  const st=DOORSTYLES.get(key); if(!st||st.lib) return '';
+  return `<button class="sw ${on}" data-door="${esc(key)}" title="${esc(st.name)}"><i data-dr="${esc(key)}"></i><span>${esc(st.name)}</span></button>`;
+}
+function doorSwatch(key){ const st=doorStyleFor(key);
+  return swatchCanvas(c=>{ c.fillStyle='#4a4540'; c.fillRect(0,0,88,88);
+    if(st.img){ const L=st.len, sz=80/L; c.drawImage(st.img,44-L*sz/2,44-sz/2,L*sz,sz); } else drawnDoor(c,70,44,44,false); }); }
+function fillDoorGrid(){
+  const g=$('doorGrid'); if(!g) return;
+  const items=doorItems(); g.innerHTML=items.length?items.slice(0,GRID_LIMIT).map(doorSwatchHTML).join(''):'<p class="empty" style="grid-column:1/-1">Nothing here yet.</p>';
+  const rec=(settings.doorRecent||[]).filter(k=>DLIB.has(k)||(DOORSTYLES.has(k)&&!DOORSTYLES.get(k).lib));
+  $('doorRecent').innerHTML=rec.length?`<div class="stack" style="gap:6px"><span class="field">Recently used</span><div class="sw-grid">${rec.map(doorSwatchHTML).join('')}</div></div>`:'';
+  g.parentElement.querySelectorAll('i[data-dr]').forEach(el=>{ const k=document.createElement('canvas'); k.width=k.height=88; k.getContext('2d').drawImage(doorSwatch(el.dataset.dr),0,0); el.replaceWith(k); });
+}
+function doorLibrarySection(){
+  const nd=[...DLIB.values()].filter(m=>m.kind==='door').length, nf=DLIB.size-nd;
+  let h=`<div class="stack" id="libSec"><h3>Your door library</h3>`;
+  if(importing){
+    h+=`<div id="libProg" class="stack" style="gap:6px"><div class="bar"><i style="width:${(importing.done/importing.total*100).toFixed(1)}%"></i></div><span class="ptext hint" style="margin:0">Importing…</span><div><button class="btn" data-act="cancelImport">Stop import</button></div></div>`;
+  } else {
+    h+= DLIB.size ? `<p class="hint" style="margin:0">${nd} doors and ${nf} frames saved in this browser.</p>`
+      : `<p class="hint" style="margin:0">Import your <b>Doors</b> folder. Door leaves (<code>Door_…_1x1</code>, <code>Door_Large_…_2x1</code>) and frames (<code>Door_Frame_…</code>) are picked up; trapdoors and cellar doors lie on the floor, so import those as props.</p>`;
+    h+=`<div class="btnrow"><button class="btn primary" data-act="importDoors">Import door folder…</button>${DLIB.size?'<span id="doorDelRow"><button class="btn danger" data-act="delDoors">Remove all</button></span>':''}</div>`;
+  }
+  return h+'</div>';
+}
+
+/* wall style picker — same shape as the ground picker */
+function wallPicker(){
+  const lib=wallCatalog();
+  if(settings.wallCat.startsWith('lib:') && !lib.some(c=>'lib:'+c.id===settings.wallCat)) settings.wallCat='inc:Stone';
+  const sel=v=>settings.wallCat===v?'selected':'';
+  let opts=`<option value="drawn" ${sel('drawn')}>Drawn (1)</option><optgroup label="Included">${Object.keys(INCLUDED_WALLS).map(c=>`<option value="inc:${c}" ${sel('inc:'+c)}>${c} (${INCLUDED_WALLS[c][1].length})</option>`).join('')}</optgroup>`;
+  let lastG=null;
+  for(const c of lib){ if(c.group!==lastG){ if(lastG!==null) opts+='</optgroup>'; opts+=`<optgroup label="${esc(c.group)}">`; lastG=c.group; }
+    opts+=`<option value="lib:${esc(c.id)}" ${sel('lib:'+c.id)}>${esc(c.cat)} (${c.count})</option>`; }
+  if(lastG!==null) opts+='</optgroup>';
+  const total=1+Object.values(INCLUDED_WALLS).reduce((n,[,c])=>n+c.length,0)+WLIB.size;
+  return `<div class="stack"><h3>Wall style</h3>
+    <label class="field">Category<select id="wallCat">${opts}</select></label>
+    <input id="wallQ" class="search" type="search" placeholder="Search ${total.toLocaleString()} wall styles" value="${esc(settings.wallQ)}" aria-label="Search wall styles" autocomplete="off">
+    <div id="wallRecent"></div><div class="sw-grid" id="wallGrid"></div><p class="hint" id="wallMore" hidden></p>
+    <p class="hint" style="margin:0">New walls, rooms and doors use this style. Click an existing wall to switch it to this style; click it again to remove it.</p></div>`;
+}
+function wallItems(){
+  const q=settings.wallQ.trim().toLowerCase(), builtin=[...WALLSTYLES.values()].filter(s=>!s.lib);
+  const byName=(a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true});
+  if(q){ const words=q.split(/\s+/), hit=s=>words.every(w=>s.includes(w));
+    return [...builtin.filter(s=>hit((s.name+' '+s.cat).toLowerCase())).map(s=>s.key), ...[...WLIB.values()].sort(byName).filter(m=>hit((m.name+' '+m.cat+' '+m.group).toLowerCase())).map(m=>m.key)]; }
+  const c=settings.wallCat;
+  if(c==='drawn') return ['drawn'];
+  if(c.startsWith('inc:')) return builtin.filter(s=>s.group==='Included'&&s.cat===c.slice(4)).map(s=>s.key);
+  if(c.startsWith('lib:')) return [...WLIB.values()].filter(m=>m.catId===c.slice(4)).sort(byName).map(m=>m.key);
+  return [];
+}
+function wallSwatchHTML(key){
+  const on=settings.wallStyle===key?'on':'';
+  const m=WLIB.get(key); if(m) return `<button class="sw ${on}" data-wall="${esc(key)}" title="${esc(m.cat+' · '+m.name)}"><img src="${wallThumbURL(key)}" loading="lazy" alt=""><span>${esc(m.name)}</span></button>`;
+  const st=WALLSTYLES.get(key); if(!st || st.lib) return '';
+  return `<button class="sw ${on}" data-wall="${esc(key)}" title="${esc(st.cat+' · '+st.name)}"><i data-w="${esc(key)}"></i><span>${esc(st.name)}</span></button>`;
+}
+function fillWallGrid(){
+  const g=$('wallGrid'); if(!g) return;
+  const items=wallItems(), more=$('wallMore');
+  g.innerHTML=items.length ? items.slice(0,GRID_LIMIT).map(wallSwatchHTML).join('') : `<p class="empty" style="grid-column:1/-1">${settings.wallQ.trim()?'No wall styles match that search.':'Nothing here yet.'}</p>`;
+  more.hidden=items.length<=GRID_LIMIT; more.textContent=`Showing ${GRID_LIMIT} of ${items.length.toLocaleString()} — search to narrow it down.`;
+  const rec=(settings.wallRecent||[]).filter(k=>WLIB.has(k)||(WALLSTYLES.has(k)&&!WALLSTYLES.get(k).lib));
+  $('wallRecent').innerHTML= rec.length && !settings.wallQ.trim() ? `<div class="stack" style="gap:6px"><span class="field">Recently used</span><div class="sw-grid">${rec.map(wallSwatchHTML).join('')}</div></div>` : '';
+  hydrate(g.parentElement);
+}
+function pickWall(key){
+  if(key.startsWith('lib:')) loadWallStyle(ensureWallStyle(key));
+  settings.wallStyle=key; settings.wallRecent=[key,...(settings.wallRecent||[]).filter(k=>k!==key)].slice(0,8); autosave();
+}
+function wallLibrarySection(){
+  const cats=wallCatalog();
+  let h=`<div class="stack" id="libSec"><h3>Your wall library</h3>`;
+  if(importing){
+    h+=`<div id="libProg" class="stack" style="gap:6px"><div class="bar"><i style="width:${(importing.done/importing.total*100).toFixed(1)}%"></i></div><span class="ptext hint" style="margin:0">Importing…</span><div><button class="btn" data-act="cancelImport">Stop import</button></div></div>`;
+  } else {
+    h+= WLIB.size ? `<p class="hint" style="margin:0">${WLIB.size.toLocaleString()} wall styles in ${cats.length} categories, saved in this browser.</p>`
+      : `<p class="hint" style="margin:0">Import a modular wall kit — files named like <code>Wall_Stone_Earthy_A_Straight_C_1x1.png</code>. Pick your whole <b>Walls_and_Curbs</b> folder; only the pieces the map needs are kept, everything else is skipped.</p>`;
+    h+=`<div class="btnrow"><button class="btn primary" data-act="importWalls">Import wall folder…</button></div>`;
+    if(settings.wallCat.startsWith('lib:')){ const c=cats.find(c=>'lib:'+c.id===settings.wallCat);
+      if(c) h+=`<div class="btnrow" id="wallDelRow"><button class="btn danger" data-act="delWallCat">Remove “${esc(c.cat)}” (${c.count})</button></div>`; }
+    if(!libPersistent) h+=`<p class="hint" style="margin:0;color:#f0a896">This browser won’t let the page store files, so imported walls last only until you close it.</p>`;
+  }
+  return h+'</div>';
+}
+function librarySection(){
+  const cats=libCatalog(), bytes=cats.reduce((s,c)=>s+c.bytes,0), mb=(bytes/1048576).toFixed(bytes>1048576*10?0:1);
+  let h=`<div class="stack" id="libSec"><h3>Your texture library</h3>`;
+  if(importing){
+    h+=`<div id="libProg" class="stack" style="gap:6px"><div class="bar"><i style="width:${(importing.done/importing.total*100).toFixed(1)}%"></i></div><span class="ptext hint" style="margin:0">Importing…</span><div><button class="btn" data-act="cancelImport">Stop import</button></div></div>`;
+  } else {
+    h+= LIB.size ? `<p class="hint" style="margin:0">${LIB.size.toLocaleString()} textures in ${cats.length} categories · ${mb} MB saved in this browser.</p>`
+      : `<p class="hint" style="margin:0">Bring in your own floor textures — a whole folder of subfolders at once. Each subfolder becomes a category. You can also drag a folder onto the map.</p>`;
+    h+=`<div class="btnrow"><button class="btn primary" data-act="importDir">Import folder…</button><button class="btn" data-act="importImgs">Add images…</button></div>`;
+    h+=`<div class="stack" style="gap:6px"><span class="field">Import quality</span>${seg('libQuality',[[512,'Light · 512px'],[1024,'Sharp · 1024px']],settings.libQuality)}</div>`;
+    if(cur.cat.startsWith('lib:')){ const c=cats.find(c=>'lib:'+c.id===cur.cat);
+      if(c) h+=`<div class="btnrow" id="libDelRow"><button class="btn danger" data-act="delCat">Remove “${esc(c.cat)}” (${c.count})</button></div>`; }
+    if(!libPersistent) h+=`<p class="hint" style="margin:0;color:#f0a896">This browser won’t let the page store files, so imported textures last only until you close it.</p>`;
+    else if(LIB.size) h+=`<p class="hint" style="margin:0">Textures stay in this browser only. Maps you save keep working elsewhere, showing flat colours until you import the same folder there.</p>`;
+  }
+  return h+'</div>';
+}
+function seg(name,opts,val){ return `<div class="seg" data-seg="${name}">${opts.map(([v,l])=>`<button class="${String(v)===String(val)?'on':''}" data-v="${v}">${l}</button>`).join('')}</div>`; }
+function colorPicker(val,name){ return `<div class="colors" data-colors="${name}">${COLORS.map(c=>`<button style="background:${c}" class="${c===val?'on':''}" data-v="${c}" aria-label="Color ${c}"></button>`).join('')}</div>`; }
+function tokenForm(){ const t=cur.token;
+  return sec('New token',`<label class="field">Name<input id="tkName" value="${esc(t.name)}" maxlength="40"></label>
+    <div class="row"><label class="field">Side<select id="tkKind">${Object.entries(KINDS).map(([k,v])=>`<option value="${k}" ${t.kind===k?'selected':''}>${v.name}</option>`).join('')}</select></label>
+    <label class="field">Size<select id="tkSize">${SIZES.map(z=>`<option value="${z.k}" ${t.size===z.k?'selected':''}>${z.name}</option>`).join('')}</select></label></div>
+    ${colorPicker(t.color,'new')}<p class="hint">Next click places <b style="color:var(--text)">${esc(nextTokenName(t.name))}</b>.</p>`); }
+function tokenEditor(o){
+  return sec('Selected token',`<label class="field">Name<input id="edName" value="${esc(o.name)}" maxlength="40"></label>
+    <div class="row"><label class="field">Side<select id="edKind">${Object.entries(KINDS).map(([k,v])=>`<option value="${k}" ${o.kind===k?'selected':''}>${v.name}</option>`).join('')}</select></label>
+    <label class="field">Size<select id="edSize">${SIZES.map(z=>`<option value="${z.k}" ${o.size===z.k?'selected':''}>${z.name}</option>`).join('')}</select></label></div>
+    ${colorPicker(o.color,'edit')}<div class="btnrow"><button class="btn" data-act="dupSel">Duplicate</button><button class="btn danger" data-act="delSel">Remove</button></div>`); }
+function tokenList(){ if(!map.tokens.length) return sec('On the map','<p class="empty">No tokens yet. Use the Tokens tool (T) to add some.</p>');
+  const order={hero:0,ally:1,foe:2}; const list=[...map.tokens].sort((a,b)=>(order[a.kind]-order[b.kind])||a.name.localeCompare(b.name,undefined,{numeric:true}));
+  return sec(`On the map · ${map.tokens.length}`,`<div class="tlist">${list.map(t=>`<div class="titem ${sel&&sel.id===t.id?'on':''}" data-tok="${t.id}"><span class="dot" style="background:${t.color};--ring:${KINDS[t.kind].ring}"></span><span class="nm">${esc(t.name)}</span><span class="meta">${colName(t.x)}${t.y+1}</span><button class="x" data-del="${t.id}" aria-label="Remove ${esc(t.name)}">×</button></div>`).join('')}</div>`); }
+/* ---------- Maps tab: this map, maps saved in this browser, new map, files ---------- */
+let savedMaps=[];                 // [{id,name,w,h,updated,thumb}] — map data stays in storage until opened
+const memMaps=new Map();
+const hashStr=s=>{ let h=5381; for(let i=0;i<s.length;i++) h=(h*33+s.charCodeAt(i))|0; return String(h>>>0); };
+// what the map looked like when last saved or opened, so the tab can say "unsaved changes"
+let savedHash=null; try{ savedHash=localStorage.getItem('flagstone.savedHash'); }catch(e){}
+function markSaved(){ savedHash=hashStr(serialize()); try{ localStorage.setItem('flagstone.savedHash',savedHash); }catch(e){} }
+const isDirty=()=> savedHash!==hashStr(serialize());
+async function loadSavedMaps(){
+  let recs=[]; if(libPersistent){ try{ recs=await idbRun('maps','readonly',t=>t.objectStore('maps').getAll()); }catch(e){} }
+  recs=recs.concat([...memMaps.values()]);
+  savedMaps=recs.map(({data,...m})=>m).sort((a,b)=>b.updated-a.updated);
+  if(tool==='file') renderPanel();
+}
+function mapThumb(){ const s=Math.max(2,Math.min(160/map.w,112/map.h)), c=document.createElement('canvas'); c.width=Math.round(map.w*s); c.height=Math.round(map.h*s);
+  drawScene(c.getContext('2d'),s,{export:true}); return new Promise(res=>c.toBlob(b=>res(b),'image/webp',.8)); }
+async function saveLocal(copy){
+  if(copy){ map.id=newId(); map.name=(map.name||'Untitled map')+' (copy)'; }
+  if(!map.id) map.id=newId();
+  const data=serialize(), thumb=await mapThumb(), rec={ id:map.id, name:map.name||'Untitled map', w:map.w, h:map.h, updated:Date.now(), thumb, data };
+  let ok=false;
+  if(libPersistent){ try{ await idbRun('maps','readwrite',t=>t.objectStore('maps').put(rec)); ok=true; }
+    catch(e){ toast(e && e.name==='QuotaExceededError' ? 'Browser storage is full — remove some saved maps or library items' : 'Couldn’t save in this browser — use Save to file instead'); return; } }
+  if(!ok) memMaps.set(rec.id,rec);
+  const u=thumbUrls.get('m|'+rec.id); if(u){ URL.revokeObjectURL(u); thumbUrls.delete('m|'+rec.id); }
+  markSaved(); autosave(); await loadSavedMaps(); updateDims(); if(tool==='file') renderPanel();
+  toast((copy?'Saved a copy: ':'Saved ')+rec.name);
+}
+async function openLocal(id){
+  let rec=memMaps.get(id); if(!rec && libPersistent){ try{ rec=await idbRun('maps','readonly',t=>t.objectStore('maps').get(id)); }catch(e){} }
+  if(!rec){ toast('That map couldn’t be opened'); return; }
+  const snap=serialize(); try{ loadMapObj(JSON.parse(rec.data)); }catch(e){ toast('That saved map is damaged and couldn’t be opened'); return; }
+  map.id=rec.id; undoStack.push(snap); redoStack.length=0; sel=null; rebuildTerrain(); fit(); markSaved(); afterChange(true);
+  toast(`Opened ${map.name} — Ctrl+Z goes back`);
+}
+async function deleteLocal(id){
+  if(libPersistent){ try{ await idbRun('maps','readwrite',t=>t.objectStore('maps').delete(id)); }catch(e){} }
+  memMaps.delete(id); const u=thumbUrls.get('m|'+id); if(u){ URL.revokeObjectURL(u); thumbUrls.delete('m|'+id); }
+  await loadSavedMaps(); toast('Deleted');
+}
+function mapThumbURL(m){ const k='m|'+m.id; let u=thumbUrls.get(k); if(!u && m.thumb){ u=URL.createObjectURL(m.thumb); thumbUrls.set(k,u); } return u||''; }
+function when(ts){ const d=(Date.now()-ts)/1000; if(d<60) return 'just now'; if(d<3600) return Math.round(d/60)+' min ago'; if(d<86400) return Math.round(d/3600)+' h ago';
+  return new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year: new Date(ts).getFullYear()===new Date().getFullYear()?undefined:'numeric'}); }
+function fileTab(){
+  const rec=savedMaps.find(m=>m.id===map.id), dirty=isDirty();
+  const status = !rec ? '<span class="pill warn">Not saved yet</span>' : dirty ? `<span class="pill warn">Unsaved changes</span><span class="hint" style="margin:0">last saved ${when(rec.updated)}</span>` : `<span class="pill ok">Saved</span><span class="hint" style="margin:0">${when(rec.updated)}</span>`;
+  let h=sec('This map',`<label class="field">Name<input id="fileName" value="${esc(map.name||'')}" maxlength="80"></label>
+    <div class="fstatus">${status}</div>
+    <div class="btnrow"><button class="btn primary" data-act="saveLocal" title="Ctrl+S">Save</button>${rec?'<button class="btn" data-act="saveCopy">Save as copy</button>':''}</div>
+    <div class="row"><label class="field">Width<input id="mapW" type="number" min="4" max="120" value="${map.w}"></label><label class="field">Height<input id="mapH" type="number" min="4" max="120" value="${map.h}"></label><button class="btn" data-act="resize" style="flex:none">Resize</button></div>
+    <label class="check"><input type="checkbox" id="optGrid" ${settings.grid?'checked':''}> Show grid</label>
+    <label class="check"><input type="checkbox" id="optNames" ${settings.names?'checked':''}> Show token names</label>`);
+  const others=savedMaps;
+  h+=sec(`Saved in this browser${others.length?' · '+others.length:''}`, others.length ? `<div class="maplist">${others.map(m=>`<div class="mapitem ${m.id===map.id?'on':''}" data-mid="${esc(m.id)}">
+      ${m.thumb?`<img src="${mapThumbURL(m)}" alt="">`:'<span class="nothumb"></span>'}
+      <div class="mi"><b>${esc(m.name)}</b><span>${m.w}×${m.h} · ${when(m.updated)}${m.id===map.id?' · open now':''}</span>
+        <div class="btnrow">${m.id===map.id?'':`<button class="btn" data-act="openLocal" data-id="${esc(m.id)}">Open</button>`}<button class="btn danger" data-act="delLocal" data-id="${esc(m.id)}">Delete</button></div></div></div>`).join('')}</div>`
+    : '<p class="empty">No saved maps yet. Save this one to keep it here.</p>');
+  const grounds=TERRAIN.map((t,i)=>({t,i})).filter(x=>!(x.t.tex&&x.t.tex.lib));
+  h+=sec('New map',`<div class="row"><label class="field">Width<input id="newW" type="number" min="4" max="120" value="${settings.newW||24}"></label><label class="field">Height<input id="newH" type="number" min="4" max="120" value="${settings.newH||18}"></label></div>
+    <label class="field">Starting ground<select id="newGround">${grounds.map(x=>`<option value="${esc(x.t.key)}" ${(settings.newGround||'grass')===x.t.key?'selected':''}>${esc(x.t.group==='Painted'?x.t.name:x.t.group+' · '+x.t.name)}</option>`).join('')}</select></label>
+    <p class="hint" style="margin:0" id="newSize">${(settings.newW||24)*FT} × ${(settings.newH||18)*FT} ft. The current map stays in the undo history.</p>
+    <div class="btnrow" id="newRow"><button class="btn primary" data-act="createMap">Create map</button><button class="btn" data-act="sample">Load example</button></div>`);
+  h+=sec('Files',`<p class="hint" style="margin:0">Save a <code>.json</code> file to back a map up or move it to another computer. Floors, walls, props and doors from your libraries only show there once the same folders are imported.</p>
+    <div class="btnrow"><button class="btn" data-act="saveFile">Save to file</button><button class="btn" data-act="openFile">Open file…</button></div>
+    <div class="stack" style="gap:6px"><span class="field">Export PNG · pixels per square</span>${seg('exportPx',[[70,'70'],[100,'100'],[140,'140']],settings.exportPx)}</div>
+    <div class="btnrow"><button class="btn" data-act="exportPng">Export PNG</button></div>`);
+  return h;
+}
+function mapSection(){
+  return sec('Map',`<div class="row"><label class="field">Width<input id="mapW" type="number" min="4" max="120" value="${map.w}"></label><label class="field">Height<input id="mapH" type="number" min="4" max="120" value="${map.h}"></label><button class="btn" data-act="resize" style="flex:none">Resize</button></div>
+    <label class="check"><input type="checkbox" id="optGrid" ${settings.grid?'checked':''}> Show grid</label>
+    <label class="check"><input type="checkbox" id="optNames" ${settings.names?'checked':''}> Show token names</label>
+    <div class="stack" style="gap:6px"><span class="field">PNG export · pixels per square</span>${seg('exportPx',[[70,'70'],[100,'100'],[140,'140']],settings.exportPx)}</div>
+    <div class="btnrow" id="newRow"><button class="btn" data-act="new">New blank map</button><button class="btn" data-act="sample">Load example</button></div>`); }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+const panel=$('panel');
+panel.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.terr){ pickTerrain(TERRAIN[+b.dataset.terr].key); renderPanel(); return; }
+  if(b.dataset.lib){ pickTerrain(b.dataset.lib); renderPanel(); return; }
+  if(b.dataset.wall){ pickWall(b.dataset.wall); renderPanel(); return; }
+  if(b.dataset.door){ const k=b.dataset.door; settings.doorStyle=k; settings.doorRecent=[k,...(settings.doorRecent||[]).filter(x=>x!==k)].slice(0,8); autosave(); renderPanel(); return; }
+  if(b.dataset.prop){ cur.prop=b.dataset.prop; if(tool==='prop') sel=null; renderPanel(); draw(); return; }
+  const sg=b.closest('[data-seg]'); if(sg){ const n=sg.dataset.seg, v=b.dataset.v;
+    if(n==='brush') cur.brush=+v; else if(n==='rot') cur.rot=+v; else if(n==='fogMode') cur.fogMode=v; else if(n==='fogView'){ settings.fogView=v; autosave(); } else if(n==='diag'){ settings.diag=v; autosave(); }
+    else if(n==='exportPx'){ settings.exportPx=+v; autosave(); }
+    else if(n==='libQuality'){ settings.libQuality=+v; autosave(); }
+    else if(n==='rotStep'){ settings.rotStep=+v; autosave(); }
+    else if(n==='propLayer'){ const o=findSel(); if(o && sel.type==='prop'){ pushUndo(); o.layer=+v; afterChange(); } }
+    else if(n==='texScale'){ pushUndo(); map.texScale[TERRAIN[cur.terrain].key]=+v; rebuildTerrain(); afterChange(); }
+    renderPanel(); draw(); return; }
+  const cp=b.closest('[data-colors]'); if(cp){ if(cp.dataset.colors==='new') cur.token.color=b.dataset.v; else { const o=findSel(); if(o){ pushUndo(); o.color=b.dataset.v; afterChange(); } } renderPanel(); draw(); return; }
+  if(b.dataset.del){ pushUndo(); map.tokens=map.tokens.filter(t=>t.id!==b.dataset.del); if(sel&&sel.id===b.dataset.del) sel=null; afterChange(true); return; }
+  const act=b.dataset.act; const o=findSel();
+  if(act==='delSel'&&o){ pushUndo(); if(sel.type==='token') map.tokens=map.tokens.filter(t=>t!==o); else map.props=map.props.filter(p=>p!==o); sel=null; afterChange(true); }
+  else if((act==='rotL'||act==='rotR')&&o){ pushUndo(); o.rot=normDeg((o.rot||0)+(act==='rotR'?1:-1)*settings.rotStep); afterChange(true); }
+  else if(act==='flipSel'&&o){ pushUndo(); o.flip=!o.flip; afterChange(true); }
+  else if(act==='resetSel'&&o){ pushUndo(); o.rot=0; o.scale=1; o.flip=false; afterChange(true); }
+  else if((act==='frontSel'||act==='backSel')&&o){ reorderProp(o, act==='frontSel'?'front':'back'); }
+  else if(act==='dupProp'&&o){ duplicateProp(o); }
+  else if(act==='importProps'){ $('propDirIn').click(); }
+  else if(act==='delPropCat'){ const id=settings.propCat.slice(4), n=[...PLIB.values()].filter(m=>m.catId===id).length;
+    $('propDelRow').innerHTML=`<span class="hint" style="margin:0;width:100%">Delete these ${n} props from this browser? Copies already on maps show as empty outlines.</span><button class="btn danger" data-act="confirmDelPropCat">Delete ${n}</button><button class="btn" data-act="cancel">Cancel</button>`; }
+  else if(act==='confirmDelPropCat'){ const id=settings.propCat.slice(4), keys=[...PLIB.values()].filter(m=>m.catId===id).map(m=>m.key);
+    propDelete(keys).then(()=>{ settings.propRecent=(settings.propRecent||[]).filter(k=>!keys.includes(k)); if(keys.includes(cur.prop)) cur.prop='tree'; settings.propCat='drawn'; renderPanel(); draw(); toast(`Removed ${keys.length} props`); }); }
+  else if(act==='dupSel'&&o){ pushUndo(); const n=sizeOf(o).n; const t={...o,id:newId(),name:nextTokenName(o.name),x:clamp(o.x+n,0,map.w-n)}; map.tokens.push(t); sel={type:'token',id:t.id}; afterChange(true); }
+  else if(act==='fogAll'){ pushUndo(); map.fog.fill(1); afterChange(); }
+  else if(act==='fogNone'){ pushUndo(); map.fog.fill(0); afterChange(); }
+  else if(act==='resize'){ resizeMap(+$('mapW').value,+$('mapH').value); }
+  else if(act==='new'){ confirmRow('new'); }
+  else if(act==='sample'){ confirmRow('sample'); }
+  else if(act==='confirmNew'||act==='confirmSample'){ pushUndo(); if(act==='confirmNew'){ map=blankMap(map.w,map.h,0); } else map=sampleMap(); sel=null; rebuildTerrain(); fit(); afterChange(true); toast(act==='confirmNew'?'Started a blank map — Ctrl+Z brings the old one back':'Loaded the example map'); }
+  else if(act==='cancel'){ renderPanel(); }
+  else if(act==='saveLocal'){ saveLocal(false); }
+  else if(act==='saveCopy'){ saveLocal(true); }
+  else if(act==='openLocal'){ openLocal(b.dataset.id); }
+  else if(act==='delLocal'){ const row=b.closest('.btnrow'), m=savedMaps.find(x=>x.id===b.dataset.id);
+    row.innerHTML=`<span class="hint" style="margin:0;width:100%">Delete “${esc(m?m.name:'this map')}” for good?</span><button class="btn danger" data-act="confirmDelLocal" data-id="${esc(b.dataset.id)}">Delete</button><button class="btn" data-act="cancel">Cancel</button>`; }
+  else if(act==='confirmDelLocal'){ deleteLocal(b.dataset.id); }
+  else if(act==='createMap'){ const w=clamp(+$('newW').value||24,4,120), h=clamp(+$('newH').value||18,4,120), g=$('newGround').value;
+    settings.newW=w; settings.newH=h; settings.newGround=g;
+    pushUndo(); map=blankMap(w,h,TI(g)); sel=null; rebuildTerrain(); fit(); afterChange(true);
+    toast(`New ${w}×${h} map — Ctrl+Z brings the previous one back`); }
+  else if(act==='saveFile'){ saveToFile(); }
+  else if(act==='openFile'){ $('fileIn').click(); }
+  else if(act==='exportPng'){ exportPNG(); }
+  else if(act==='importDir'){ $('dirIn').click(); }
+  else if(act==='importImgs'){ $('imgIn').click(); }
+  else if(act==='importWalls'){ $('wallDirIn').click(); }
+  else if(act==='importDoors'){ $('doorDirIn').click(); }
+  else if(act==='restyleDoors'){ pushUndo(); const d=curDoorData(); for(const [k,v] of Object.entries(map.doors)){ v.s=d.s; v.f=d.f; }
+    const W=map.w; map.hw.forEach((v,i)=>{ if(v===2){ const k=doorKey('h',i%W,Math.floor(i/W)); if(!map.doors[k]) map.doors[k]={...d}; } });
+    map.vw.forEach((v,i)=>{ if(v===2){ const k=doorKey('v',i%(W+1),Math.floor(i/(W+1))); if(!map.doors[k]) map.doors[k]={...d}; } });
+    afterChange(); toast('All doors restyled'); }
+  else if(act==='delDoors'){ $('doorDelRow').innerHTML=`<button class="btn danger" data-act="confirmDelDoors">Delete ${DLIB.size} door pieces</button><button class="btn" data-act="cancel">Cancel</button>`; }
+  else if(act==='confirmDelDoors'){ const keys=[...DLIB.keys()]; doorDelete(keys).then(()=>{ settings.doorRecent=[]; if(keys.includes(settings.doorStyle)) settings.doorStyle='inc:wood_dark_a'; if(keys.includes(settings.doorFrame)) settings.doorFrame='inc:stone_earthy_a'; settings.doorCat='inc'; renderPanel(); draw(); toast(`Removed ${keys.length} door pieces`); }); }
+  else if(act==='restyleAll'){ pushUndo(); const wi=curWallIdx(); map.hws=map.hws.map((v,i)=>map.hw[i]?wi:v); map.vws=map.vws.map((v,i)=>map.vw[i]?wi:v); afterChange(); toast('All walls restyled'); }
+  else if(act==='delWallCat'){ const id=settings.wallCat.slice(4), n=[...WLIB.values()].filter(m=>m.catId===id).length;
+    $('wallDelRow').innerHTML=`<span class="hint" style="margin:0;width:100%">Delete these ${n} wall styles from this browser? Walls already built with them turn back into drawn walls.</span><button class="btn danger" data-act="confirmDelWallCat">Delete ${n}</button><button class="btn" data-act="cancel">Cancel</button>`; }
+  else if(act==='confirmDelWallCat'){ const id=settings.wallCat.slice(4), keys=[...WLIB.values()].filter(m=>m.catId===id).map(m=>m.key);
+    wallDelete(keys).then(()=>{ for(const k of keys){ const st=WALLSTYLES.get(k); if(st){ st.loaded=false; st.imgs={}; st.missing=true; } }
+      settings.wallRecent=(settings.wallRecent||[]).filter(k=>!keys.includes(k)); if(keys.includes(settings.wallStyle)) settings.wallStyle='inc:stone_a/earthy';
+      settings.wallCat='inc:Stone'; renderPanel(); draw(); toast(`Removed ${keys.length} wall styles`); }); }
+  else if(act==='cancelImport'){ if(importing){ importing.cancel=true; b.disabled=true; b.textContent='Stopping…'; } }
+  else if(act==='delCat'){ const id=cur.cat.slice(4), n=[...LIB.values()].filter(m=>m.catId===id).length;
+    $('libDelRow').innerHTML=`<span class="hint" style="margin:0;width:100%">Delete these ${n} textures from this browser? Floors already painted with them turn to flat colour.</span><button class="btn danger" data-act="confirmDelCat">Delete ${n}</button><button class="btn" data-act="cancel">Cancel</button>`; }
+  else if(act==='confirmDelCat'){ const id=cur.cat.slice(4), keys=[...LIB.values()].filter(m=>m.catId===id).map(m=>m.key);
+    libDelete(keys).then(()=>{ settings.recent=(settings.recent||[]).filter(k=>!keys.includes(k)); cur.cat='painted'; renderPanel(); toast(`Removed ${keys.length} textures`); }); }
+});
+panel.addEventListener('input',e=>{ const id=e.target.id, v=e.target.value;
+  if(id==='newW'||id==='newH'){ const w=clamp(+$('newW').value||0,0,120), h=clamp(+$('newH').value||0,0,120); $('newSize').textContent=`${w*FT} × ${h*FT} ft. The current map stays in the undo history.`; }
+  if(id==='terrQ'){ cur.q=v; fillTerrGrid(); } if(id==='wallQ'){ settings.wallQ=v; fillWallGrid(); } if(id==='propQ'){ settings.propQ=v; fillPropGrid(); }
+  if(id==='edRotR'||id==='edScaleR'){ const o=findSel(); if(!o||sel.type!=='prop') return;
+    if(!e.target.dataset.pushed){ pushUndo(); e.target.dataset.pushed=1; }
+    if(id==='edRotR'){ o.rot=+v; $('edRot').value=v; } else { o.scale=+v/100; $('edScale').value=v; } draw(); } });
+panel.addEventListener('change',e=>{ const id=e.target.id, v=e.target.value;
+  if(id==='terrCat'){ cur.cat=v; cur.q=''; autosave(); renderPanel(); }
+  if(id==='wallCat'){ settings.wallCat=v; settings.wallQ=''; autosave(); renderPanel(); }
+  if(id==='propCat'){ settings.propCat=v; settings.propQ=''; autosave(); renderPanel(); }
+  if(id==='doorCat'){ settings.doorCat=v; autosave(); renderPanel(); }
+  if(id==='fileName'){ pushUndo(); map.name=v.trim()||'Untitled map'; afterChange(true); }
+  if(id==='doorFrame'){ settings.doorFrame=v; doorStyleFor(v,true); autosave(); }
+  if(id==='curRot'){ cur.rot=normDeg(+v||0); draw(); }
+  if(id==='curScale'){ cur.scale=clamp((+v||100)/100,.1,10); draw(); }
+  if(id==='curFlip'){ cur.flip=e.target.checked; draw(); }
+  if(id==='optRandom'){ settings.propRandom=e.target.checked; autosave(); }
+  if(id==='optSnap'){ settings.propSnap=e.target.checked; autosave(); }
+  if(id==='edRot'||id==='edScale'){ const o=findSel(); if(o && sel.type==='prop'){ pushUndo(); if(id==='edRot') o.rot=normDeg(+v||0); else o.scale=clamp((+v||100)/100,.1,10); afterChange(true); } }
+  if(id==='edRotR'||id==='edScaleR'){ afterChange(true); } });
+$('doorDirIn').addEventListener('change',e=>{ const l=filesFromInput(e.target); e.target.value=''; if(l.length) importDoors(l); });
+$('propDirIn').addEventListener('change',e=>{ const l=filesFromInput(e.target); e.target.value=''; if(l.length) importProps(l); });
+$('wallDirIn').addEventListener('change',e=>{ const l=filesFromInput(e.target); e.target.value=''; if(l.length) importWalls(l); });
+function filesFromInput(input){ return [...input.files].map(f=>({file:f,path:f.webkitRelativePath||f.name})); }
+$('dirIn').addEventListener('change',e=>{ const l=filesFromInput(e.target); e.target.value=''; if(l.length) importFiles(l); });
+$('imgIn').addEventListener('change',e=>{ const l=filesFromInput(e.target); e.target.value=''; if(l.length) importFiles(l); });
+// drag a folder (or images) anywhere onto the page
+let dragDepth=0;
+const hasFiles=e=>e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+window.addEventListener('dragenter',e=>{ if(!hasFiles(e)) return; e.preventDefault(); dragDepth++; $('dropZone').hidden=false; });
+window.addEventListener('dragover',e=>{ if(hasFiles(e)) e.preventDefault(); });
+window.addEventListener('dragleave',e=>{ if(!hasFiles(e)) return; if(--dragDepth<=0){ dragDepth=0; $('dropZone').hidden=true; } });
+window.addEventListener('drop',e=>{ if(!hasFiles(e)) return; e.preventDefault(); dragDepth=0; $('dropZone').hidden=true;
+  const items=[...e.dataTransfer.items], files=[...e.dataTransfer.files];
+  if(files.length===1 && /\.json$/i.test(files[0].name)){ openMapFile(files[0]); return; }
+  const entries=items.map(i=>i.webkitGetAsEntry ? i.webkitGetAsEntry() : null).filter(Boolean);
+  const into = tool==='wall' ? importWalls : tool==='door' ? importDoors : tool==='prop' ? importProps : importFiles;
+  (entries.length ? entriesToFiles(entries) : Promise.resolve(files.map(f=>({file:f,path:f.name})))).then(l=>into(l)); });
+function confirmRow(kind){ $('newRow').innerHTML=`<span class="hint" style="margin:0;width:100%">${kind==='new'?'Clear everything and start over?':'Replace this map with the example?'} You can undo this.</span><button class="btn danger" data-act="${kind==='new'?'confirmNew':'confirmSample'}">${kind==='new'?'Clear map':'Load example'}</button><button class="btn" data-act="cancel">Cancel</button>`; }
+panel.addEventListener('click',e=>{ const it=e.target.closest('[data-tok]'); if(!it||e.target.closest('button')) return; const t=map.tokens.find(o=>o.id===it.dataset.tok); if(!t) return;
+  if(tool!=='select') setTool('select'); sel={type:'token',id:t.id}; const n=sizeOf(t).n; view.ox=cw/2-(t.x+n/2)*view.s; view.oy=ch/2-(t.y+n/2)*view.s; renderPanel(); draw(); });
+panel.addEventListener('input',e=>{ const id=e.target.id;
+  if(id==='tkName'){ cur.token.name=e.target.value; const hint=e.target.closest('.stack').querySelector('.hint b'); if(hint) hint.textContent=nextTokenName(cur.token.name); draw(); }
+  if(id==='edName'){ const o=findSel(); if(o){ if(!e.target.dataset.pushed){ pushUndo(); e.target.dataset.pushed=1; } o.name=e.target.value||'?'; autosave(); draw(); } }
+});
+panel.addEventListener('change',e=>{ const id=e.target.id, v=e.target.value;
+  if(id==='tkKind'){ cur.token.kind=v; if(v==='hero'&&cur.token.name==='Goblin'){ cur.token.name='Hero'; } renderPanel(); }
+  else if(id==='tkSize'){ cur.token.size=+v; }
+  else if(id==='edKind'||id==='edSize'){ const o=findSel(); if(o){ pushUndo(); if(id==='edKind') o.kind=v; else { o.size=+v; const n=sizeOf(o).n; o.x=clamp(o.x,0,map.w-n); o.y=clamp(o.y,0,map.h-n); } afterChange(); } }
+  else if(id==='edName'){ renderPanel(); }
+  else if(id==='optGrid'){ settings.grid=e.target.checked; autosave(); draw(); }
+  else if(id==='optNames'){ settings.names=e.target.checked; autosave(); draw(); }
+});
+
+/* top bar */
+$('mapName').addEventListener('change',e=>{ pushUndo(); map.name=e.target.value.trim()||'Untitled map'; afterChange(); });
+$('undoBtn').onclick=undo; $('redoBtn').onclick=redo;
+$('zoomIn').onclick=()=>zoomAt(cw/2,ch/2,1.25); $('zoomOut').onclick=()=>zoomAt(cw/2,ch/2,.8); $('fitBtn').onclick=fit;
+const fileBase=()=> (map.name||'battle-map').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase()||'battle-map';
+let dlPromise=null;
+function getDownloads(){ if(!dlPromise) dlPromise = (window.claude && window.claude.use) ? window.claude.use('downloads').catch(()=>null) : Promise.resolve(null); return dlPromise; }
+async function offer(filename,data,fallback){
+  const dl=await getDownloads();
+  if(!dl){ fallback(); return; }
+  try{ await dl.save({filename,data}); toast('Saved '+filename); }
+  catch(err){ const c=err&&err.code; if(c==='declined') toast('Save cancelled'); else if(c==='rate_limited') toast('A save prompt is already open'); else fallback(); }
+}
+$('exportBtn').onclick=()=>exportPNG();
+$('mapTabBtn').onclick=()=>setTool('file');
+function exportPNG(){
+  const s=settings.exportPx||100, c=document.createElement('canvas'); c.width=map.w*s; c.height=map.h*s; const x=c.getContext('2d');
+  drawScene(x,s,{export:true});
+  c.toBlob(blob=>{ offer(fileBase()+'.png',blob,()=>showImage(c.toDataURL('image/png'))); },'image/png');
+};
+// the file carries the map plus the display settings that affect how it looks
+const FILE_SETTINGS=['grid','names','diag','fogView','exportPx'];
+function saveToFile(){ const o=JSON.parse(serialize()); o.settings=Object.fromEntries(FILE_SETTINGS.map(k=>[k,settings[k]])); const data=JSON.stringify(o);
+  offer(fileBase()+'.flagstone.json',data,()=>{ try{ navigator.clipboard.writeText(data).then(()=>toast('Saving files isn’t available here — map JSON copied to clipboard'),()=>toast('Saving files isn’t available in this view')); }catch(e){ toast('Saving files isn’t available in this view'); } }); }
+$('fileIn').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f) openMapFile(f); };
+async function openMapFile(f){
+  try{ const o=JSON.parse(await f.text()); const snap=serialize(); loadMapObj(o); if(o.settings) for(const k of FILE_SETTINGS) if(k in o.settings) settings[k]=o.settings[k]; undoStack.push(snap); redoStack.length=0; sel=null; rebuildTerrain(); fit(); afterChange(true); toast('Opened '+map.name); }
+  catch(err){ toast('That file isn’t a Flagstone map (.json)'); } };
+function showImage(url){ const m=document.createElement('div'); m.className='modal';
+  m.innerHTML=`<div class="card"><div class="row" style="align-items:center"><strong style="font-family:var(--display);font-size:18px">Your map image</strong><button class="btn" style="flex:none">Close</button></div><p class="hint" style="margin:0">Right-click (or long-press) the image and choose “Save image”.</p><img alt="Exported battle map" src="${url}"></div>`;
+  m.addEventListener('click',e=>{ if(e.target===m||e.target.closest('button')) m.remove(); }); document.body.appendChild(m); }
+
+/* ---------- boot ---------- */
+function resize(){ const r=stage.getBoundingClientRect(); dpr=window.devicePixelRatio||1; const first=!cw; cw=r.width; ch=r.height; cv.width=Math.round(cw*dpr); cv.height=Math.round(ch*dpr); if(first) fit(); else draw(); }
+function boot(){
+  let loaded=false;
+  try{ const s=localStorage.getItem('flagstone.map'); if(s){ loadMapObj(JSON.parse(s)); loaded=true; } const st=localStorage.getItem('flagstone.settings'); if(st) Object.assign(settings,JSON.parse(st)); }catch(e){}
+  if(!loaded) map=sampleMap();
+  buildRail(); rebuildTerrain(); loadTextures(); setTool('select'); updateDims(); updateUndo(); libInit();
+  new ResizeObserver(resize).observe(stage); resize();
+  if(document.fonts) document.fonts.ready.then(draw);
+  getDownloads();
+}
+boot();
+})();
+</script>
