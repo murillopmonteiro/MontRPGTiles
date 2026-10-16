@@ -1,0 +1,1420 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Light Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --ground:#141217; --panel:#1d1a21; --panel2:#27232c; --panel3:#312c37;
+  --line:#3a3440; --text:#ece5d8; --muted:#a2998b; --faint:#6f6874;
+  --accent:#d4a24c; --accent-ink:#1b1408; --hb:#7fb08a;
+  --display:"Alegreya SC", "Palatino Linotype", Georgia, serif;
+  --body:"Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--ground);color:var(--text);font-family:var(--body);font-size:15px}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 270px;grid-template-rows:auto minmax(0,1fr)}
+.bar{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:.04em;color:var(--accent)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{background:transparent;border:1px solid transparent;border-radius:7px;padding:5px 11px;cursor:pointer;color:var(--muted)}
+.tab:hover{background:var(--panel2)}
+.tab[aria-selected=true]{background:var(--panel3);border-color:var(--line);color:var(--text)}
+.spacer{flex:1}
+.search{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:5px 10px;width:200px}
+.search:focus{outline:none;border-color:var(--accent)}
+main{overflow-y:auto;padding:14px}
+.grid{columns:340px;column-gap:14px}
+.card{break-inside:avoid;background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:0 0 14px;overflow:hidden}
+.card>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel2);font-family:var(--display);font-size:17px;font-weight:700;color:var(--accent)}
+.card>summary::-webkit-details-marker{display:none}
+.card>summary::before{content:"▸";font-size:12px;color:var(--faint);transition:transform .15s}
+.card[open]>summary::before{transform:rotate(90deg)}
+.hbtag{font-family:var(--body);font-size:11px;font-weight:700;color:var(--hb);border:1px solid var(--hb);border-radius:4px;padding:0 5px;margin-left:auto}
+.body{padding:8px 12px 12px;line-height:1.4}
+.body p{margin:.4em 0}
+.body b{color:var(--text)}
+.body ul{margin:.3em 0;padding-left:1.1em}
+.body h4{margin:.8em 0 .3em;font-family:var(--display);font-size:15px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:.4em 0}
+th,td{text-align:left;padding:3px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:13px}
+td:first-child,th:first-child{white-space:nowrap}
+.rollable th:first-child{padding:0}
+.rollbtn{width:100%;background:var(--accent);color:var(--accent-ink);border:0;border-radius:5px;padding:3px 8px;font-weight:700;cursor:pointer;font-family:var(--mono);font-size:12px}
+.rollbtn:hover{filter:brightness(1.1)}
+tr.hit td{background:color-mix(in srgb,var(--accent) 25%,transparent)}
+tr.hit td:first-child{box-shadow:inset 3px 0 var(--accent)}
+.nest{margin:.6em 0 0;padding:2px 0 2px 10px;border-left:2px solid var(--line);color:var(--muted);font-size:14px}
+.nest h4{margin:.2em 0;color:var(--faint);font-size:13px}
+.nest ul{margin:0}
+.lang{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.lang button{background:transparent;border:0;padding:5px 9px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:700}
+.lang button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+.genrow{display:flex;gap:6px;margin:.3em 0}
+.genrow select{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:4px 6px;color:var(--text)}
+.rollbtn.gen{width:auto;padding:4px 14px;font-family:var(--body);font-size:14px}
+.genout{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.genout:empty{display:none}
+.genout>div,.entry .res>div{border-left:2px solid var(--accent);padding-left:8px}
+.entry .res>div{margin-top:4px}
+.die{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.rollable th:last-child{position:relative;padding-right:30px}
+.sizebtn{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:24px;height:22px;background:var(--panel2);border:1px solid var(--line);border-radius:5px;cursor:pointer;color:var(--muted);font-size:13px;line-height:1}
+.sizebtn:hover{background:var(--panel3);color:var(--text)}
+.rollable.min tbody tr:not(.hit){display:none}
+.rollable tr.empty{display:none}
+.rollable.min tbody:not(:has(tr.hit)) tr.empty{display:table-row}
+tr.empty td{color:var(--faint);font-style:italic;border-bottom:0}
+.allbtn{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:5px 10px;cursor:pointer;color:var(--muted);font-size:13px;white-space:nowrap}
+.allbtn:hover{background:var(--panel3);color:var(--text)}
+.allbtn[hidden]{display:none}
+tr.group td{border-bottom:0;padding-top:6px}
+tr.sub td{padding-top:1px;padding-bottom:1px;font-size:13.5px;border-bottom:0}
+tr.sub:last-child td,tr.sub:has(+ tr:not(.sub)) td{border-bottom:1px solid var(--line);padding-bottom:4px}
+.subn{display:inline-block;width:22px;color:var(--muted);font-family:var(--mono);font-size:12px}
+.body table + table{margin-top:10px}
+.rollbtn.namegen{width:auto;padding:4px 14px;font-family:var(--body);font-size:14px}
+.names{columns:2;margin:.5em 0 0;padding-left:1.1em}
+.names:empty{display:none}
+.subtabs{margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.subtabs[hidden],.subtabs:empty{display:none}
+.card>summary .cardbtn{position:static;transform:none;margin-left:auto;flex:none}
+.card>summary .hbtag + .cardbtn{margin-left:6px}
+.desc{margin-top:3px;color:var(--muted);font-size:13px}
+.dice-inline{background:none;border:0;border-bottom:1px dashed var(--accent);padding:0;color:var(--accent);font:inherit;cursor:pointer;white-space:nowrap}
+.dice-inline:hover{background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.hidden{display:none!important}
+aside{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+aside h3{margin:0;padding:10px 12px 6px;font-family:var(--display);color:var(--accent);font-size:16px}
+.dice{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:0 12px}
+.dice button{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 0;cursor:pointer;font-family:var(--mono);font-size:13px}
+.dice button:hover{background:var(--panel3)}
+.expr{display:flex;gap:4px;padding:6px 12px}
+.expr input{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-family:var(--mono);font-size:13px}
+.expr button{background:var(--accent);color:var(--accent-ink);border:0;border-radius:6px;padding:4px 10px;font-weight:700;cursor:pointer}
+.log{flex:1;overflow-y:auto;padding:4px 12px 12px;display:flex;flex-direction:column;gap:6px}
+.entry{background:var(--panel2);border-radius:7px;padding:6px 8px;font-size:13px}
+.entry .what{color:var(--muted);font-size:12px}
+.entry .val{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--accent)}
+.entry .res{margin-top:2px}
+.clear{margin:0 12px 10px;background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px;cursor:pointer;color:var(--muted)}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr) 240px}
+  aside{border-left:0;border-top:1px solid var(--line)}
+  .search{width:100%}
+  main{padding:12px 16px}
+}
+</style>
+
+<div class="app">
+  <header class="bar">
+    <span class="brand">Light Screen</span>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+    <span class="spacer"></span>
+    <button class="allbtn" id="sizeAll"></button>
+    <input class="search" id="q" type="search" data-ui="search">
+    <div class="lang" id="lang"><button data-l="pt">PT</button><button data-l="en">EN</button></div>
+  </header>
+  <main><nav class="tabs subtabs" id="subtabs" role="tablist"></nav><div class="grid" id="grid"></div></main>
+  <aside>
+    <h3 data-ui="dice"></h3>
+    <div class="dice" id="dice"></div>
+    <form class="expr" id="exprf"><input id="expr" value="2d6+3" aria-label="Dice expression"><button data-ui="roll"></button></form>
+    <h3 data-ui="log"></h3>
+    <div class="log" id="log" aria-live="polite"></div>
+    <button class="clear" id="clear" data-ui="clear"></button>
+  </aside>
+</div>
+
+<script src="lightscreen-core.js"></script>
+<script>
+// Shared with Flagstone: dice, the table roller, treasure and dungeon-encounter tables.
+const {R, S, list, rnd, range, rollExpr, subOf, subDie, TREASURE, COINS, CRS, avgOf, fmt, DENC} = LS;
+/* ─── CONTENT ──────────────────────────────────────────────
+   Each screen = a tab. Each panel = a card.
+   Blocks: {html:"..."}  or  {table:{die:"d20", cols:[...], rows:[[range, ...], ...]}}
+   A table with `die` is rollable: first column holds ranges ("1", "2-4", "01-05", "96-00").
+   Set homebrew:true on a panel to tag it.
+   Bilingual: any text can be a plain string or {pt:"…", en:"…"}.
+─────────────────────────────────────────────────────────── */
+
+// Conditions as data (also the source for a future Roll20 macro).
+// `includes` = other conditions this one imposes; their rules are shown nested below.
+const CONDITIONS = [
+ {id:"blinded", name:{pt:"Cego",en:"Blinded"}, rules:{
+  pt:["Uma criatura cega falha automaticamente em qualquer teste de habilidade que requeira o uso da visão.",
+      "Jogadas de ataque contra a criatura possuem vantagem, e os ataques da criatura sofrem desvantagem."],
+  en:["A blinded creature can't see and automatically fails any ability check that requires sight.",
+      "Attack rolls against the creature have advantage, and the creature's attack rolls have disadvantage."]}},
+ {id:"charmed", name:{pt:"Enfeitiçado",en:"Charmed"}, rules:{
+  pt:["Uma criatura enfeitiçada não pode atacar quem a enfeitiçou ou tê-lo como alvo de habilidades ou efeitos mágicos nocivos.",
+      "Quem a enfeitiçou possui vantagem em testes de habilidade feitos para interagir socialmente com a criatura."],
+  en:["A charmed creature can't attack the charmer or target the charmer with harmful abilities or magical effects.",
+      "The charmer has advantage on any ability check to interact socially with the creature."]}},
+ {id:"deafened", name:{pt:"Surdo",en:"Deafened"}, rules:{
+  pt:["Uma criatura surda falha automaticamente em qualquer teste de habilidade que requeira o uso da audição."],
+  en:["A deafened creature can't hear and automatically fails any ability check that requires hearing."]}},
+ {id:"frightened", name:{pt:"Amedrontado",en:"Frightened"}, rules:{
+  pt:["Uma criatura amedrontada sofre desvantagem em testes de habilidade e jogadas de ataque enquanto a fonte do seu medo estiver em sua linha de visão.",
+      "A criatura não pode se mover voluntariamente para uma posição que a faça terminar o turno mais próxima da sua fonte de medo do que sua posição inicial."],
+  en:["A frightened creature has disadvantage on ability checks and attack rolls while the source of its fear is within line of sight.",
+      "The creature can't willingly move closer to the source of its fear."]}},
+ {id:"grappled", name:{pt:"Agarrado",en:"Grappled"}, rules:{
+  pt:["O deslocamento de uma criatura agarrada se torna 0, e ela não pode se beneficiar de qualquer bônus em seu deslocamento.",
+      "A condição encerra caso a criatura que a agarrou fique incapacitada (veja a condição).",
+      "A condição se encerra se um efeito, como o causado pela magia <i>onda trovejante</i>, remover a criatura agarrada do alcance da criatura que a agarrou ou do efeito que causa a condição."],
+  en:["A grappled creature's speed becomes 0, and it can't benefit from any bonus to its speed.",
+      "The condition ends if the grappler is incapacitated (see the condition).",
+      "The condition also ends if an effect removes the grappled creature from the reach of the grappler or grappling effect, such as when a creature is hurled away by the <i>thunderwave</i> spell."]}},
+ {id:"incapacitated", name:{pt:"Incapacitado",en:"Incapacitated"}, rules:{
+  pt:["Uma criatura incapacitada não pode realizar ações ou reações."],
+  en:["An incapacitated creature can't take actions or reactions."]}},
+ {id:"invisible", name:{pt:"Invisível",en:"Invisible"}, rules:{
+  pt:["Uma criatura invisível é impossível de ser vista sem a ajuda de magia ou sentidos especiais. Para o propósito de se esconder, a criatura é considerada em área de escuridão densa. A localização da criatura pode ser detectada por qualquer barulho que ela faça ou rastros que ela deixe.",
+      "Jogadas de ataque contra a criatura sofrem desvantagem, e os ataques da criatura possuem vantagem."],
+  en:["An invisible creature is impossible to see without the aid of magic or a special sense. For the purpose of hiding, the creature is heavily obscured. Its location can be detected by any noise it makes or any tracks it leaves.",
+      "Attack rolls against the creature have disadvantage, and the creature's attack rolls have advantage."]}},
+ {id:"paralyzed", name:{pt:"Paralisado",en:"Paralyzed"}, includes:["incapacitated"], rules:{
+  pt:["Uma criatura paralisada está incapacitada (veja a condição). Ela não pode se mover ou falar.",
+      "A criatura falha automaticamente em testes de resistência de Força e Destreza.",
+      "Jogadas de ataque contra a criatura possuem vantagem.",
+      "Qualquer ataque que atinja a criatura é um acerto crítico, se o atacante estiver a 1,5 metro dela."],
+  en:["A paralyzed creature is incapacitated (see the condition) and can't move or speak.",
+      "The creature automatically fails Strength and Dexterity saving throws.",
+      "Attack rolls against the creature have advantage.",
+      "Any attack that hits the creature is a critical hit if the attacker is within 5 feet of the creature."]}},
+ {id:"petrified", name:{pt:"Petrificado",en:"Petrified"}, includes:["incapacitated"], rules:{
+  pt:["Uma criatura petrificada está transformada, juntamente com todos os objetos não-mágicos que estiver vestindo ou carregando, em uma substância sólida e inanimada (geralmente pedra). Seu peso é multiplicado por dez, e ela para de envelhecer.",
+      "A criatura está incapacitada (veja a condição), não pode se mover ou falar, e não tem ciência de seus arredores.",
+      "Jogadas de ataque contra a criatura possuem vantagem.",
+      "A criatura falha automaticamente em testes de resistência de Força e Destreza.",
+      "A criatura tem resistência a todos os tipos de dano.",
+      "A criatura é imune a veneno e doenças, embora um veneno ou doença previamente presente em seu sistema seja apenas suspenso, não neutralizado."],
+  en:["A petrified creature is transformed, along with any nonmagical object it is wearing or carrying, into a solid inanimate substance (usually stone). Its weight increases by a factor of ten, and it ceases aging.",
+      "The creature is incapacitated (see the condition), can't move or speak, and is unaware of its surroundings.",
+      "Attack rolls against the creature have advantage.",
+      "The creature automatically fails Strength and Dexterity saving throws.",
+      "The creature has resistance to all damage.",
+      "The creature is immune to poison and disease, although a poison or disease already in its system is suspended, not neutralized."]}},
+ {id:"poisoned", name:{pt:"Envenenado",en:"Poisoned"}, rules:{
+  pt:["Uma criatura envenenada sofre desvantagem em jogadas de ataque e testes de habilidade."],
+  en:["A poisoned creature has disadvantage on attack rolls and ability checks."]}},
+ {id:"prone", name:{pt:"Caído",en:"Prone"}, rules:{
+  pt:["A única opção de movimento que uma criatura caída tem é rastejar, a menos que ela se levante, encerrando assim a condição.",
+      "A criatura sofre desvantagem nas jogadas de ataque.",
+      "Uma jogada de ataque contra a criatura possui vantagem se o atacante estiver a 1,5 metro dela. De qualquer outra forma a jogada sofre desvantagem."],
+  en:["A prone creature's only movement option is to crawl, unless it stands up and thereby ends the condition.",
+      "The creature has disadvantage on attack rolls.",
+      "An attack roll against the creature has advantage if the attacker is within 5 feet of the creature. Otherwise, the attack roll has disadvantage."]}},
+ {id:"restrained", name:{pt:"Impedido",en:"Restrained"}, rules:{
+  pt:["O deslocamento de uma criatura impedida se torna 0, e ela não pode se beneficiar de qualquer bônus em seu deslocamento.",
+      "Jogadas de ataque contra a criatura possuem vantagem, e os ataques da criatura sofrem desvantagem.",
+      "A criatura sofre desvantagem em testes de resistência de Destreza."],
+  en:["A restrained creature's speed becomes 0, and it can't benefit from any bonus to its speed.",
+      "Attack rolls against the creature have advantage, and the creature's attack rolls have disadvantage.",
+      "The creature has disadvantage on Dexterity saving throws."]}},
+ {id:"stunned", name:{pt:"Atordoado",en:"Stunned"}, includes:["incapacitated"], rules:{
+  pt:["Uma criatura atordoada está incapacitada (veja a condição). Ela não pode se mover e somente pode falar hesitantemente.",
+      "A criatura falha automaticamente em testes de resistência de Força ou Destreza.",
+      "Jogadas de ataque contra a criatura possuem vantagem."],
+  en:["A stunned creature is incapacitated (see the condition), can't move, and can speak only falteringly.",
+      "The creature automatically fails Strength and Dexterity saving throws.",
+      "Attack rolls against the creature have advantage."]}},
+ {id:"unconscious", name:{pt:"Inconsciente",en:"Unconscious"}, includes:["incapacitated","prone"], rules:{
+  pt:["Uma criatura inconsciente está incapacitada (veja a condição). Ela não pode se mover ou falar e não tem ciência de seus arredores.",
+      "A criatura larga tudo que estiver segurando e fica caída.",
+      "A criatura falha automaticamente em testes de resistência de Força ou Destreza.",
+      "Jogadas de ataque contra a criatura possuem vantagem.",
+      "Qualquer ataque que atinja a criatura é um acerto crítico, se o atacante estiver a 1,5 metro dela."],
+  en:["An unconscious creature is incapacitated (see the condition), can't move or speak, and is unaware of its surroundings.",
+      "The creature drops whatever it's holding and falls prone.",
+      "The creature automatically fails Strength and Dexterity saving throws.",
+      "Attack rolls against the creature have advantage.",
+      "Any attack that hits the creature is a critical hit if the attacker is within 5 feet of the creature."]}},
+];
+
+const conditionPanels = () => {
+  const ul = a => `<ul>${a.map(x => `<li>${x}</li>`).join("")}</ul>`;
+  const byId = Object.fromEntries(CONDITIONS.map(c => [c.id, c]));
+  const card = c => ({title:c.name, blocks:[{html:{
+    pt: ul(c.rules.pt) + (c.includes||[]).map(i => `<div class="nest"><h4>↳ ${byId[i].name.pt}</h4>${ul(byId[i].rules.pt)}</div>`).join(""),
+    en: ul(c.rules.en) + (c.includes||[]).map(i => `<div class="nest"><h4>↳ ${byId[i].name.en}</h4>${ul(byId[i].rules.en)}</div>`).join("")}}]});
+  const sorted = [...CONDITIONS].sort((a,b) => L(a.name).localeCompare(L(b.name), lang));
+  return [
+   {title:{pt:"Regras gerais",en:"General rules"}, blocks:[{html:{
+    pt:`<p>Condições alteram as capacidades de uma criatura das mais diversas maneiras e surgem como resultado de uma magia ou outro efeito. A maioria das condições, como cego, são prejudiciais, mas algumas poucas, como invisível, podem ser vantajosas.</p>
+        <p>Uma condição se encerra ao ser remediada (a condição caído é remediada levantando-se, por exemplo) ou de acordo com uma duração expressada no efeito que a impôs.</p>
+        <p>Se mais de um efeito impor a mesma condição a uma criatura, cada aplicação tem sua própria duração, porém os efeitos não se agravam. Ou a criatura tem a condição ou não.</p>`,
+    en:`<p>Conditions alter a creature's capabilities in a variety of ways and can arise as a result of a spell or other effect. Most conditions, such as blinded, are impairments, but a few, such as invisible, can be advantageous.</p>
+        <p>A condition lasts until it is countered (the prone condition is countered by standing up, for example) or for a duration specified by the effect that imposed it.</p>
+        <p>If multiple effects impose the same condition on a creature, each instance has its own duration, but the effects don't get worse. A creature either has a condition or doesn't.</p>`}}]},
+   ...sorted.map(card),
+   {title:{pt:"Exaustão",en:"Exhaustion"}, blocks:[
+    {html:{
+     pt:`<p>Algumas habilidades especiais e perigos ambientais, como fome e exposição prolongada a temperaturas congelantes ou escaldantes, podem impor uma condição especial chamada exaustão. A exaustão é medida em seis níveis. Um efeito pode fazer com que uma criatura sofra um ou mais níveis de exaustão, como especificado na descrição do efeito.</p>`,
+     en:`<p>Some special abilities and environmental hazards, such as starvation and the long-term effects of freezing or scorching temperatures, can lead to a special condition called exhaustion. Exhaustion is measured in six levels. An effect can give a creature one or more levels of exhaustion, as specified in the effect's description.</p>`}},
+    {table:{cols:[{pt:"Nível",en:"Level"},{pt:"Efeito",en:"Effect"}], rows:[
+     ["1",{pt:"Desvantagem em testes de habilidade",en:"Disadvantage on ability checks"}],
+     ["2",{pt:"Deslocamento reduzido à metade",en:"Speed halved"}],
+     ["3",{pt:"Desvantagem nas jogadas de ataque e testes de resistência",en:"Disadvantage on attack rolls and saving throws"}],
+     ["4",{pt:"Máximo de pontos de vida reduzido à metade",en:"Hit point maximum halved"}],
+     ["5",{pt:"Deslocamento reduzido a 0",en:"Speed reduced to 0"}],
+     ["6",{pt:"Morte",en:"Death"}]]}},
+    {html:{
+     pt:`<ul><li>Se uma criatura que já possui exaustão sofrer outro efeito que causa exaustão, seu nível aumenta na quantidade especificada pelo efeito.</li>
+         <li>Os efeitos são cumulativos: a criatura sofre o efeito do nível atual e de todos os anteriores (nível 2 = deslocamento à metade <b>e</b> desvantagem em testes de habilidade).</li>
+         <li>Um efeito que remova exaustão reduz seu nível; todos os efeitos desaparecem se o nível ficar abaixo de 1.</li>
+         <li>Terminar um descanso longo reduz a exaustão em 1 nível, contanto que a criatura tenha ingerido um pouco de água e comida.</li></ul>`,
+     en:`<ul><li>If an already exhausted creature suffers another effect that causes exhaustion, its level increases by the amount specified in the effect.</li>
+         <li>Effects are cumulative: the creature suffers its current level's effect and all lower levels (level 2 = speed halved <b>and</b> disadvantage on ability checks).</li>
+         <li>An effect that removes exhaustion reduces its level; all effects end if the level drops below 1.</li>
+         <li>Finishing a long rest reduces exhaustion by 1 level, provided the creature has also ingested some food and drink.</li></ul>`}}]},
+  ];
+};
+
+// Location-based adventures. Rows: [range, pt, en].
+const TWICE = {pt:"Role duas vezes, ignorando resultados iguais a 20.", en:"Roll twice, ignoring results of 20."};
+const ADV = {
+ dungeon:{id:"dungeon", die:"d20", twice:"20", title:{pt:"Objetivos na Masmorra",en:"Dungeon Goals"}, cols:["d20",{pt:"Objetivo",en:"Goal"}], rows:[...R([
+  ["1","Impedir os habitantes monstruosos da masmorra de atacar o mundo da superfície.","Stop the dungeon's monstrous inhabitants from raiding the surface world."],
+  ["2","Frustrar a trama de um vilão maligno.","Foil a villain's evil scheme."],
+  ["3","Destruir uma ameaça mágica dentro de uma masmorra.","Destroy a magical threat inside the dungeon."],
+  ["4","Adquirir tesouros.","Acquire treasure."],
+  ["5","Encontrar um item em particular para um propósito específico.","Find a particular item for a specific purpose."],
+  ["6","Recuperar um item roubado escondido em uma masmorra.","Retrieve a stolen item hidden in the dungeon."],
+  ["7","Encontrar informações necessárias para um propósito especial.","Find information needed for a special purpose."],
+  ["8","Resgatar um cativo.","Rescue a captive."],
+  ["9","Descobrir o destino de um antigo grupo de aventura.","Discover the fate of a previous adventuring party."],
+  ["10","Encontrar um NPC que desapareceu na área.","Find an NPC who disappeared in the area."],
+  ["11","Matar um dragão ou algum outro monstro desafiador.","Slay a dragon or some other challenging monster."],
+  ["12","Descobrir a natureza e origem de um local ou fenômeno estranho.","Discover the nature and origin of a strange location or phenomenon."],
+  ["13","Perseguir oponentes em fuga se abrigando na masmorra.","Pursue fleeing foes taking refuge in the dungeon."],
+  ["14","Escapar do cativeiro na masmorra.","Escape from captivity in the dungeon."],
+  ["15","Limpar uma ruína para que ela possa ser reconstruída e ocupada.","Clear a ruin so it can be rebuilt and reoccupied."],
+  ["16","Descobrir porque um vilão está interessado na masmorra.","Discover why a villain is interested in the dungeon."],
+  ["17","Vencer uma aposta ou completar um ritual de passagem ao sobreviver na masmorra por um certo tempo.","Win a bet or complete a rite of passage by surviving in the dungeon for a certain amount of time."],
+  ["18","Negociar com um vilão na masmorra.","Parley with a villain in the dungeon."],
+  ["19","Se esconder de uma ameaça fora da masmorra.","Hide from a threat outside the dungeon."]]), ["20",TWICE]]},
+ wild:{id:"wild", die:"d20", twice:"20", link:{"1":"dungeon"}, title:{pt:"Objetivos no Ambiente Selvagem",en:"Wilderness Goals"}, cols:["d20",{pt:"Objetivo",en:"Goal"}], rows:[...R([
+  ["1","Localizar uma masmorra ou outro local de interesse (role na tabela Objetivos na Masmorra para descobrir o porquê).","Locate a dungeon or other site of interest (roll on the Dungeon Goals table to find out why)."],
+  ["2","Avaliar o local de um desastre natural ou antinatural.","Assess the scope of a natural or unnatural disaster."],
+  ["3","Escoltar um NPC até um destino.","Escort an NPC to a destination."],
+  ["4","Chegar a um destino sem ser visto pelas forças do vilão.","Arrive at a destination without being seen by the villain's forces."],
+  ["5","Impedir monstros de assaltarem caravanas e fazendas.","Stop monsters from raiding caravans and farms."],
+  ["6","Estabelecer comércio com uma cidade distante.","Establish trade with a distant town."],
+  ["7","Proteger uma caravana viajando para uma cidade distante.","Protect a caravan traveling to a distant town."],
+  ["8","Mapear um novo território.","Map a new territory."],
+  ["9","Encontrar um local para estabelecer uma colônia.","Find a place to establish a colony."],
+  ["10","Encontrar um recurso natural.","Find a natural resource."],
+  ["11","Caçar um monstro específico.","Hunt a specific monster."],
+  ["12","Voltar para casa de um local distante.","Return home from a distant place."],
+  ["13","Obter informações sobre um eremita recluso.","Obtain information from a reclusive hermit."],
+  ["14","Encontrar um objeto que se perdeu na natureza.","Find an object that was lost in the wilds."],
+  ["15","Descobrir o destino de um grupo de exploração desaparecido.","Discover the fate of a missing group of explorers."],
+  ["16","Perseguir inimigos em fuga.","Pursue fleeing foes."],
+  ["17","Avaliar o tamanho de um exército que se aproxima.","Assess the size of an approaching army."],
+  ["18","Escapar do reino de um tirano.","Escape the reign of a tyrant."],
+  ["19","Proteger um local selvagem de atacantes.","Protect a wilderness site from attackers."]]), ["20",TWICE]]},
+ other:{id:"other", die:"d12", title:{pt:"Outros Objetivos",en:"Other Goals"}, cols:["d12",{pt:"Objetivo",en:"Goal"}], rows:R([
+  ["1","Tomar o controle de um local fortificado como uma fortaleza, cidade ou navio.","Seize control of a fortified location such as a fortress, town, or ship."],
+  ["2","Defender um local de atacantes.","Defend a location from attackers."],
+  ["3","Recuperar um objeto de dentro de um local seguro em um povoado.","Retrieve an object from inside a secure location in a settlement."],
+  ["4","Recuperar um objeto de uma caravana.","Retrieve an object from a caravan."],
+  ["5","Resgatar um objeto ou bens de uma embarcação ou caravana perdida.","Salvage an object or goods from a lost vessel or caravan."],
+  ["6","Libertar prisioneiros de uma cadeia ou prisão.","Break prisoners out of a jail or prison."],
+  ["7","Escapar de uma cadeia ou prisão.","Escape from a jail or prison."],
+  ["8","Viajar com sucesso através de um percurso com obstáculos para ganhar reconhecimento ou recompensa.","Successfully travel through an obstacle course to gain recognition or reward."],
+  ["9","Infiltrar-se em um local fortificado.","Infiltrate a fortified location."],
+  ["10","Encontrar a fonte de ocorrências estranhas em uma casa assombrada ou outro local.","Find the source of strange occurrences in a haunted house or other location."],
+  ["11","Interferir na operação de um negócio.","Interfere with the operation of a business."],
+  ["12","Resgatar um personagem, monstro ou objeto de um desastre natural ou antinatural.","Rescue a character, monster, or object from a natural or unnatural disaster."]])},
+ villain:{id:"villain", die:"d20", title:{pt:"Vilões da Aventura",en:"Adventure Villains"}, cols:["d20",{pt:"Vilão",en:"Villain"}], rows:R([
+  ["1","Besta ou monstruosidade sem motivações específicas","Beast or monstrosity with no particular agenda"],
+  ["2","Aberração propensa a corrupção ou dominação","Aberration bent on corruption or domination"],
+  ["3","Corruptor propenso a corrupção ou destruição","Fiend bent on corruption or destruction"],
+  ["4","Dragão propenso a dominação ou saque","Dragon bent on domination and plunder"],
+  ["5","Gigante propenso a saquear","Giant bent on plunder"],
+  ["6-7","Morto-vivo com qualquer motivação","Undead with any agenda"],
+  ["8","Fada com um objetivo misterioso","Fey with a mysterious goal"],
+  ["9-10","Humanoide cultista","Humanoid cultist"],
+  ["11-12","Humanoide conquistador","Humanoid conqueror"],
+  ["13","Humanoide buscando vingança","Humanoid seeking revenge"],
+  ["14-15","Humanoide conspirador buscando governar","Humanoid schemer seeking to rule"],
+  ["16","Humanoide mestre do crime","Humanoid criminal mastermind"],
+  ["17-18","Humanoide incursor ou devastador","Humanoid raider or ravager"],
+  ["19","Humanoide sob uma maldição","Humanoid under a curse"],
+  ["20","Humanoide fanático desorientado","Misguided humanoid zealot"]])},
+ ally:{id:"ally", die:"d12", title:{pt:"Aliados da Aventura",en:"Adventure Allies"}, cols:["d12",{pt:"Aliado",en:"Ally"}], rows:R([
+  ["1","Aventureiro hábil","Skilled adventurer"],["2","Aventureiro inexperiente","Inexperienced adventurer"],
+  ["3","Camponês entusiasta","Enthusiastic commoner"],["4","Soldado","Soldier"],["5","Sacerdote","Priest"],["6","Sábio","Sage"],
+  ["7","Buscador de vingança","Revenge seeker"],["8","Lunático delirante","Raving lunatic"],["9","Celestial aliado","Celestial ally"],
+  ["10","Fada aliada","Fey ally"],["11","Monstro disfarçado","Disguised monster"],["12","Vilão se passando por aliado","Villain posing as an ally"]])},
+ patron:{id:"patron", die:"d20", title:{pt:"Patronos da Aventura",en:"Adventure Patrons"}, cols:["d20",{pt:"Patrono",en:"Patron"}], rows:R([
+  ["1-2","Aventureiro aposentado","Retired adventurer"],["3-4","Governante local","Local ruler"],["5-6","Oficial militar","Military officer"],
+  ["7-8","Oficial de templo","Temple official"],["9-10","Sábio","Sage"],["11-12","Ancião respeitado","Respected elder"],
+  ["13","Divindade ou celestial","Deity or celestial"],["14","Pai ou outro membro da família","Parent or other family member"],
+  ["15","Antigo professor","Former teacher"],["16","Velho amigo","Old friend"],["17","Fada misteriosa","Mysterious fey"],
+  ["18","Mercador aguerrido","Hardened merchant"],["19","Camponês desesperado","Desperate commoner"],["20","Vilão se passando por patrono","Villain posing as a patron"]])},
+ intro:{id:"intro", die:"d12", title:{pt:"Introdução da Aventura",en:"Adventure Introduction"}, cols:["d12",{pt:"Introdução",en:"Introduction"}], rows:R([
+  ["1","Enquanto estiverem viajando pela natureza, os personagens caem num buraco que se abre sob seus pés, levando-os a um local de aventura.","While traveling in the wilderness, the characters fall into a sinkhole that opens beneath their feet, dropping them into the adventure location."],
+  ["2","Enquanto estiverem viajando pela natureza, os personagens percebem a entrada de um local de aventura.","While traveling in the wilderness, the characters notice the entrance to the adventure location."],
+  ["3","Enquanto estiverem viajando por uma estrada, os personagens são atacados por monstros que fogem para o local de aventura mais próximo.","While traveling on a road, the characters are attacked by monsters that flee into the nearest adventure location."],
+  ["4","Os aventureiros encontram um mapa em um cadáver. Além do mapa encontrado levar à aventura, o vilão da aventura deseja o mapa.","The adventurers find a map on a dead body. Besides leading to the adventure, the map is something the adventure's villain wants."],
+  ["5","Um item mágico misterioso ou um vilão cruel teletransporta os personagens para o local de aventura.","A mysterious magic item or a cruel villain teleports the characters to the adventure location."],
+  ["6","Um estranho se aproxima dos personagens em uma taverna e os instiga a ir para o local de aventura.","A stranger approaches the characters in a tavern and urges them to go to the adventure location."],
+  ["7","Uma cidade ou vila precisa de voluntários para ir ao local de aventura.","A town or village needs volunteers to go to the adventure location."],
+  ["8","Um NPC com quem os personagens se importam precisa deles para ir ao local de aventura.","An NPC the characters care about needs them to go to the adventure location."],
+  ["9","Um NPC que os personagens devem obedecer ordena-os a ir ao local de aventura.","An NPC the characters must obey orders them to go to the adventure location."],
+  ["10","Um NPC que os personagens respeitam pede que eles vão ao local de aventura.","An NPC the characters respect asks them to go to the adventure location."],
+  ["11","Uma noite, todos os personagens sonham com a entrada do local de aventura.","One night, all the characters dream about the entrance to the adventure location."],
+  ["12","Um fantasma aparece e aterroriza uma vila. Pesquisas revelam que ele só pode ter o descanso eterno entrando no local de aventura.","A ghost appears and terrorizes a village. Research reveals that it can only be laid to rest by entering the adventure location."]])},
+ climax:{id:"climax", die:"d12", title:{pt:"Clímax da Aventura",en:"Adventure Climax"}, cols:["d12",{pt:"Clímax",en:"Climax"}], rows:R([
+  ["1","Os aventureiros enfrentam o vilão principal e um grupo de lacaios em uma batalha sangrenta para a conclusão.","The adventurers confront the main villain and a group of minions in a bloody battle to the finish."],
+  ["2","Os aventureiros perseguem o vilão enquanto desviam de obstáculos colocados para impedi-los, levando ao confronto final dentro ou fora do refúgio do vilão.","The adventurers chase the villain while dodging obstacles placed to stop them, leading to a final confrontation in or outside the villain's refuge."],
+  ["3","As ações dos aventureiros ou do vilão resultam em um evento cataclísmico do qual os aventureiros devem escapar.","The actions of the adventurers or the villain result in a cataclysmic event that the adventurers must escape."],
+  ["4","Os aventureiros correm até o local onde o vilão está concluindo seu plano mestre, chegando exatamente no momento que o plano está prestes a se concluir.","The adventurers race to the site where the villain is finishing a master plan, arriving just as that plan is about to be completed."],
+  ["5","O vilão e dois ou três tenentes realizam rituais separados em um imenso salão. Os aventureiros devem impedir todos os rituais ao mesmo tempo.","The villain and two or three lieutenants perform separate rituals in a huge hall. The adventurers must disrupt all the rituals at the same time."],
+  ["6","Um aliado trai os aventureiros quando eles estão prestes a concluir seu objetivo. (Use esse clímax com cuidado e não abuse dele.)","An ally betrays the adventurers as they're about to achieve their goal. (Use this climax carefully, and don't overuse it.)"],
+  ["7","Um portal se abre para outro plano de existência. As criaturas do outro lado saem, forçando os aventureiros a fechar o portal e lidarem com o vilão ao mesmo tempo.","A portal opens to another plane of existence. Creatures on the other side pour out, forcing the adventurers to close the portal and deal with the villain at the same time."],
+  ["8","Armadilhas, perigos ou objetos animados se voltam contra os aventureiros enquanto o vilão principal ataca.","Traps, hazards, or animated objects turn against the adventurers while the main villain attacks."],
+  ["9","A masmorra começa a desmoronar enquanto os aventureiros enfrentam o vilão principal, que tenta escapar em meio ao caos.","The dungeon begins to collapse while the adventurers face the main villain, who tries to escape in the chaos."],
+  ["10","Uma ameaça mais poderosa que os aventureiros aparece, destrói o vilão principal e então volta suas atenções para os personagens.","A threat more powerful than the adventurers appears, destroys the main villain, and then turns its attention to the characters."],
+  ["11","Os aventureiros devem escolher se perseguem o vilão principal em fuga ou salvam um NPC com quem se importam ou um grupo de inocentes.","The adventurers must choose whether to pursue the fleeing main villain or save an NPC they care about or a group of innocents."],
+  ["12","Os aventureiros devem descobrir a fraqueza secreta do vilão principal antes de terem esperança de derrotá-lo.","The adventurers must discover the main villain's secret weakness before they can hope to defeat that villain."]])},
+ twist:{id:"twist", die:"d10", title:{pt:"Reviravoltas",en:"Twists"}, cols:["d10",{pt:"Reviravolta",en:"Twist"}],
+  note:{pt:"Uma reviravolta pode complicar uma história e tornar mais difícil para os personagens completarem seus objetivos.",
+        en:"A twist can complicate a story and make it harder for the characters to complete their goals."}, rows:R([
+  ["1","Os aventureiros estão correndo contra outras criaturas com o mesmo objetivo ou objetivo oposto.","The adventurers are racing against other creatures with the same or opposite goal."],
+  ["2","Os aventureiros tornam-se responsáveis pela segurança de um NPC não-combatente.","The adventurers become responsible for the safety of a noncombatant NPC."],
+  ["3","Os aventureiros são proibidos de matar o vilão, mas o vilão não terá remorso de matá-los.","The adventurers are forbidden to kill the villain, but the villain has no qualms about killing them."],
+  ["4","Os aventureiros têm um tempo limite.","The adventurers have a time limit."],
+  ["5","Os aventureiros receberam informações falsas ou estranhas.","The adventurers have received false or misleading information."],
+  ["6","Concluir o objetivo de uma aventura completa uma profecia ou impede o cumprimento de uma profecia.","Completing the adventure's goal fulfills a prophecy or prevents a prophecy from being fulfilled."],
+  ["7","Os aventureiros têm dois objetivos diferentes, mas só podem completar um.","The adventurers have two different goals, but can complete only one."],
+  ["8","Completar o objetivo secretamente ajuda o vilão.","Completing the goal secretly helps the villain."],
+  ["9","Os aventureiros devem cooperar com um inimigo conhecido para alcançar o objetivo.","The adventurers must cooperate with a known enemy to achieve the goal."],
+  ["10","Os aventureiros estão sob compulsão mágica (como pela magia <i>missão</i>) para completar seu objetivo.","The adventurers are under a magical compulsion (such as a <i>geas</i> spell) to complete their goal."]])},
+ events:{id:"events", die:"d100", twice:"99-00", title:{pt:"Eventos Fechados",en:"Framing Events"}, cols:["d100",{pt:"Evento",en:"Event"}], rows:[...R([
+  ["01-02","Aniversário de reinado de um monarca","Anniversary of a monarch's reign"],
+  ["03-04","Aniversário de um evento importante","Anniversary of an important event"],
+  ["05-06","Evento de arena","Arena event"],
+  ["07-08","Chegada de uma caravana ou navio","Arrival of a caravan or ship"],
+  ["09-10","Chegada de um circo","Arrival of a circus"],
+  ["11-12","Chegada de um NPC importante","Arrival of an important NPC"],
+  ["13-14","Chegada de uma marcha de modrons","Arrival of marching modrons"],
+  ["15-16","Atuação artística","Artistic performance"],
+  ["17-18","Evento de atletismo","Athletic event"],
+  ["19-20","Nascimento de uma criança","Birth of a child"],
+  ["21-22","Aniversário de um NPC importante","Birthday of an important NPC"],
+  ["23-24","Festival cívico","Civic festival"],
+  ["25-26","Aparição de um cometa","Appearance of a comet"],
+  ["27-28","Comemoração de uma tragédia passada","Commemoration of a past tragedy"],
+  ["29-30","Consagração de um novo templo","Consecration of a new temple"],
+  ["31-32","Coroação","Coronation"],
+  ["33-34","Reunião do conselho","Council meeting"],
+  ["35-36","Equinócio ou solstício","Equinox or solstice"],
+  ["37-38","Execução","Execution"],
+  ["39-40","Festival da fertilidade","Fertility festival"],
+  ["41-42","Lua cheia","Full moon"],
+  ["43-44","Funeral","Funeral"],
+  ["45-46","Graduação de cadetes ou magos","Graduation of cadets or wizards"],
+  ["47-48","Festival da colheita","Harvest festival"],
+  ["49-50","Dia sagrado","Holy day"],
+  ["51-52","Posse de um cavaleiro ou outro nobre","Investiture of a knight or other noble"],
+  ["53-54","Eclipse lunar","Lunar eclipse"],
+  ["55-58","Festival de verão","Midsummer festival"],
+  ["59-60","Festival de inverno","Midwinter festival"],
+  ["61-62","Migração de monstros","Migration of monsters"],
+  ["63-64","Baile do monarca","Monarch's ball"],
+  ["65-66","Lua nova","New moon"],
+  ["67-68","Ano novo","New year"],
+  ["69-70","Perdão de um prisioneiro","Pardoning of a prisoner"],
+  ["71-72","Conjunção planar","Planar conjunction"],
+  ["73-74","Alinhamento planetário","Planetary alignment"],
+  ["75-76","Posse sacerdotal","Priestly investiture"],
+  ["77-78","Procissão de fantasmas","Procession of ghosts"],
+  ["79-80","Recordação de soldados mortos em batalha","Remembrance of soldiers fallen in battle"],
+  ["81-82","Proclamação real","Royal proclamation"],
+  ["83-84","Dia de audiência real","Royal audience day"],
+  ["85-86","Assinatura de um tratado","Signing of a treaty"],
+  ["87-88","Eclipse solar","Solar eclipse"],
+  ["89-91","Torneio","Tournament"],
+  ["92-94","Julgamento","Trial"],
+  ["95-96","Insurreição violenta","Violent uprising"],
+  ["97-98","Casamento ou aniversário de casamento","Wedding or wedding anniversary"]]),
+  ["99-00",{pt:"Concorrência de dois eventos (role duas vezes, ignorando resultados 99–00)",en:"Two events coincide (roll twice, ignoring results of 99–00)"}]]},
+};
+// NPC & villain tables. Sub-table rows: S(range, pt, en, [[range, pt, en], ...]).
+const ideal = (id, pt, en, a, b) => ({id, die:"d6", title:{pt:"Ideal "+pt,en:en+" Ideal"}, cols:["d6",{pt:"Ideal "+pt,en:en}], rows:R(list(a, b))});
+// Race groups: common 85%, monstrous 10%, exotic 5%; then an even roll inside the group.
+const RACE_GROUPS = [
+ ["01-85",{pt:"Comum",en:"Common"},[["Draconato","Dragonborn"],["Anão","Dwarf"],["Elfo","Elf"],["Gnomo","Gnome"],["Meio-Elfo","Half-Elf"],
+   ["Meio-Orc","Half-Orc"],["Halfling","Halfling"],["Humano","Human"],["Tiefling","Tiefling"]]],
+ ["86-95",{pt:"Monstruosa",en:"Monstrous"},[["Bugbear","Bugbear"],["Centauro","Centaur"],["Goblin","Goblin"],["Grung","Grung"],["Hobgoblin","Hobgoblin"],
+   ["Kobold","Kobold"],["Povo-Lagarto","Lizardfolk"],["Minotauro","Minotaur"],["Orc","Orc"],["Metamorfo","Shifter"],["Yuan-Ti","Yuan-Ti"]]],
+ ["96-00",{pt:"Exótica",en:"Exotic"},[["Aarakocra","Aarakocra"],["Aasimar","Aasimar"],["Changeling","Changeling"],["Gnomo das Profundezas","Deep Gnome"],
+   ["Duergar","Duergar"],["Eladrin","Eladrin"],["Fada","Fairy"],["Firbolg","Firbolg"],["Genasi (Ar)","Genasi (Air)"],["Genasi (Terra)","Genasi (Earth)"],
+   ["Genasi (Fogo)","Genasi (Fire)"],["Genasi (Água)","Genasi (Water)"],["Githyanki","Githyanki"],["Githzerai","Githzerai"],["Golias","Goliath"],
+   ["Harengon","Harengon"],["Kenku","Kenku"],["Locathah","Locathah"],["Owlin","Owlin"],["Sátiro","Satyr"],["Elfo do Mar","Sea Elf"],
+   ["Shadar-Kai","Shadar-Kai"],["Tabaxi","Tabaxi"],["Tortle","Tortle"],["Tritão","Triton"],["Verdan","Verdan"]]],
+];
+
+// Name generator: prefix + suffix syllables per style, by gender (m/f), plus optional surname (s).
+const SYL = {
+ human:{m:[["Al","Bran","Cor","Ed","Gar","Hal","Jor","Mar","Ror","Ste","Tom","Wil","Ar","Dun","Os","Ben"],["ric","an","win","mund","fred","ton","bert","ard","en","os","wald","ias"]],
+  f:[["Ad","Bri","Cas","El","Gwen","Is","Li","Mar","Ros","Sel","Tes","Vi","An","Mir","Hel","Cat"],["a","elle","wyn","ina","eth","ara","ine","ys","ora","issa","ena","ia"]],
+  s:[["Ash","Black","Brook","Dun","Gold","Hart","Iron","Marsh","Oak","Stone","Thorn","Wood","Fair","Hill","Red","Grey"],["ford","wood","well","ley","more","by","ridge","son","field","wick","wright","worth"]]},
+ elf:{m:[["Aer","Cael","Eli","Gal","Ival","Lae","Rol","Thal","Var","Fae","Ere","Sil","Ad","Ama","Hal","Py"],["ian","ion","adar","uil","or","andil","ithil","ar","ren","iel","anor","dris"]],
+  f:[["Ad","Bet","Cael","Dru","Ena","Lia","Mial","Nae","Sha","Tha","Val","Ara","Kei","Sa","Il","Que"],["rie","rynna","ia","lia","wyn","ndra","nna","thi","viel","sari","enne","lith"]],
+  s:[["Ama","Gala","Holi","Lia","Mel","Nai","Sian","Xilo","Ilph","Thea","Sil","Aelo"],["kiir","nodel","mion","drel","amne","lo","thar","phine","rien","weth","ndil","quessir"]]},
+ dwarf:{m:[["Bal","Bor","Dor","Dur","Gim","Har","Kor","Thor","Ulf","Brom","Grun","Mor","Tor","Ad","Fal","Ran"],["in","ak","grim","dek","rik","nar","ur","bur","gar","din","li","tor"]],
+  f:[["Bar","Dag","Eld","Gun","Hel","Kat","Ris","Tor","Vis","Ama","Bru","Fin","Il","Ol","Sann","Hlin"],["dis","rid","hild","wyn","ra","a","ja","ga","bera","gret","lin","dra"]],
+  s:[["Battle","Fire","Gold","Iron","Stone","Hammer","Deep","Granite","Rock","Ale","Coal","Bronze"],["forge","beard","hammer","fist","helm","delver","shield","mantle","heart","brow","anvil","axe"]]},
+ halfling:{m:[["Al","Cad","Eld","Gar","Lin","Mer","Os","Per","Ros","Wel","Mil","Fin","Cor","Bil","Tob","Wil"],["ton","dic","don","ret","do","ric","born","by","bo","an","ly","o"]],
+  f:[["And","Bree","Cal","Ky","Lav","Mer","Ner","Ver","Sera","Pol","Ros","Lid","Daisy","Mae","Tan","Wen"],["ry","lie","ri","inia","la","ly","ie","ella","a","bell","sy","na"]],
+  s:[["Brush","Good","High","Hill","Leaf","Tea","Thorn","Under","Green","Tall","Apple","Honey"],["gather","barrel","hill","topple","leaf","bough","foot","bottle","dale","brook","meadow","pot"]]},
+ gnome:{m:[["Al","Bod","Bur","Dim","Eld","Fon","Glim","Orr","Zook","Wren","Fizz","Nim","Bim","Jeb","Kel","Quil"],["ston","dynock","gell","ble","wick","kin","bo","nock","bin","ver","dle","pip"]],
+  f:[["Bimp","Bree","Carl","Don","Ella","Lil","Nis","Ny","Orla","Roy","Tana","Zan","Wil","Pip","Quee","Tri"],["nella","ena","lin","yx","bi","ywin","na","ella","ka","ble","sy","ni"]],
+  s:[["Beren","Daer","Fol","Gar","Nack","Mur","Oren","Tur","Tink","Spark","Cog","Whistle"],["gos","ble","kin","rick","le","wick","wizzle","ter","nozzle","spring","gear","top"]]},
+ dragonborn:{m:[["Ar","Bal","Bhar","Don","Ghe","Hes","Kri","Med","Ner","Pan","Rho","Tor","Vor","Zar","Kal","Sha"],["jhan","asar","ash","aar","esh","kian","rash","inn","ax","oth","gar","uun"]],
+  f:[["Ak","Bir","Dar","Far","Har","Hav","Jhe","Kava","Kor","Mis","Nal","Sor","Thav","Uad","Zof","Vey"],["ra","ann","aa","ideh","ilar","ri","ira","ess","atha","ys","ura","ivi"]],
+  s:[["Kep","Ker","Myas","Nem","Dra","Fen","Ophin","Yarj","Ther","Vor","Kim","Dal"],["esk","rhyl","tan","mon","ix","shal","ken","ith","an","ux","ijir","mor"]]},
+ tiefling:{m:[["Ak","Am","Bar","Dam","Ek","Ia","Kai","Leu","Mor","Pel","Ska","Mal","Zer","Vel","Xan","Ruk"],["menos","non","akas","akos","emon","dos","rion","mos","thus","zar","ias","ek"]],
+  f:[["Akt","Ana","Bry","Cri","Dam","Ea","Kal","Ler","Mak","Ner","Or","Rie","Ves","Zai","Lil","Sei"],["a","kis","seis","ella","aia","ithia","issa","eth","ara","zia","ne","ys"]]},
+ orc:{m:[["Dur","Gor","Grak","Hruk","Kar","Mog","Ruk","Thar","Ug","Zug","Brak","Gash","Krag","Nar","Rog","Vrok"],["ash","nak","uk","rog","gar","dush","mak","oth","ul","grim","tar","ok"]],
+  f:[["Bag","Em","Eng","Kan","Myev","Ov","Shau","Sut","Vol","Yev","Gra","Ush","Ara","Murz","Tola","Zhar"],["a","ga","ha","ra","ka","tha","ya","gra","sha","ena","ul","ri"]]},
+ goblin:{m:[["Snik","Grib","Nub","Zat","Klik","Murk","Fizz","Skab","Dreb","Yik","Pog","Rax","Twig","Mok"],["ik","nob","sy","gle","snag","rat","bit","zz","ek","git","nik","wort"]],
+  f:[["Snik","Grib","Nub","Zat","Klik","Murk","Fizz","Skab","Dreb","Yik","Pog","Rax","Twig","Mok"],["ika","bi","sy","gle","ya","zee","ni","ra","et","ka","li","wi"]]},
+ bird:{m:[["Kee","Ruk","Aer","Quil","Trek","Shri","Kir","Ozz","Ka","Tik","Vree","Hoo"],["ra","ik","ree","ak","ii","sha","rak","kek","tt","oo","isk","aak"]],
+  f:[["Kee","Ruk","Aer","Quil","Trek","Shri","Kir","Ozz","Ka","Tik","Vree","Hoo"],["ra","ia","ree","ka","ii","sha","eel","wee","ri","oo","ssa","ae"]]},
+};
+const NAME_STYLE = {Human:"human", Changeling:"human", Shifter:"human", Aasimar:"human", Centaur:"human", Tabaxi:"human",
+ "Genasi (Air)":"human","Genasi (Earth)":"human","Genasi (Fire)":"human","Genasi (Water)":"human",
+ Elf:"elf", Eladrin:"elf", "Sea Elf":"elf", "Shadar-Kai":"elf", Fairy:"elf", Firbolg:"elf", Satyr:"elf",
+ Dwarf:"dwarf", Duergar:"dwarf", Goliath:"dwarf", Halfling:"halfling", Harengon:"halfling",
+ Gnome:"gnome", "Deep Gnome":"gnome", Dragonborn:"dragonborn", Lizardfolk:"dragonborn", "Yuan-Ti":"dragonborn",
+ Tortle:"dragonborn", Locathah:"dragonborn", Triton:"dragonborn", Tiefling:"tiefling", Githyanki:"tiefling", Githzerai:"tiefling",
+ "Half-Orc":"orc", Orc:"orc", Bugbear:"orc", Hobgoblin:"orc", Minotaur:"orc",
+ Goblin:"goblin", Kobold:"goblin", Grung:"goblin", Verdan:"goblin", Aarakocra:"bird", Kenku:"bird", Owlin:"bird"};
+const RACES = RACE_GROUPS.flatMap(g => g[2]);   // [pt, en]
+const any = a => a[rnd(a.length) - 1];
+// gender: "m" | "f" | "o" (other picks either pool)
+function makeName(raceEn, gender){
+  let style = raceEn === "Half-Elf" ? any(["human","elf"]) : NAME_STYLE[raceEn] || "human";
+  const S = SYL[style], g = gender === "o" ? any(["m","f"]) : gender;
+  const part = ([a,b]) => any(a) + any(b);
+  return part(S[g]) + (S.s ? " " + part(S.s) : "");
+}
+
+const NPC = {
+ race:{id:"race", die:"d100", title:{pt:"Raça do NPC",en:"NPC Race"}, cols:["d100",{pt:"Raça",en:"Race"}],
+  rows:RACE_GROUPS.map(([r,g,list]) => [r, g, list.map(([pt,en],i) => [String(i+1), {pt,en}])])},
+ gender:{id:"gender", die:"d200", title:{pt:"Gênero do NPC",en:"NPC Gender"}, cols:["d200",{pt:"Gênero",en:"Gender"}], rows:R([
+  ["1-99","Masculino","Male"],["100-198","Feminino","Female"],["199-200","Outro","Other"]])},
+ appearance:{id:"appearance", die:"d20", title:{pt:"Aparência do NPC",en:"NPC Appearance"}, cols:["d20",{pt:"Característica",en:"Feature"}], rows:R([
+  ["1","Joia chamativa: brincos, colar, pulseira, braceletes","Distinctive jewelry: earrings, necklace, circlet, bracelets"],
+  ["2","Piercings","Piercings"],["3","Roupas extravagantes ou estrangeiras","Flamboyant or outlandish clothes"],
+  ["4","Roupas formais e limpas","Formal, clean clothes"],["5","Roupas rasgadas e sujas","Ragged, dirty clothes"],
+  ["6","Cicatriz notória","Pronounced scar"],["7","Dente faltando","Missing teeth"],["8","Dedos faltando","Missing fingers"],
+  ["9","Cor de olho incomum (ou duas cores diferentes)","Unusual eye color (or two different colors)"],["10","Tatuagens","Tattoos"],
+  ["11","Marca de nascença","Birthmark"],["12","Cor de pele incomum","Unusual skin color"],["13","Careca","Bald"],
+  ["14","Barba ou cabelo trançado","Braided beard or hair"],["15","Cor de cabelo incomum","Unusual hair color"],
+  ["16","Movimento de olhos nervoso","Nervous eye twitch"],["17","Nariz distinto","Distinctive nose"],
+  ["18","Postura distinta (torta ou rígida)","Distinctive posture (crooked or rigid)"],
+  ["19","Excepcionalmente belo","Exceptionally beautiful"],["20","Excepcionalmente feio","Exceptionally ugly"]])},
+ high:{id:"high", die:"d6", title:{pt:"Habilidade Alta",en:"High Ability"}, cols:["d6",{pt:"Habilidade Alta",en:"High Ability"}], rows:R(list(
+  ["Força – poderoso, musculoso, forte como um touro","Destreza – esbelto, ágil, gracioso","Constituição – resistente, robusto, sadio",
+   "Inteligência – estudioso, escolado, curioso","Sabedoria – perceptivo, espiritualizado, intuitivo","Carisma – persuasivo, convincente, líder natural"],
+  ["Strength – powerful, brawny, strong as an ox","Dexterity – lithe, agile, graceful","Constitution – hardy, hale, healthy",
+   "Intelligence – studious, learned, inquisitive","Wisdom – perceptive, spiritual, insightful","Charisma – persuasive, forceful, born leader"]))},
+ low:{id:"low", die:"d6", title:{pt:"Habilidade Baixa",en:"Low Ability"}, cols:["d6",{pt:"Habilidade Baixa",en:"Low Ability"}], rows:R(list(
+  ["Força – fraco, magrelo","Destreza – desajeitado, desastrado","Constituição – doentio, pálido",
+   "Inteligência – estúpido, lento","Sabedoria – esquecido, distraído","Carisma – enfadonho, chato"],
+  ["Strength – feeble, scrawny","Dexterity – clumsy, fumbling","Constitution – sickly, pale",
+   "Intelligence – dim-witted, slow","Wisdom – oblivious, absentminded","Charisma – dull, boring"]))},
+ talent:{id:"talent", die:"d20", title:{pt:"Dons do NPC",en:"NPC Talents"}, cols:["d20",{pt:"Dom",en:"Talent"}], rows:R(list(
+  ["Toca um instrumento musical","Fala diversos idiomas fluentemente","Inacreditavelmente sortudo","Memória perfeita","Bom com animais",
+   "Bom com crianças","Bom em resolver enigmas","Bom em um jogo","Bom em imitação","Desenha lindamente","Pinta lindamente","Canta lindamente",
+   "Bebe todos para debaixo da mesa","Carpinteiro especialista","Cozinheiro especialista","Especialista em arremessar dardos e fazer pedras saltarem",
+   "Malabarista especialista","Ator e mestre dos disfarces perito","Dançarino experiente","Conhece gírias de ladrão"],
+  ["Plays a musical instrument","Speaks several languages fluently","Unbelievably lucky","Perfect memory","Great with animals",
+   "Great with children","Great at solving puzzles","Great at one game","Great at impersonations","Draws beautifully","Paints beautifully","Sings beautifully",
+   "Drinks everyone under the table","Expert carpenter","Expert cook","Expert dart thrower and rock skipper",
+   "Expert juggler","Skilled actor and master of disguise","Skilled dancer","Knows thieves' cant"]))},
+ mannerism:{id:"mannerism", die:"d20", title:{pt:"Maneirismos do NPC",en:"NPC Mannerisms"}, cols:["d20",{pt:"Maneirismo",en:"Mannerism"}], rows:R(list(
+  ["Inclinado a cantar, assobiar ou resmungar rapidamente","Fala em rimas ou de alguma outra forma peculiar","Voz particularmente baixa ou alta",
+   "Pronuncia palavras de forma incompreensível, balbucia ou gagueja","Fala excessivamente clara","Fala gritando","Sussurros",
+   "Fala de forma rebuscada ou com palavras longas","Usa palavras erradas com frequência","Usa injúrias e exclamações",
+   "Faz piadas e trocadilhos constantemente","Inclinado a previsões dramáticas","Impaciente","Vesgo","Olhar distante","Masca alguma coisa",
+   "Paciente","Estala os dedos","Rói as unhas","Enrola os cabelos ou puxa a barba"],
+  ["Prone to singing, whistling, or humming quickly","Speaks in rhyme or some other peculiar way","Particularly low or high voice",
+   "Slurs words, mumbles, or stutters","Enunciates overly clearly","Speaks loudly","Whispers",
+   "Uses flowery speech or long words","Frequently uses the wrong word","Uses colorful oaths and exclamations",
+   "Makes constant jokes or puns","Prone to dramatic predictions","Impatient","Cross-eyed","Stares into the distance","Chews something",
+   "Patient","Cracks knuckles","Bites fingernails","Twirls hair or tugs beard"]))},
+ trait:{id:"trait", die:"d12", title:{pt:"Traços de Interação do NPC",en:"NPC Interaction Traits"}, cols:["d12",{pt:"Traço",en:"Trait"}], rows:R(list(
+  ["Argumentativo","Arrogante","Barulhento","Rude","Curioso","Amigável","Honesto","Esquentado","Irritadiço","Ponderado","Quieto","Desconfiado"],
+  ["Argumentative","Arrogant","Blustering","Rude","Curious","Friendly","Honest","Hot-tempered","Irritable","Ponderous","Quiet","Suspicious"]))},
+ ideal_good:ideal("ideal_good","Bom","Good",["Beleza","Caridade","Bem maior","Vida","Respeito","Autossacrifício"],["Beauty","Charity","Greater good","Life","Respect","Self-sacrifice"]),
+ ideal_evil:ideal("ideal_evil","Mau","Evil",["Dominação","Ganância","Força","Dor","Retribuição","Matança"],["Domination","Greed","Might","Pain","Retribution","Slaughter"]),
+ ideal_lawful:ideal("ideal_lawful","Leal","Lawful",["Comunidade","Justiça","Honra","Lógica","Responsabilidade","Tradição"],["Community","Fairness","Honor","Logic","Responsibility","Tradition"]),
+ ideal_chaotic:ideal("ideal_chaotic","Caótico","Chaotic",["Mudança","Criatividade","Liberdade","Independência","Sem limites","Extravagância"],["Change","Creativity","Freedom","Independence","No limits","Whimsy"]),
+ ideal_neutral:ideal("ideal_neutral","Neutro","Neutral",["Equilíbrio","Conhecimento","Viva e deixe viver","Moderação","Neutralidade","Povo"],["Balance","Knowledge","Live and let live","Moderation","Neutrality","People"]),
+ ideal_other:{...ideal("ideal_other","","",["Aspiração","Descoberta","Glória","Nação","Redenção","Autoconhecimento"],["Aspiration","Discovery","Glory","Nation","Redemption","Self-knowledge"]),
+  title:{pt:"Outros Ideais",en:"Other Ideals"}, cols:["d6",{pt:"Outros Ideais",en:"Other Ideals"}]},
+ bond:{id:"bond", die:"d10", twice:"10", title:{pt:"Vínculos do NPC",en:"NPC Bonds"}, cols:["d10",{pt:"Vínculo",en:"Bond"}], rows:R(list(
+  ["Dedicado a completar um objetivo de vida pessoal","Protege membros próximos da família","Protege colegas ou compatriotas",
+   "Leal a um benfeitor, patrono ou empregador","Cativado por um interesse romântico","Atraído por um local especial",
+   "Protege uma lembrança especial","Protege um bem valioso","Em busca de vingança","Role duas vezes, ignorando resultados iguais a 10"],
+  ["Dedicated to fulfilling a personal life goal","Protective of close family members","Protective of colleagues or compatriots",
+   "Loyal to a benefactor, patron, or employer","Captivated by a romantic interest","Drawn to a special place",
+   "Protective of a sentimental keepsake","Protective of a valuable possession","Out for revenge","Roll twice, ignoring results of 10"]))},
+ flaw:{id:"flaw", die:"d12", title:{pt:"Defeitos e Segredos do NPC",en:"NPC Flaws and Secrets"}, cols:["d12",{pt:"Defeito ou Segredo",en:"Flaw or Secret"}], rows:R(list(
+  ["Amor perdido ou suscetível a se apaixonar","Gosta de prazeres escusos","Arrogante","Inveja as posses ou posto de outra criatura",
+   "Ganância desenfreada","Inclinado a se enfurecer","Tem um inimigo poderoso","Fobia específica","História vergonhosa ou escandalosa",
+   "Crime ou delito secreto","Possui conhecimento proibido","Bravura imprudente"],
+  ["Lost love or prone to falling in love","Enjoys shady pleasures","Arrogant","Envies another creature's possessions or station",
+   "Overpowering greed","Prone to rage","Has a powerful enemy","Specific phobia","Shameful or scandalous history",
+   "Secret crime or misdeed","Possesses forbidden lore","Foolhardy bravery"]))},
+ scheme:{id:"scheme", die:"d8", title:{pt:"Trama do Vilão",en:"Villain's Scheme"}, cols:["d8",{pt:"Objetivo e Trama",en:"Objective and Scheme"}], rows:[
+  S("1","Imortalidade","Immortality",[["1","Adquirir um item lendário para prolongar a vida","Acquire a legendary item to prolong life"],["2","Ascender à divindade","Ascend to godhood"],["3","Tornar-se um morto-vivo ou obter um corpo mais jovem","Become undead or obtain a younger body"],["4","Roubar a essência de uma criatura planar","Steal a planar creature's essence"]]),
+  S("2","Influência","Influence",[["1","Adquirir uma posição de poder ou título","Seize a position of power or title"],["2","Vencer uma disputa ou torneio","Win a contest or tournament"],["3","Ganhar o favor de um indivíduo poderoso","Win favor with a powerful individual"],["4","Colocar um peão em uma posição de poder","Place a pawn in a position of power"]]),
+  S("3","Magia","Magic",[["1","Obter um artefato antigo","Obtain an ancient artifact"],["2","Construir um edifício ou dispositivo mágico","Build a construct or magical device"],["3","Executar os desejos de uma divindade","Carry out a deity's wishes"],["4","Oferecer sacrifícios para uma divindade","Offer sacrifices to a deity"],["5","Contatar uma divindade ou poder perdido","Contact a lost deity or power"],["6","Abrir um portal para outro mundo","Open a gate to another world"]]),
+  S("4","Desordem","Mayhem",[["1","Cumprir uma profecia apocalíptica","Fulfill an apocalyptic prophecy"],["2","Decretar a vontade vingativa de um deus ou patrono","Enact the vengeful will of a god or patron"],["3","Espalhar uma praga maligna","Spread a vile contagion"],["4","Destronar um governante","Overthrow a ruler"],["5","Desencadear um desastre natural","Trigger a natural disaster"],["6","Destruir totalmente uma linhagem ou clã","Utterly destroy a bloodline or clan"]]),
+  S("5","Paixão","Passion",[["1","Prolongar a vida de um ente querido","Prolong the life of a loved one"],["2","Mostrar-se merecedor do amor de outra pessoa","Prove worthy of another person's love"],["3","Reanimar ou reviver um ente querido","Raise or restore a dead loved one"],["4","Destruir rivais pela afeição de outra pessoa","Destroy rivals for another person's affection"]]),
+  S("6","Poder","Power",[["1","Conquistar uma região ou incitar uma rebelião","Conquer a region or incite a rebellion"],["2","Adquirir controle de um exército","Seize control of an army"],["3","Tornar-se o poder por trás do trono","Become the power behind the throne"],["4","Ganhar o favor de um governante","Gain the favor of a ruler"]]),
+  S("7","Vingança","Revenge",[["1","Vingar uma humilhação ou insulto passado","Avenge a past humiliation or insult"],["2","Vingar um aprisionamento ou injúria passada","Avenge a past imprisonment or injury"],["3","Vingar a morte de um ente querido","Avenge the death of a loved one"],["4","Recuperar propriedade roubada e punir o ladrão","Retrieve stolen property and punish the thief"]]),
+  S("8","Riqueza","Wealth",[["1","Controlar recursos naturais ou comércio","Control natural resources or trade"],["2","Casar-se por riqueza","Marry into wealth"],["3","Saquear ruínas antigas","Plunder ancient ruins"],["4","Roubar terras, bens ou dinheiro","Steal land, goods, or money"]])]},
+ method:{id:"method", die:"d20", title:{pt:"Métodos do Vilão",en:"Villain's Methods"}, cols:["d20",{pt:"Métodos",en:"Methods"}], rows:[
+  S("1","Devastação agrícola","Agricultural devastation",list(["Praga","Colheita fracassada","Seca","Fome"],["Blight","Crop failure","Drought","Famine"])),
+  ["2",{pt:"Assalto ou ataques",en:"Assault or beatings"}],
+  ["3",{pt:"Caça de recompensa ou assassinato",en:"Bounty hunting or assassination"}],
+  S("4","Cativeiro ou coerção","Captivity or coercion",list(["Suborno","Sedução","Despejo","Aprisionamento","Sequestro","Intimação legal","Recrutamento forçado","Acorrentamento","Escravidão","Ameaças ou perseguição"],
+    ["Bribery","Enticement","Eviction","Imprisonment","Kidnapping","Legal intimidation","Press gangs","Shackling","Slavery","Threats or harassment"])),
+  S("5","Golpes de confiança","Confidence scams",list(["Quebra de contrato","Trapaça","Persuasão","Letras miúdas","Fraude ou estelionato","Charlatanismo ou enganação"],
+    ["Breach of contract","Cheating","Fast talking","Fine print","Fraud or swindling","Quackery or tricks"])),
+  S("6","Difamação","Defamation",list(["Incriminação","Fofoca ou calúnia","Humilhação","Difamação ou insultos"],["Framing","Gossiping or slander","Humiliation","Libel or insults"])),
+  ["7",{pt:"Duelos",en:"Dueling"}],
+  S("8","Execução","Execution",list(["Decapitação","Queimado na fogueira","Enterrado vivo","Crucificação","Estripado e esquartejado","Enforcado","Empalado","Sacrificado (vivo)"],
+    ["Beheading","Burning at the stake","Burying alive","Crucifixion","Drawing and quartering","Hanging","Impalement","Sacrifice (living)"])),
+  ["9",{pt:"Personificação ou disfarce",en:"Impersonation or disguise"}],
+  ["10",{pt:"Mentira ou perjúrio",en:"Lying or perjury"}],
+  S("11","Caos mágico","Magical mayhem",list(["Assombrações","Ilusões","Barganhas infernais","Controle mental","Petrificação","Erguendo ou reanimando os mortos","Invocando monstros","Controle do clima"],
+    ["Hauntings","Illusions","Infernal bargains","Mind control","Petrification","Raising or animating the dead","Summoning monsters","Weather control"])),
+  S("12","Homicídio","Murder",list(["Assassinato","Canibalismo","Desmembramento","Afogamento","Eletrocussão","Eutanásia (involuntária)","Doença","Envenenamento","Esfaqueamento","Estrangulamento ou sufocamento"],
+    ["Assassination","Cannibalism","Dismemberment","Drowning","Electrocution","Euthanasia (involuntary)","Disease","Poisoning","Stabbing","Strangulation or suffocation"])),
+  ["13",{pt:"Negligência",en:"Neglect"}],
+  S("14","Política","Politics",list(["Traição ou infidelidade","Conspiração","Espionagem ou perscrutação","Genocídio","Opressão","Aumentar impostos"],
+    ["Betrayal or treason","Conspiracy","Espionage or spying","Genocide","Oppression","Raising taxes"])),
+  S("15","Religião","Religion",list(["Maldições","Profanação","Deuses falsos","Heresia ou cultos"],["Curses","Desecration","False gods","Heresy or cults"])),
+  ["16",{pt:"Perseguição",en:"Stalking"}],
+  S("17","Roubo ou crime contra a propriedade","Theft or property crime",list(["Incêndio criminoso","Chantagem ou extorsão","Assalto","Falsificação","Roubo em estradas","Pilhagem","Roubo","Caça ilegal","Apropriação de propriedade","Contrabando"],
+    ["Arson","Blackmail or extortion","Burglary","Counterfeiting","Highway robbery","Looting","Mugging","Poaching","Seizing property","Smuggling"])),
+  S("18","Tortura","Torture",list(["Ácido","Cegueira","Marcar a ferro","Dilaceração","Perfurações","Açoitamento"],["Acid","Blinding","Branding","Racking","Thumbscrews","Whipping"])),
+  S("19","Vício","Vice",list(["Adultério","Drogas ou álcool","Jogos de azar","Sedução"],["Adultery","Drugs or alcohol","Gambling","Seduction"])),
+  S("20","Guerra","Warfare",list(["Emboscada","Invasão","Massacre","Mercenários","Rebelião","Terrorismo"],["Ambush","Invasion","Massacre","Mercenaries","Rebellion","Terrorism"]))]},
+ weakness:{id:"weakness", die:"d8", title:{pt:"Fraqueza do Vilão",en:"Villain's Weakness"}, cols:["d8",{pt:"Fraqueza",en:"Weakness"}], rows:R(list(
+  ["Um objeto escondido contém a alma do vilão.","O poder do vilão acaba se a morte do seu verdadeiro amor for vingada.",
+   "O vilão fica enfraquecido na presença de um artefato em particular.","Uma arma especial causa dano extra quando usada contra o vilão.",
+   "O vilão é destruído se falarem seu nome verdadeiro.","Uma profecia ou enigma antigo revela como o vilão pode ser derrotado.",
+   "O vilão perece quando um inimigo antigo o perdoa por suas ações passadas.","O vilão perde seu poder se uma barganha mística que ele fez há muito tempo for concluída."],
+  ["A hidden object holds the villain's soul.","The villain's power is broken if the death of its true love is avenged.",
+   "The villain is weakened in the presence of a particular artifact.","A special weapon deals extra damage when used against the villain.",
+   "The villain is destroyed if its true name is spoken.","An ancient prophecy or riddle reveals how the villain can be overthrown.",
+   "The villain falls when an ancient enemy forgives its past actions.","The villain loses its power if a mystic bargain it struck long ago is completed."]))},
+};
+const IDEALS = ["ideal_good","ideal_evil","ideal_lawful","ideal_chaotic","ideal_neutral","ideal_other"];
+// Cards on the NPC tab: a table id, or {title, tables} to group several tables in one card.
+const NPC_CARDS = [{title:{pt:"Raça e Gênero",en:"Race and Gender"}, tables:["race","gender"]}, "appearance", {title:{pt:"Habilidades do NPC",en:"NPC Abilities"}, tables:["high","low"]}, "talent", "mannerism", "trait",
+  {title:{pt:"Ideais do NPC",en:"NPC Ideals"}, tables:IDEALS}, "bond", "flaw", "scheme", "method", "weakness"];
+
+// Environments: dungeon & wilderness tables.
+const ENV = {
+ location:{id:"location", die:"d100", link:{"96-00":"exotic"}, title:{pt:"Localização da Masmorra",en:"Dungeon Location"}, cols:["d100",{pt:"Localização",en:"Location"}], rows:R([
+  ["01-04","Uma construção em uma cidade","A building in a city"],["05-08","Catacumbas ou esgotos abaixo de uma cidade","Catacombs or sewers beneath a city"],
+  ["09-12","Abaixo de uma casa de fazenda","Beneath a farmhouse"],["13-16","Abaixo de um cemitério","Beneath a graveyard"],
+  ["17-22","Abaixo de um castelo em ruínas","Beneath a ruined castle"],["23-26","Abaixo de uma cidade em ruínas","Beneath a ruined city"],
+  ["27-30","Abaixo de um templo","Beneath a temple"],["31-34","Em um abismo","In a chasm"],["35-38","Na face de um penhasco","In a cliff face"],
+  ["39-42","Em um deserto","In a desert"],["43-46","Em uma floresta","In a forest"],["47-50","Em uma geleira","In a glacier"],
+  ["51-54","Em um desfiladeiro","In a gorge"],["55-58","Em uma selva","In a jungle"],["59-62","Na passagem de uma montanha","In a mountain pass"],
+  ["63-66","Em um pântano","In a swamp"],["67-70","Abaixo ou no topo de um platô","Beneath or on top of a mesa"],["71-74","Em grutas marinhas","In sea caves"],
+  ["75-78","Em diversos platôs interligados","In several connected mesas"],["79-82","No pico de uma montanha","On a mountain peak"],
+  ["83-86","Em um promontório","On a promontory"],["87-90","Em uma ilha","On an island"],["91-95","Submersa","Underwater"],
+  ["96-00","Role na tabela Localização Exótica","Roll on the Exotic Location table"]])},
+ exotic:{id:"exotic", die:"d20", title:{pt:"Localização Exótica",en:"Exotic Location"}, cols:["d20",{pt:"Localização",en:"Location"}], rows:R(list(
+  ["Entre os galhos de uma árvore","Em volta de um gêiser","Atrás de uma cachoeira","Enterrada por uma avalanche","Enterrada por uma tempestade de areia",
+   "Enterrada em cinzas vulcânicas","Castelo ou estrutura inundada em um pântano","Castelo ou estrutura no fundo de um buraco","Flutuando no mar","Em um meteoro",
+   "Em um semiplano ou em uma bolsa dimensional","Em uma área devastada por uma catástrofe mágica","Em uma nuvem","Em Faéria","Na Umbra",
+   "Em uma ilha num mar subterrâneo","Em um vulcão","Nas costas de uma criatura viva imensa","Selada dentro de um domo de energia mágico",
+   "Dentro de uma <i>mansão magnífica de Mordenkainen</i>"],
+  ["Among the branches of a tree","Around a geyser","Behind a waterfall","Buried in an avalanche","Buried in a sandstorm",
+   "Buried in volcanic ash","Castle or structure sunken in a swamp","Castle or structure at the bottom of a sinkhole","Floating on the sea","In a meteorite",
+   "On a demiplane or in a pocket dimension","In an area devastated by a magical catastrophe","On a cloud","In the Feywild","In the Shadowfell",
+   "On an island in an underground sea","In a volcano","On the back of a Gargantuan living creature","Sealed inside a magical dome of force",
+   "Inside a <i>Mordenkainen's magnificent mansion</i>"]))},
+ creator:{id:"creator", die:"d20", link:{"2-4":"cult", "12-15":["alignment","class"]}, title:{pt:"Criador da Masmorra",en:"Dungeon Creator"}, cols:["d20",{pt:"Criador",en:"Creator"}], rows:R([
+  ["1","Observador","Beholder"],
+  ["2-4","Culto ou grupo religioso (role na tabela Cultos e Grupos Religiosos para determinar especificações)","Cult or religious group (roll on the Cults and Religious Groups table for specifics)"],
+  ["5-8","Anões","Dwarves"],["9","Elfos (incluindo drow)","Elves (including drow)"],["10","Gigantes","Giants"],["11","Hobgoblins","Hobgoblins"],
+  ["12-15","Humanos (role nas tabelas Tendência do NPC e Classe do NPC para determinar especificações)","Humans (roll on the NPC Alignment and NPC Class tables for specifics)"],
+  ["16","Kuo-toa","Kuo-toa"],["17","Lich","Lich"],["18","Devoradores de mentes","Mind flayers"],["19","Yuan-ti","Yuan-ti"],["20","Sem criador (cavernas naturais)","No creator (natural caverns)"]])},
+ cult:{id:"cult", die:"d20", title:{pt:"Cultos e Grupos Religiosos",en:"Cults and Religious Groups"}, cols:["d20",{pt:"Culto ou Grupo Religioso",en:"Cult or Religious Group"}], rows:R([
+  ["1","Culto de adoração demoníaca","Demon-worshiping cult"],["2","Culto de adoração diabólica","Devil-worshiping cult"],
+  ["3-4","Culto Elemental do Ar","Elemental Air cult"],["5-6","Culto Elemental da Terra","Elemental Earth cult"],
+  ["7-8","Culto Elemental do Fogo","Elemental Fire cult"],["9-10","Culto Elemental da Água","Elemental Water cult"],
+  ["11-15","Adoradores de uma divindade maligna","Worshipers of an evil deity"],["16-17","Adoradores de uma divindade benigna","Worshipers of a good deity"],
+  ["18-20","Adoradores de uma divindade neutra","Worshipers of a neutral deity"]])},
+ alignment:{id:"alignment", die:"d20", title:{pt:"Tendência do NPC",en:"NPC Alignment"}, cols:["d20",{pt:"Tendência",en:"Alignment"}], rows:R([
+  ["1-2","Leal e bom","Lawful good"],["3-4","Neutro e bom","Neutral good"],["5-6","Caótico e bom","Chaotic good"],["7-9","Leal e neutro","Lawful neutral"],
+  ["10-11","Neutro","Neutral"],["12","Caótico e neutro","Chaotic neutral"],["13-15","Leal e mau","Lawful evil"],["16-18","Neutro e mau","Neutral evil"],["19-20","Caótico e mau","Chaotic evil"]])},
+ class:{id:"class", die:"d20", title:{pt:"Classe do NPC",en:"NPC Class"}, cols:["d20",{pt:"Classe",en:"Class"}], rows:R([
+  ["1","Bárbaro","Barbarian"],["2","Bardo","Bard"],["3-4","Clérigo","Cleric"],["5","Druida","Druid"],["6-7","Guerreiro","Fighter"],["8","Monge","Monk"],
+  ["9","Paladino","Paladin"],["10","Patrulheiro","Ranger"],["11-14","Ladino","Rogue"],["15","Feiticeiro","Sorcerer"],["16","Bruxo","Warlock"],["17-20","Mago","Wizard"]])},
+ purpose:{id:"purpose", die:"d20", title:{pt:"Propósito da Masmorra",en:"Dungeon Purpose"}, cols:["d20",{pt:"Propósito",en:"Purpose"}],
+  note:{pt:"Exceto no caso de uma caverna natural, uma masmorra é construída e habitada com um propósito específico que influencia seu projeto e características. Você pode escolher um propósito, rolar um aleatório ou usar suas próprias ideias.",
+        en:"Except for a natural cave, a dungeon is built and inhabited for a specific purpose that shapes its design and features. You can choose a purpose, roll one at random, or use your own ideas."}, rows:R([
+  ["1","Armadilha mortal","Death trap"],["2-5","Covil","Lair"],["6","Labirinto","Maze"],["7-9","Mina","Mine"],["10","Portal planar","Planar gate"],
+  ["11-14","Fortaleza","Stronghold"],["15-17","Templo ou santuário","Temple or shrine"],["18-19","Tumba","Tomb"],["20","Câmara de tesouro","Treasure vault"]])},
+ history:{id:"history", die:"d20", title:{pt:"História da Masmorra",en:"Dungeon History"}, cols:["d20",{pt:"Evento Importante",en:"Key Event"}], rows:R([
+  ["1-3","Abandonada pelos criadores","Abandoned by its creators"],["4","Abandonada devido a uma praga","Abandoned due to plague"],
+  ["5-8","Conquistada por invasores","Conquered by invaders"],["9-10","Criadores destruídos por ataques de incursores","Creators destroyed by attacking raiders"],
+  ["11","Criadores destruídos por descoberta feita dentro do lugar","Creators destroyed by a discovery made within the site"],
+  ["12","Criadores destruídos por conflito interno","Creators destroyed by internal conflict"],["13","Criadores destruídos por catástrofe mágica","Creators destroyed by magical catastrophe"],
+  ["14-15","Criadores destruídos por desastre natural","Creators destroyed by natural disaster"],["16","Local amaldiçoado pelos deuses e evitado","Location cursed by the gods and shunned"],
+  ["17-18","Criador original ainda está no controle","Original creator still in control"],["19","Invadido por criaturas planares","Overrun by planar creatures"],
+  ["20","Local de um grande milagre","Site of a great miracle"]])},
+ monument:{id:"monument", die:"d20", title:{pt:"Monumentos",en:"Monuments"}, cols:["d20",{pt:"Monumento",en:"Monument"}], rows:R([
+  ["1","Túmulo ou pirâmide selado","Sealed burial mound or pyramid"],["2","Túmulo ou pirâmide saqueado","Plundered burial mound or pyramid"],
+  ["3","Faces esculpidas na encosta de uma montanha ou penhasco","Faces carved into a mountainside or cliff"],
+  ["4","Estátuas gigantes esculpidas na encosta de uma montanha ou penhasco","Giant statues carved out of a mountainside or cliff"],
+  ["5-6","Obelisco intacto gravado com um aviso, conhecimento histórico, dedicatória ou iconografia religiosa","Intact obelisk etched with a warning, historical lore, dedication, or religious iconography"],
+  ["7-8","Obelisco em ruínas ou tombado","Ruined or toppled obelisk"],["9-10","Estátua intacta de uma personalidade ou divindade","Intact statue of a person or deity"],
+  ["11-13","Estátua arruinada ou tombada de uma personalidade ou divindade","Ruined or toppled statue of a person or deity"],
+  ["14","Grande muralha de pedra, intacta, com torres fortificadas espaçadas em intervalos de 1,5 quilômetro","Great stone wall, intact, with fortified towers at one-mile intervals"],
+  ["15","Grande muralha de pedra em ruínas","Great stone wall in ruins"],["16","Grande arco de pedra","Great stone arch"],["17","Fonte","Fountain"],
+  ["18","Círculo de menires intacto","Intact circle of standing stones"],["19","Círculo de menires arruinado ou tombado","Ruined or toppled circle of standing stones"],["20","Poste totêmico","Totem pole"]])},
+ weird:{id:"weird", die:"d20", title:{pt:"Locais Estranhos",en:"Weird Locales"}, cols:["d20",{pt:"Local",en:"Locale"}], rows:R([
+  ["1-2","Zona de magia morta (similar a um <i>campo antimagia</i>)","Dead magic zone (similar to an <i>antimagic field</i>)"],
+  ["3","Zona de magia selvagem (role na tabela Surto de Magia Selvagem no <i>Livro do Jogador</i> sempre que uma magia for conjurada dentro da zona)","Wild magic zone (roll on the Wild Magic Surge table in the <i>Player's Handbook</i> whenever a spell is cast within the zone)"],
+  ["4","Pedregulho esculpido com rostos falantes","Boulder carved with talking faces"],["5","Caverna de cristal que responde perguntas misticamente","Crystal cave that mystically answers questions"],
+  ["6","Árvore antiga contendo um espírito aprisionado","Ancient tree containing a trapped spirit"],
+  ["7-8","Campo de batalha onde uma névoa duradoura ocasionalmente assume formas humanoides","Battlefield where a lingering fog occasionally takes humanoid forms"],
+  ["9-10","Portal permanente para outro plano de existência","Permanent portal to another plane of existence"],["11","Poço dos desejos","Wishing well"],
+  ["12","Estilha de cristal gigante projetando-se do solo","Giant crystal shard jutting from the ground"],["13","Navio naufragado, em algum lugar longe da água","Wrecked ship, somewhere far from water"],
+  ["14-15","Colina ou monte assombrado","Haunted hill or barrow mound"],["16","Balsa de rio guiada por um capitão esquelético","River ferry guided by a skeletal captain"],
+  ["17","Campo de soldados ou outras criaturas petrificadas","Field of petrified soldiers or other creatures"],["18","Floresta de árvores petrificadas ou despertas","Forest of petrified or awakened trees"],
+  ["19","Desfiladeiro contendo um cemitério de dragões","Canyon containing a dragons' graveyard"],["20","Pedaço de terra flutuante com uma torre em cima","Floating earth mote with a tower on top"]])},
+ temp:{id:"temp", die:"d20", title:{pt:"Temperatura",en:"Temperature"}, cols:["d20",{pt:"Temperatura",en:"Temperature"}], rows:R([
+  ["1-14","Normal para a estação","Normal for the season"],["15-17","1d4 × 5 °C mais frio que o normal","1d4 × 10 °F colder than normal"],
+  ["18-20","1d4 × 5 °C mais quente que o normal","1d4 × 10 °F hotter than normal"]])},
+ wind:{id:"wind", die:"d20", title:{pt:"Vento",en:"Wind"}, cols:["d20",{pt:"Vento",en:"Wind"}], rows:R([
+  ["1-12","Nenhum","None"],["13-17","Fraco","Light"],["18-20","Forte","Strong"]])},
+ precip:{id:"precip", die:"d20", title:{pt:"Precipitação",en:"Precipitation"}, cols:["d20",{pt:"Precipitação",en:"Precipitation"}], rows:R([
+  ["1-12","Nenhuma","None"],["13-17","Chuva fraca ou nevasca fraca","Light rain or light snowfall"],["18-20","Chuva forte ou nevasca forte","Heavy rain or heavy snowfall"]])},
+};
+// Rule cards: rule(title pt, title en, html pt, html en, extra blocks)
+const rule = (tp, te, pt, en, extra=[]) => ({title:{pt:tp,en:te}, blocks:[{html:{pt, en}}, ...extra]});
+const ENV_RULES = [
+ rule("Sobrevivência no Ambiente Selvagem","Wilderness Survival",
+  `<p>Aventurar-se no ambiente selvagem apresenta uma série de perigos além das ameaças de predadores monstruosos e saqueadores selvagens.</p>`,
+  `<p>Venturing into the wilderness brings a host of dangers beyond the threat of monstrous predators and savage raiders.</p>`),
+ rule("Frio Extremo","Extreme Cold",
+  `<p>Sempre que a temperatura estiver em <b>−17 °C</b> ou abaixo disso, uma criatura exposta ao frio deve ser bem sucedida num <b>teste de resistência de Constituição CD 10</b>, ao final de cada hora, ou receberá um nível de exaustão.</p><p>Obtêm sucesso automático: criaturas com resistência ou imunidade a dano de frio, criaturas vestindo trajes de clima frio (casacos grossos, luvas e similares) e criaturas naturalmente adaptadas a climas frios.</p>`,
+  `<p>Whenever the temperature is at or below <b>0 °F</b>, a creature exposed to the cold must succeed on a <b>DC 10 Constitution saving throw</b> at the end of each hour or gain one level of exhaustion.</p><p>Automatically succeed: creatures with resistance or immunity to cold damage, creatures wearing cold weather gear (thick coats, gloves, and the like), and creatures naturally adapted to cold climates.</p>`),
+ rule("Calor Extremo","Extreme Heat",
+  `<p>Quando a temperatura estiver em <b>38 °C</b> ou acima disso, uma criatura exposta ao calor e sem acesso a água potável deve ser bem sucedida num <b>teste de resistência de Constituição</b>, ao final de cada hora, ou receberá um nível de exaustão. A <b>CD é 5</b> para a primeira hora e <b>aumenta em 1</b> para cada hora adicional.</p><p>Criaturas vestindo armaduras médias ou pesadas, ou roupas pesadas, têm desvantagem no teste. Obtêm sucesso automático: criaturas com resistência ou imunidade a dano de fogo e criaturas naturalmente adaptadas a climas quentes.</p>`,
+  `<p>When the temperature is at or above <b>100 °F</b>, a creature exposed to the heat and without access to drinkable water must succeed on a <b>Constitution saving throw</b> at the end of each hour or gain one level of exhaustion. The <b>DC is 5</b> for the first hour and <b>increases by 1</b> for each additional hour.</p><p>Creatures wearing medium or heavy armor, or heavy clothing, have disadvantage on the save. Automatically succeed: creatures with resistance or immunity to fire damage and creatures naturally adapted to hot climates.</p>`),
+ rule("Vento Forte","Strong Wind",
+  `<ul><li>Desvantagem em jogadas de ataque com armas à distância e em testes de Sabedoria (Percepção) relacionados à audição.</li><li>Extingue chamas expostas, dispersa névoa e torna o voo por meios não-mágicos quase impossível.</li><li>Uma criatura voadora deve aterrissar no final do seu turno ou cairá.</li><li>Em um deserto, pode criar uma tempestade de areia que impõe desvantagem em testes de Sabedoria (Percepção) relacionados à visão.</li></ul>`,
+  `<ul><li>Disadvantage on ranged weapon attack rolls and on Wisdom (Perception) checks that rely on hearing.</li><li>Extinguishes open flames, disperses fog, and makes flying by nonmagical means nearly impossible.</li><li>A flying creature must land at the end of its turn or fall.</li><li>In a desert, it can create a sandstorm that imposes disadvantage on Wisdom (Perception) checks that rely on sight.</li></ul>`),
+ rule("Precipitação Pesada","Heavy Precipitation",
+  `<ul><li>Tudo na área de chuva forte ou nevasca forte fica sob <b>escuridão leve</b>; criaturas na área têm desvantagem em testes de Sabedoria (Percepção) relacionados à visão.</li><li>Chuva forte também extingue chamas expostas e impõe desvantagem em testes de Sabedoria (Percepção) relacionados à audição.</li></ul>`,
+  `<ul><li>Everything within an area of heavy rain or heavy snowfall is <b>lightly obscured</b>; creatures in the area have disadvantage on Wisdom (Perception) checks that rely on sight.</li><li>Heavy rain also extinguishes open flames and imposes disadvantage on Wisdom (Perception) checks that rely on hearing.</li></ul>`),
+ rule("Altitude Elevada","High Altitude",
+  `<p>Viajar a <b>3.000 metros</b> ou mais acima do nível do mar é desgastante para uma criatura que precise respirar, devido à redução de oxigênio no ar. Cada hora de viagem em altitude elevada conta como <b>2 horas</b> para determinar o quanto essa criatura pode viajar.</p><p>Criaturas que respiram podem se aclimatar passando <b>30 dias</b> ou mais nessa elevação, mas não conseguem se aclimatar acima de <b>6.000 metros</b>, a não ser que sejam nativas desses ambientes.</p>`,
+  `<p>Traveling at altitudes of <b>10,000 feet</b> or higher above sea level is taxing for a creature that needs to breathe, because of the reduced oxygen in the air. Each hour spent traveling at high altitude counts as <b>2 hours</b> for the purpose of determining how long that creature can travel.</p><p>Breathing creatures can become acclimated by spending <b>30 days</b> or more at this elevation, but can't become acclimated above <b>20,000 feet</b> unless they are native to such environments.</p>`),
+ rule("Perigos no Ambiente Selvagem","Wilderness Hazards",
+  `<p>Alguns perigos, como gelo escorregadio e vinha-navalha, não requerem teste de habilidade para serem vistos. Outros, como solo profanado, são indetectáveis por sentidos normais. Os demais podem ser identificados com um teste bem sucedido de <b>Inteligência (Natureza)</b>. Use as orientações do capítulo 8 para determinar a CD para avistar ou reconhecer um perigo.</p>`,
+  `<p>Some hazards, such as slippery ice and razorvine, require no ability check to spot. Others, such as desecrated ground, are undetectable by normal senses. The rest can be identified with a successful <b>Intelligence (Nature)</b> check. Use the guidelines in chapter 8 to set the DC to spot or recognize a hazard.</p>`),
+ rule("Solo Profanado","Desecrated Ground",
+  `<p>Alguns cemitérios e catacumbas estão impregnados com traços invisíveis de mal antigo. Uma área de solo profanado pode ter qualquer tamanho, e a magia <i>detectar o bem e mal</i> conjurada no alcance revela sua presença.</p><ul><li>Mortos-vivos no solo profanado têm <b>vantagem em todos os testes de resistência</b>.</li><li>Um frasco de água benta purifica uma área de 3 × 3 metros quando aspergido nela.</li><li>A magia <i>consagrar</i> purifica o solo profanado dentro da sua área.</li></ul>`,
+  `<p>Some cemeteries and catacombs are imbued with the unseen traces of ancient evil. An area of desecrated ground can be any size, and a <i>detect evil and good</i> spell cast within range reveals its presence.</p><ul><li>Undead standing on desecrated ground have <b>advantage on all saving throws</b>.</li><li>A vial of holy water purifies a 10-foot-square area when sprinkled on it.</li><li>A <i>hallow</i> spell purifies desecrated ground within its area.</li></ul>`),
+ rule("Água Gelada","Frigid Water",
+  `<p>Uma criatura pode ficar submersa em água gelada por um número de <b>minutos igual ao seu valor de Constituição</b> antes de sofrer efeitos nocivos. Cada minuto adicional requer um <b>teste de resistência de Constituição CD 10</b>, ou a criatura recebe um nível de exaustão.</p><p>Obtêm sucesso automático: criaturas com resistência ou imunidade a dano de frio e criaturas naturalmente adaptadas a viver em águas geladas.</p>`,
+  `<p>A creature can be immersed in frigid water for a number of <b>minutes equal to its Constitution score</b> before suffering any ill effects. Each additional minute requires a <b>DC 10 Constitution saving throw</b>, or the creature gains one level of exhaustion.</p><p>Automatically succeed: creatures with resistance or immunity to cold damage and creatures naturally adapted to living in ice-cold water.</p>`),
+ rule("Areia Movediça","Quicksand",
+  `<p>Um fosso de areia movediça cobre cerca de 3 × 3 metros e tem geralmente 3 metros de profundidade.</p><ul><li>Ao entrar na área, a criatura afunda <b>(1d4 + 1) × 30 cm</b> e fica <b>impedida</b>.</li><li>No início de cada turno dela, afunda mais <b>1d4 × 30 cm</b>.</li><li>Se não estiver completamente submersa, pode escapar usando sua ação e passando num <b>teste de Força</b>: CD 10 + o número de frações de 30 cm que afundou.</li><li>Completamente submersa, não consegue respirar (veja as regras de sufocamento no <i>Livro do Jogador</i>).</li><li>Outra criatura ao alcance pode puxá-la usando sua ação e passando num <b>teste de Força</b>: CD 5 + o número de frações de 30 cm que o alvo afundou.</li></ul>`,
+  `<p>A quicksand pit covers roughly a 10-foot-square area and is usually 10 feet deep.</p><ul><li>When a creature enters the area, it sinks <b>1d4 + 1 feet</b> and becomes <b>restrained</b>.</li><li>At the start of each of its turns, it sinks another <b>1d4 feet</b>.</li><li>If not completely submerged, it can escape by using its action and succeeding on a <b>Strength check</b>: DC 10 + the number of feet it has sunk.</li><li>Completely submerged, it can't breathe (see the suffocation rules in the <i>Player's Handbook</i>).</li><li>Another creature within reach can pull it out by using its action and succeeding on a <b>Strength check</b>: DC 5 + the number of feet the target has sunk.</li></ul>`),
+ rule("Vinha-Navalha","Razorvine",
+  `<p>Planta que cresce em emaranhados silvestres e cercas vivas, e prende-se a paredes e outras superfícies como trepadeiras.</p><ul><li>Uma parede ou cerca de 3 m de altura, 3 m de largura e 1,5 m de espessura tem <b>CA 11, 25 pontos de vida</b> e imunidade a dano de concussão, perfurante e psíquico.</li><li>Quando uma criatura entra em contato direto com a vinha pela primeira vez num turno, deve passar num <b>teste de resistência de Destreza CD 10</b> ou sofre <b>5 (1d10) de dano cortante</b>.</li></ul>`,
+  `<p>A plant that grows in wild tangles and hedges, and clings to walls and other surfaces as ivy does.</p><ul><li>A 10-foot-high, 10-foot-wide, 5-foot-thick wall or hedge has <b>AC 11, 25 hit points</b>, and immunity to bludgeoning, piercing, and psychic damage.</li><li>When a creature comes into direct contact with razorvine for the first time on a turn, it must succeed on a <b>DC 10 Dexterity saving throw</b> or take <b>5 (1d10) slashing damage</b>.</li></ul>`),
+ rule("Gelo Escorregadio","Slippery Ice",
+  `<p>Gelo escorregadio é <b>terreno difícil</b>. Quando uma criatura se move por ele pela primeira vez num turno, deve passar num <b>teste de Destreza (Acrobacia) CD 10</b> ou cai no chão.</p>`,
+  `<p>Slippery ice is <b>difficult terrain</b>. When a creature moves onto it for the first time on a turn, it must succeed on a <b>DC 10 Dexterity (Acrobatics) check</b> or fall prone.</p>`),
+ rule("Gelo Fino","Thin Ice",
+  `<p>Gelo fino suporta <b>3d10 × 5 kg</b> para cada área de 3 × 3 metros. Sempre que o peso total na área exceder essa tolerância, o gelo se quebra e todas as criaturas na área caem através dele.</p>`,
+  `<p>Thin ice holds <b>3d10 × 10 pounds</b> per 10-foot-square area. Whenever the total weight on an area exceeds that tolerance, the ice breaks and all creatures on it fall through.</p>`),
+ rule("Forrageio","Foraging",
+  `<p>Os personagens podem coletar comida e água enquanto o grupo viaja em ritmo normal ou lento. Um personagem forrageando faz um <b>teste de Sabedoria (Sobrevivência)</b> quando você pedir, com a CD definida pela abundância da região.</p>`,
+  `<p>Characters can gather food and water as the party travels at a normal or slow pace. A foraging character makes a <b>Wisdom (Survival) check</b> whenever you call for it, with the DC set by the abundance of the region.</p>`,
+  [{table:{cols:[{pt:"Comida e Água Disponíveis",en:"Food and Water Availability"},{pt:"CD",en:"DC"}], rows:[
+    [{pt:"Fontes abundantes",en:"Abundant sources"},"10"],[{pt:"Fontes limitadas",en:"Limited sources"},"15"],[{pt:"Fontes escassas, se houver",en:"Very little, if any, sources"},"20"]]}},
+   {html:{pt:`<p>Cada personagem forrageando faz um teste separado. Em uma falha, não encontra nada. Em um sucesso, role <b>1d6 + modificador de Sabedoria</b> para a comida encontrada (resultado × 0,5 kg) e repita para a água (resultado × 4 litros).</p>`,
+          en:`<p>Each foraging character makes a separate check. On a failure, they find nothing. On a success, roll <b>1d6 + Wisdom modifier</b> for food found (in pounds), then repeat for water (in gallons).</p>`}}]),
+ rule("Comida e Água","Food and Water",
+  `<p>Os requerimentos do <i>Livro do Jogador</i> são para personagens. Cavalos e outras criaturas precisam de quantidades diferentes por dia, conforme o tamanho. A água necessária <b>dobra</b> se o clima estiver quente.</p>`,
+  `<p>The requirements in the <i>Player's Handbook</i> are for characters. Horses and other creatures need different amounts per day, based on size. Water needs <b>double</b> in hot weather.</p>`,
+  [{table:{cols:[{pt:"Tamanho",en:"Size"},{pt:"Comida/dia",en:"Food/day"},{pt:"Água/dia",en:"Water/day"}], rows:[
+    [{pt:"Miúdo",en:"Tiny"},{pt:"125 g",en:"¼ lb"},{pt:"1 litro",en:"¼ gallon"}],[{pt:"Pequeno",en:"Small"},{pt:"0,5 kg",en:"1 lb"},{pt:"4 litros",en:"1 gallon"}],
+    [{pt:"Médio",en:"Medium"},{pt:"0,5 kg",en:"1 lb"},{pt:"4 litros",en:"1 gallon"}],[{pt:"Grande",en:"Large"},{pt:"2 kg",en:"4 lb"},{pt:"16 litros",en:"4 gallons"}],
+    [{pt:"Enorme",en:"Huge"},{pt:"8 kg",en:"16 lb"},{pt:"64 litros",en:"16 gallons"}],[{pt:"Imenso",en:"Gargantuan"},{pt:"32 kg",en:"64 lb"},{pt:"256 litros",en:"64 gallons"}]]}}]),
+ rule("Se Perdendo","Becoming Lost",
+  `<p>A não ser que sigam uma trilha ou algo parecido, aventureiros no ambiente selvagem podem se perder. O navegador do grupo faz um <b>teste de Sabedoria (Sobrevivência)</b> quando você achar apropriado, contra a CD do terreno predominante.</p><ul><li>Ritmo lento: <b>+5</b>. Ritmo rápido: <b>−5</b>.</li><li>Mapa preciso da região, ou sol/estrelas visíveis: <b>vantagem</b>.</li><li>Sucesso: o grupo segue na direção desejada. Falha: segue na direção errada sem perceber e se perde.</li><li>O grupo pode repetir o teste após passar <b>1d6 horas</b> tentando voltar ao curso.</li></ul>`,
+  `<p>Unless following a path or something like it, adventurers in the wilderness can become lost. The party's navigator makes a <b>Wisdom (Survival) check</b> when you decide it's appropriate, against the DC of the prevailing terrain.</p><ul><li>Slow pace: <b>+5</b>. Fast pace: <b>−5</b>.</li><li>Accurate map of the region, or sun/stars visible: <b>advantage</b>.</li><li>Success: the party travels in the desired direction. Failure: it unknowingly travels the wrong way and becomes lost.</li><li>The party can repeat the check after spending <b>1d6 hours</b> trying to get back on course.</li></ul>`,
+  [{table:{cols:[{pt:"Terreno",en:"Terrain"},{pt:"CD",en:"DC"}], rows:[
+    [{pt:"Floresta, selva, pântano, montanhas ou mar aberto com céu nublado e nenhuma terra à vista",en:"Forest, jungle, swamp, mountains, or open sea with overcast skies and no land in sight"},"15"],
+    [{pt:"Ártico, deserto, colinas ou mar aberto com céu claro e nenhuma terra à vista",en:"Arctic, desert, hills, or open sea with clear skies and no land in sight"},"10"],
+    [{pt:"Pradaria, campina ou campos agrícolas",en:"Grassland, meadow, or farmland"},"5"]]}}]),
+];
+
+// Settlements (Povoados).
+const TOWN = {
+ relations:{id:"relations", die:"d20", title:{pt:"Relações Raciais",en:"Race Relations"}, cols:["d20",{pt:"Resultado",en:"Result"}], rows:R([
+  ["1-10","Harmonia","Harmony"],["11-14","Tensão ou rivalidade","Tension or rivalry"],["15-16","Maioria racial são conquistadores","Racial majority are conquerors"],
+  ["17","Minoria racial são governantes","Racial minority are rulers"],["18","Minoria racial são refugiados","Racial minority are refugees"],
+  ["19","Maioria racial oprime minoria","Racial majority oppresses minority"],["20","Minoria racial oprime maioria","Racial minority oppresses majority"]])},
+ ruler:{id:"ruler", die:"d20", title:{pt:"Posição do Governante",en:"Ruler's Status"}, cols:["d20",{pt:"Governante",en:"Ruler"}], rows:R([
+  ["1-5","Respeitado, honesto e justo","Respected, fair, and just"],["6-8","Tirano temido","Feared tyrant"],["9","Pessoa fraca manipulada por terceiros","Weakling manipulated by others"],
+  ["10","Governante ilegítimo, guerra civil iminente","Illegitimate ruler, simmering civil war"],["11","Governado ou controlado por um monstro poderoso","Ruled or controlled by a powerful monster"],
+  ["12","Cabala anônima misteriosa","Mysterious, anonymous cabal"],["13","Líder impugnado, luta aberta","Contested leadership, open fighting"],
+  ["14","Cabala usurpou poder abertamente","Cabal seized power openly"],["15","Idiota arruaceiro","Doltish lout"],
+  ["16","Em leito de morte, pretendentes competem pelo poder","On deathbed, claimants compete for power"],["17-18","Mão de ferro, mas respeitado","Iron-willed but respected"],
+  ["19-20","Líder religioso","Religious leader"]])},
+ traits:{id:"traits", die:"d20", title:{pt:"Traços Notáveis",en:"Notable Traits"}, cols:["d20",{pt:"Traço",en:"Trait"}], rows:R(list(
+  ["Canais no lugar de ruas","Estátua ou monumento maciço","Templo imponente","Grande fortaleza","Parques e pomares verdejantes","Rio divide a cidade",
+   "Grande centro comercial","Sede de uma família ou guilda poderosa","A maioria da população é rica","Desamparada, degradada",
+   "Cheiro terrível (curtumes, esgoto aberto)","Centro comercial de um bem específico","Local de muitas batalhas","Local de um evento mítico ou mágico",
+   "Biblioteca ou arquivo importante","Adoração de todos os deuses banida","Reputação sinistra","Biblioteca ou academia notável",
+   "Local de uma tumba ou cemitério importante","Construída em cima de ruínas antigas"],
+  ["Canals in place of streets","Massive statue or monument","Grand temple","Large fortress","Verdant parks and orchards","River divides town",
+   "Major trade center","Headquarters of a powerful family or guild","Population mostly wealthy","Destitute, rundown",
+   "Awful smell (tanneries, open sewers)","Center of trade for one specific good","Site of many battles","Site of a mythic or magical event",
+   "Important library or archive","Worship of all gods banned","Sinister reputation","Notable library or academy",
+   "Site of an important tomb or graveyard","Built atop ancient ruins"]))},
+ known:{id:"known", die:"d20", title:{pt:"Conhecido Por…",en:"Known For…"}, cols:["d20",{pt:"Característica",en:"Trait"}], rows:R(list(
+  ["Culinária deliciosa","Povo rude","Mercadores gananciosos","Artistas e escritores","Grande herói/salvador","Flores","Hordas de mendigos","Guerreiros durões",
+   "Magia negra","Decadência","Piedade","Apostas","Ateísmo","Educação","Vinhos","Alta costura","Intrigas políticas","Guildas poderosas","Bebida forte","Patriotismo"],
+  ["Delicious cuisine","Rude people","Greedy merchants","Artists and writers","Great hero/savior","Flowers","Hordes of beggars","Tough warriors",
+   "Dark magic","Decadence","Piety","Gambling","Godlessness","Education","Wines","High fashion","Political intrigue","Powerful guilds","Strong drink","Patriotism"]))},
+ calamity:{id:"calamity", die:"d20", title:{pt:"Calamidade Atual",en:"Current Calamity"}, cols:["d20",{pt:"Calamidade",en:"Calamity"}], rows:R([
+  ["1","Suspeita de infestação de vampiros","Suspected vampire infestation"],["2","Novo culto em busca de neófitos","New cult seeks converts"],
+  ["3","Figura importante morta (suspeita de homicídio)","Important figure died (murder suspected)"],["4","Guerra entre guildas de ladrões rivais","War between rival thieves' guilds"],
+  ["5-6","Praga ou fome (início de tumultos)","Plague or famine (sparking riots)"],["7","Oficiais corruptos","Corrupt officials"],["8-9","Monstros saqueadores","Marauding monsters"],
+  ["10","Mago poderoso mudou-se para a cidade","Powerful wizard has moved into town"],["11","Depressão econômica (comércio interrompido)","Economic depression (trade disrupted)"],
+  ["12","Inundação","Flooding"],["13","Mortos-vivos erguendo-se em cemitérios","Undead stirring in cemeteries"],["14","Profecia de condenação","Prophecy of doom"],
+  ["15","Iminência de uma guerra","Brink of war"],["16","Conflito interno (levando à anarquia)","Internal strife (leading to anarchy)"],["17","Cercada por inimigos","Besieged by enemies"],
+  ["18","Escândalo ameaça famílias poderosas","Scandal threatens powerful families"],["19","Masmorra descoberta (aventureiros migram para a cidade)","Dungeon discovered (adventurers flock to town)"],
+  ["20","Seitas religiosas brigam pelo poder","Religious sects struggle for power"]])},
+ building:{id:"building", die:"d20", link:{"1-10":"residence","11-12":"religious","13-15":["tavern","@tavernName"],"16-17":"warehouse","18-20":"shop"},
+  title:{pt:"Tipo de Construção",en:"Building Type"}, cols:["d20",{pt:"Tipo",en:"Type"}], rows:R([
+  ["1-10","Residência (role uma vez na tabela Residência)","Residence (roll once on the Residence table)"],
+  ["11-12","Religiosa (role uma vez na tabela Construção Religiosa)","Religious (roll once on the Religious Building table)"],
+  ["13-15","Taverna (role uma vez na tabela Taverna e duas vezes na tabela Gerador de Nome de Taverna)","Tavern (roll once on the Tavern table and twice on the Tavern Name Generator)"],
+  ["16-17","Armazém (role uma vez na tabela Armazém)","Warehouse (roll once on the Warehouse table)"],["18-20","Loja (role uma vez na tabela Loja)","Shop (roll once on the Shop table)"]])},
+ residence:{id:"residence", die:"d20", title:{pt:"Residência",en:"Residence"}, cols:["d20",{pt:"Tipo",en:"Type"}], rows:R([
+  ["1-2","Casebre abandonado","Abandoned squat"],["3-8","Casa de classe média","Middle-class home"],["9-10","Casa de classe alta","Upper-class home"],
+  ["11-15","Cortiço lotado","Crowded tenement"],["16-17","Orfanato","Orphanage"],["18","Antro de escravagistas escondido","Hidden slavers' den"],
+  ["19","Fachada para um culto secreto","Front for a secret cult"],["20","Mansão luxuosa bem guardada","Lavish, guarded mansion"]])},
+ religious:{id:"religious", die:"d20", title:{pt:"Construção Religiosa",en:"Religious Building"}, cols:["d20",{pt:"Tipo",en:"Type"}], rows:R([
+  ["1-10","Templo de uma divindade boa ou neutra","Temple to a good or neutral deity"],
+  ["11-12","Templo de uma divindade falsa (conduzido por sacerdotes charlatões)","Temple to a false deity (run by charlatan priests)"],
+  ["13","Lar de ascetas","Home of ascetics"],["14-15","Santuário abandonado","Abandoned shrine"],["16-17","Biblioteca dedicada a estudos religiosos","Library dedicated to religious study"],
+  ["18-20","Santuário escondido dedicado a um corruptor ou divindade maligna","Hidden shrine to a fiend or an evil deity"]])},
+ tavern:{id:"tavern", die:"d20", title:{pt:"Taverna",en:"Tavern"}, cols:["d20",{pt:"Tipo",en:"Type"}], rows:R([
+  ["1-5","Quieta, bar discreto","Quiet, low-key bar"],["6-9","Muito barulhenta","Raucous dive"],["10","Frequentada por guilda de ladrões","Thieves' guild hangout"],
+  ["11","Local de encontro de uma sociedade secreta","Gathering place for a secret society"],["12-13","Clube gastronômico de alta classe","Upper-class dining club"],
+  ["14-15","Antro de apostas","Gambling den"],["16-17","Atende uma raça ou guilda específica","Caters to a specific race or guild"],["18","Clube exclusivo para membros","Members-only club"],
+  ["19-20","Bordel","Brothel"]])},
+ tavern1:{id:"tavern1", die:"d20", title:{pt:"Nome de Taverna: Primeira Parte",en:"Tavern Name: First Part"}, cols:["d20",{pt:"Primeira Parte",en:"First Part"}], rows:R(list(
+  ["A Enguia","O Golfinho","O Anão","O Pégaso","O Pônei","A Rosa","O Cervo","O Lobo","O Cordeiro","O Demônio","O Bode","O Espírito","A Horda","O Bufão",
+   "A Montanha","A Águia","O Sátiro","O Cão","A Aranha","A Estrela"],
+  ["The Eel","The Dolphin","The Dwarf","The Pegasus","The Pony","The Rose","The Stag","The Wolf","The Lamb","The Demon","The Goat","The Spirit","The Horde","The Jester",
+   "The Mountain","The Eagle","The Satyr","The Dog","The Spider","The Star"]))},
+ tavern2:{id:"tavern2", die:"d20", title:{pt:"Nome de Taverna: Segunda Parte",en:"Tavern Name: Second Part"}, cols:["d20",{pt:"Segunda Parte",en:"Second Part"}], rows:R(list(
+  ["Prateado(a)","Dourado(a)","Cambaleante","Sorridente","Empinado(a)","Atraente","Que Corre","Uivante","Abatido(a)","Malicioso(a)","Bêbado(a)","Saltitante",
+   "Rugidor(a)","Carrancudo(a)","Solitário(a)","Errante","Misterioso(a)","Ladrante","Negro(a)","Reluzente"],
+  ["Silver","Golden","Staggering","Laughing","Prancing","Charming","Running","Howling","Slaughtered","Leering","Drunken","Leaping",
+   "Roaring","Frowning","Lonely","Wandering","Mysterious","Barking","Black","Gleaming"]))},
+ warehouse:{id:"warehouse", die:"d20", title:{pt:"Armazém",en:"Warehouse"}, cols:["d20",{pt:"Tipo",en:"Type"}], rows:R([
+  ["1-4","Vazio ou abandonado","Empty or abandoned"],["5-6","Bem guardado, mercadorias caras","Heavily guarded, expensive goods"],["7-10","Mercadorias baratas","Cheap goods"],
+  ["11-14","Mercadorias volumosas","Bulk goods"],["15","Animais vivos","Live animals"],["16-17","Armas/armaduras","Weapons/armor"],
+  ["18-19","Mercadorias de uma terra distante","Goods from a distant land"],["20","Antro secreto de contrabandistas","Secret smugglers' den"]])},
+ shop:{id:"shop", die:"d20", title:{pt:"Loja",en:"Shop"}, cols:["d20",{pt:"Tipo",en:"Type"}], rows:R(list(
+  ["Loja de penhores","Ervas/incensos","Frutas/vegetais","Carnes secas","Cerâmica","Funerária","Livros","Agiota","Armas/armaduras","Mercearia",
+   "Ferreiro","Carpinteiro","Tecelão","Joalheiro","Padeiro","Cartógrafo","Alfaiate","Cordoeiro","Pedreiro","Escriba"],
+  ["Pawnshop","Herbs/incense","Fruits/vegetables","Dried meats","Pottery","Undertaker","Books","Moneylender","Weapons/armor","Chandler",
+   "Smithy","Carpenter","Weaver","Jeweler","Baker","Mapmaker","Tailor","Ropemaker","Mason","Scribe"]))},
+};
+// Tavern name: rolls both parts; PT adjectives agree with the noun's gender ("Prateado(a)" → "Prateada" after "A ...").
+function tavernName(){
+  const a = rollTable(TOWN.tavern1).picks[0][1], b = rollTable(TOWN.tavern2).picks[0][1];
+  const fem = a.pt.startsWith("A "), adj = b.pt.replace(/o?\(a\)$/, m => fem ? "a" : (m[0] === "o" ? "o" : ""));
+  return {title:{pt:"Nome da taverna",en:"Tavern name"}, text:L({pt:`${a.pt} ${adj}`, en:`The ${b.en} ${a.en.replace(/^The /,"")}`})};
+}
+const LINK_FN = Object.assign(LS.LINK_FN, {"@tavernName": tavernName});
+
+// Events: random encounters (city, sea, underwater, forest). `desc` = text shown with the roll result.
+const D = (pt, en) => ({pt, en});
+const EVT = {
+ urban:{id:"urban", die:"d12+d8", title:{pt:"Encontros Aleatórios Urbanos",en:"Urban Encounters"}, cols:["d12+d8",{pt:"Encontro",en:"Encounter"}],
+  note:{pt:"Útil para aventuras em cidades e metrópoles. Verifique um encontro aleatório pelo menos uma vez por dia e uma vez por noite, caso os personagens estejam fora. Role novamente se o resultado não fizer sentido para a hora do dia.",
+        en:"Useful for adventures in towns and cities. Check for a random encounter at least once a day and once at night if the characters are out and about. Reroll if the result doesn't make sense for the time of day."},
+  rows:R([["2","Animais à solta","Animals on the loose"],["3","Anúncio","Announcement"],["4","Briga","Brawl"],["5","Valentões","Bullies"],["6","Acompanhante","Companion"],
+   ["7","Disputa","Contest"],["8","Cadáver","Corpse"],["9","Convocados","Drafted"],["10","Bêbado","Drunk"],["11","Incêndio","Fire"],["12","Encontra uma bugiganga","Found trinket"],
+   ["13","Assédio da guarda","Guard harassment"],["14","Batedor de carteira","Pickpocket"],["15","Procissão","Procession"],["16","Protesto","Protest"],
+   ["17","Carroça em fuga","Runaway cart"],["18","Transação suspeita","Shady transaction"],["19","Espetáculo","Spectacle"],["20","Garoto de rua","Urchin"]]),
+  desc:{
+   "2":D("Os personagens avistam um ou mais animais inesperados à solta na rua — desde um bando de babuínos até um urso, tigre ou elefante que escapou do circo.","The characters spot one or more unexpected animals loose in the street — anything from a pack of baboons to a bear, tiger, or elephant escaped from the circus."),
+   "3":D("Um arauto, pregador, louco ou outro indivíduo faz um anúncio numa esquina para todos ouvirem. Pode pressagiar um evento (como uma execução pública), comunicar algo importante (como um novo decreto real) ou transmitir um augúrio ou aviso terrível.","A herald, town crier, mad person, or other individual makes an announcement on a street corner for all to hear. It might foretell an event (such as a public execution), share important news (such as a new royal decree), or deliver a dire omen or warning."),
+   "4":D("Uma briga irrompe perto dos aventureiros: briga de taverna, batalha entre facções, famílias ou gangues rivais, ou luta entre guardas e criminosos. Os personagens podem ser testemunhas, ser atingidos por flechas perdidas ou ser confundidos com um dos lados e atacados pelo outro.","A brawl breaks out near the adventurers: a tavern fight, a battle between rival factions, families, or gangs, or a fight between guards and criminals. The characters might be witnesses, be hit by stray arrows, or be mistaken for one side and attacked by the other."),
+   "5":D("Os personagens veem 1d4 + 2 valentões molestando um forasteiro (use as estatísticas de plebeu do <i>Manual dos Monstros</i> para todos). Um valentão foge assim que sofre qualquer dano.","The characters see 1d4 + 2 bullies harassing a visitor (use the commoner statistics in the <i>Monster Manual</i> for all of them). A bully flees as soon as it takes any damage."),
+   "6":D("Um ou mais personagens são abordados por alguém do lugar com interesse amigável nas atividades do grupo. Reviravolta: o suposto companheiro pode ser um espião coletando informações sobre os aventureiros.","One or more characters are approached by a local who takes a friendly interest in the party's activities. Twist: the would-be companion could be a spy gathering information on the adventurers."),
+   "7":D("Os personagens são levados a uma disputa improvisada — de um teste intelectual a uma competição de bebida — ou testemunham um duelo.","The characters are drawn into an impromptu contest — from an intellectual challenge to a drinking contest — or witness a duel."),
+   "8":D("Os aventureiros encontram um cadáver humanoide.","The adventurers find a humanoid corpse."),
+   "9":D("Um guarda da cidade convoca os personagens para ajudar com um problema imediato. Reviravolta: o guarda pode ser um criminoso disfarçado atraindo o grupo para uma emboscada (use as estatísticas de rufião do <i>Manual dos Monstros</i> para ele e seus comparsas).","A town guard drafts the characters to help with an immediate problem. Twist: the guard could be a disguised criminal luring the party into an ambush (use the thug statistics in the <i>Monster Manual</i> for the criminal and accomplices)."),
+   "10":D("Um bêbado alegre cambaleia até um membro aleatório do grupo, confundindo-o com outra pessoa.","A cheerful drunk staggers toward a random party member, mistaking them for someone else."),
+   "11":D("Um incêndio começa e os personagens têm a chance de ajudar a apagar as chamas antes que se espalhem.","A fire breaks out, and the characters have a chance to help put out the flames before they spread."),
+   "12":D("Os personagens encontram uma bugiganga aleatória (role na tabela de Bugigangas do <i>Livro do Jogador</i>).","The characters find a random trinket (roll on the Trinkets table in the <i>Player's Handbook</i>)."),
+   "13":D("Os aventureiros são encurralados por 1d4 + 1 guardas ansiosos para confrontá-los. Se ameaçados, os guardas pedem ajuda e podem atrair outros guardas ou cidadãos próximos.","The adventurers are cornered by 1d4 + 1 guards eager to confront them. If threatened, the guards call for help and might attract other guards or nearby citizens."),
+   "14":D("Um ladrão (use as estatísticas de espião do <i>Manual dos Monstros</i>) tenta roubar um personagem aleatório. Personagens com Sabedoria (Percepção) passiva igual ou maior que o teste de Destreza (Prestidigitação) do ladrão o pegam no ato.","A thief (use the spy statistics in the <i>Monster Manual</i>) tries to rob a random character. Characters whose passive Wisdom (Perception) equals or beats the thief's Dexterity (Sleight of Hand) check catch the thief in the act."),
+   "15":D("Os aventureiros encontram cidadãos desfilando em celebração ou formando uma procissão funerária.","The adventurers encounter citizens either parading in celebration or forming a funeral procession."),
+   "16":D("Os aventureiros veem cidadãos protestando pacificamente contra uma nova lei ou decreto. Um punhado de guardas mantém a ordem.","The adventurers see citizens peacefully protesting a new law or decree. A handful of guards keep order."),
+   "17":D("Cavalos puxando um vagão disparam pelas ruas. Os aventureiros precisam desviar; se pararem o vagão, o dono (correndo atrás dele) fica agradecido.","A team of horses pulling a wagon careens through the streets. The adventurers must dodge; if they stop the wagon, its owner (running after it) is grateful."),
+   "18":D("Os personagens testemunham uma transação suspeita entre duas figuras de manto.","The characters witness a shady transaction between two cloaked figures."),
+   "19":D("Os personagens testemunham entretenimento público: um bardo imitando a realeza, um circo de rua, marionetes, um vistoso ato de mágica, uma visita real ou uma execução pública.","The characters witness public entertainment: a bard impersonating royalty, a street circus, a puppet show, a flashy magic act, a royal visit, or a public execution."),
+   "20":D("Um garoto de rua se aproxima dos aventureiros e os segue por todo lugar até ser afugentado.","A street urchin latches onto the adventurers and follows them everywhere until scared off.")}},
+ sea:{id:"sea", die:"d12+d8", title:{pt:"Encontros Aleatórios no Mar",en:"Sea Encounters"}, cols:["d12+d8",{pt:"Encontro",en:"Encounter"}],
+  note:{pt:"Verifique encontros aleatórios no mar com a mesma frequência que em terra (veja o capítulo 3).",en:"Check for random encounters at sea as often as on land (see chapter 3)."},
+  rows:R([["2","Navio fantasma","Ghost ship"],["3","Dragão de bronze amigável e curioso","Friendly and curious bronze dragon"],
+   ["4","Vórtice (25% de chance de ser um portal para o Plano Elemental da Água)","Whirlpool (25% chance it's a portal to the Elemental Plane of Water)"],
+   ["5","Povo do mar comerciante","Merfolk traders"],["6","Navio de guerra de passagem (amigável ou hostil)","Passing warship (friendly or hostile)"],
+   ["7-8","Navio pirata (hostil)","Pirate ship (hostile)"],["9-10","Navio mercante de passagem (galera ou veleiro)","Passing merchant ship (galley or sailing ship)"],
+   ["11-12","Baleia assassina avistada","Killer whale sighting"],["13-14","Destroços flutuando","Floating debris"],["15","Dracar tripulado por furiosos hostis","Longship crewed by hostile berserkers"],
+   ["16","Grifos ou harpias hostis","Hostile griffons or harpies"],["17","Iceberg (facilmente evitado se visto de longe)","Iceberg (easily avoided if seen from afar)"],
+   ["18","Grupo de abordagem sahuagin","Sahuagin boarding party"],["19","NPC na água (agarrado a destroços flutuantes)","NPC in the water (clinging to floating debris)"],
+   ["20","Monstro marinho (como uma tartaruga-dragão ou kraken)","Sea monster (such as a dragon turtle or kraken)"]])},
+ underwater:{id:"underwater", die:"d12+d8", link:{"12":"underwater"}, title:{pt:"Encontros Aleatórios Submersos",en:"Underwater Encounters"}, cols:["d12+d8",{pt:"Encontro",en:"Encounter"}],
+  note:{pt:"Verifique encontros submersos com a mesma frequência que encontros terrestres (veja o capítulo 3). Role ou escolha o que funcionar melhor.",en:"Check for underwater encounters as often as for encounters on land (see chapter 3). Roll or pick whatever works best."},
+  rows:R([["2","Navio afundado coberto por cracas (25% de chance de conter tesouro; role nas tabelas de tesouro do capítulo 7)","Sunken ship covered in barnacles (25% chance of treasure; roll on the treasure tables in chapter 7)"],
+   ["3","Navio afundado com tubarões dos arrecifes (águas rasas) ou tubarões caçadores (águas profundas) rondando (50% de chance de conter tesouro; role nas tabelas de tesouro do capítulo 7)","Sunken ship circled by reef sharks (shallow water) or hunter sharks (deep water) (50% chance of treasure; roll on the treasure tables in chapter 7)"],
+   ["4","Campo de ostras gigantes (cada ostra tem 1% de chance de ter uma pérola gigante de 5.000 po)","Bed of giant oysters (each has a 1% chance of holding a giant 5,000 gp pearl)"],
+   ["5","Saída de vapor submarina (25% de chance de ser um portal para o Plano Elemental do Fogo)","Undersea steam vent (25% chance it's a portal to the Elemental Plane of Fire)"],
+   ["6","Ruína inundada (desabitada)","Sunken ruin (uninhabited)"],["7","Ruína inundada (habitada ou assombrada)","Sunken ruin (inhabited or haunted)"],
+   ["8","Estátua ou monólito afundado","Sunken statue or monolith"],["9","Cavalo-marinho gigante amigável e curioso","Friendly and curious giant sea horse"],
+   ["10","Patrulha de povo do mar amigável","Patrol of friendly merfolk"],["11","Patrulha de sireníedeos hostis (águas costeiras) ou sahuagin (águas profundas)","Patrol of hostile merrow (coastal waters) or sahuagin (deep water)"],
+   ["12","Campo de algas enorme (role novamente para determinar o que está escondido nele)","Enormous kelp bed (roll again to determine what's hidden in it)"],
+   ["13","Caverna submersa (vazia)","Underwater cave (empty)"],["14","Caverna submersa (covil de bruxa do mar)","Underwater cave (sea hag lair)"],
+   ["15","Caverna submersa (covil de povo do mar)","Underwater cave (merfolk lair)"],["16","Caverna submersa (covil de polvo gigante)","Underwater cave (giant octopus lair)"],
+   ["17","Caverna submersa (covil de tartaruga-dragão)","Underwater cave (dragon turtle lair)"],["18","Dragão de bronze procurando tesouro","Bronze dragon searching for treasure"],
+   ["19","Gigante da tempestade andando no leito do oceano","Storm giant walking along the ocean floor"],
+   ["20","Baú de tesouro afundado (25% de chance de conter algo valioso; role nas tabelas de tesouro do capítulo 7)","Sunken treasure chest (25% chance of something valuable; roll on the treasure tables in chapter 7)"]])},
+ forest:{id:"forest", die:"d12+d8", title:{pt:"Encontros Numa Floresta Silvestre",en:"Sylvan Forest Encounters"}, cols:["d12+d8",{pt:"Encontro",en:"Encounter"}], rows:R([
+  ["2","1 pantera deslocadora","1 displacer beast"],["3","1 gnoll líder de matilha e 2d4 gnolls","1 gnoll pack lord and 2d4 gnolls"],["4","1d4 gnolls e 2d4 hienas","1d4 gnolls and 2d4 hyenas"],
+  ["5","Um bosque de árvores queimadas. Com sucesso num teste de Sabedoria (Sobrevivência) CD 10, os personagens encontram rastros de gnolls. Segui-los por 1d4 horas leva a um encontro com gnolls, ou a gnolls mortos com flechas élficas fincadas em seus corpos pulguentos.",
+   "A grove of burned trees. With a successful DC 10 Wisdom (Survival) check, the characters find gnoll tracks. Following them for 1d4 hours leads to an encounter with gnolls, or to dead gnolls with elven arrows stuck in their flea-bitten bodies."],
+  ["6","1 coruja gigante","1 giant owl"],["7","Uma estátua de uma divindade ou herói élfico coberta por vegetação","A statue of an elven deity or hero overgrown with vegetation"],
+  ["8","1 dríade (50%) ou 1d4 sátiros (50%)","1 dryad (50%) or 1d4 satyrs (50%)"],["9","1d4 centauros","1d4 centaurs"],
+  ["10","2d4 batedores (elfos). Um batedor carrega uma trombeta e pode usar sua ação para soprá-la. Se soprada na floresta, role na tabela novamente; se o resultado for um encontro com monstro, ele chega em 1d4 minutos. Recém-chegados que não sejam gnolls, hienas, ursos-coruja ou panteras deslocadoras são amigáveis aos batedores.",
+   "2d4 scouts (elves). One scout carries a horn and can use its action to blow it. If blown in the forest, roll on the table again; if the result is a monster encounter, it arrives in 1d4 minutes. Newcomers other than gnolls, hyenas, owlbears, or displacer beasts are friendly to the scouts."],
+  ["11","2d4 pixies (50%) ou 2d4 sprites (50%)","2d4 pixies (50%) or 2d4 sprites (50%)"],["12","1 urso-coruja","1 owlbear"],
+  ["13","1d4 alces (75%) ou 1 alce gigante (25%)","1d4 elk (75%) or 1 giant elk (25%)"],["14","1d4 cães teleportadores","1d4 blink dogs"],
+  ["15","Uma planta mágica com 2d4 frutos brilhantes. Quem comer um fruto fica invisível por 1d4 horas, ou até atacar ou conjurar uma magia. Colhido, o fruto perde a magia após 12 horas. Os frutos voltam a crescer à meia-noite, mas se todos forem colhidos, a planta se torna não-mágica e não dá mais frutos.",
+   "A magical plant with 2d4 glowing fruit. A creature that eats one becomes invisible for 1d4 hours, or until it attacks or casts a spell. Once picked, a fruit loses its magic after 12 hours. The fruit regrows at midnight, but if all of it is picked, the plant becomes nonmagical and bears no more fruit."],
+  ["16","Uma melodia élfica carregada por uma brisa suave","An elven melody carried on a gentle breeze"],["17","1d4 dragões-fada laranja (75%) ou azul (25%)","1d4 faerie dragons, orange (75%) or blue (25%)"],
+  ["18","1 druida (elfo). Inicialmente indiferente ao grupo, torna-se amigável se os personagens concordarem em livrar a floresta da infestação de gnolls.",
+   "1 druid (elf). Initially indifferent to the party, but becomes friendly if the characters agree to rid the forest of its gnoll infestation."],
+  ["19","1 ente. Amigável se o grupo tiver um ou mais elfos ou estiver acompanhado por uma criatura feérica visível; hostil se o grupo carregar chamas ao ar livre. Do contrário, é indiferente e não revela sua presença.",
+   "1 treant. Friendly if the party includes one or more elves or is accompanied by a visible fey creature; hostile if the party carries open flames. Otherwise indifferent, and it doesn't reveal itself."],
+  ["20","1 unicórnio","1 unicorn"]])},
+};
+const urbanDescCard = () => ({title:{pt:"Descrições dos Encontros Urbanos",en:"Urban Encounter Descriptions"}, blocks:[{html:{
+  pt:EVT.urban.rows.map(r => `<p><b>${r[1].pt}.</b> ${EVT.urban.desc[r[0]].pt}</p>`).join(""),
+  en:EVT.urban.rows.map(r => `<p><b>${r[1].en}.</b> ${EVT.urban.desc[r[0]].en}</p>`).join("")}}]});
+const EVT_RULES = {
+ underwater: rule("Submerso","Underwater",
+  `<p>Veja o capítulo 9 do <i>Livro do Jogador</i> para regras de combate submerso.</p>`,
+  `<p>See chapter 9 of the <i>Player's Handbook</i> for underwater combat rules.</p>`),
+ swim: rule("Nadando","Swimming",
+  `<ul><li>A não ser com auxílio de magia, um personagem não pode nadar 8 horas seguidas num dia.</li><li>Após cada hora de natação: <b>teste de resistência de Constituição CD 10</b> ou recebe um nível de exaustão.</li><li>Criaturas com deslocamento de natação (inclusive com <i>anel de natação</i> ou magia similar) nadam o dia todo sem penalidade e usam as regras normais de marcha forçada do <i>Livro do Jogador</i>.</li><li>Águas profundas são como altitude elevada (pressão e frio). Sem deslocamento de natação, cada hora a mais de <b>30 m</b> de profundidade conta como <b>2 horas</b> para exaustão; a mais de <b>60 m</b>, conta como <b>4 horas</b>.</li></ul>`,
+  `<ul><li>Unless aided by magic, a character can't swim for a full 8 hours per day.</li><li>After each hour of swimming: <b>DC 10 Constitution saving throw</b> or gain one level of exhaustion.</li><li>A creature with a swimming speed (including one with a <i>ring of swimming</i> or similar magic) can swim all day without penalty and uses the normal forced march rules in the <i>Player's Handbook</i>.</li><li>Deep water is like high altitude (pressure and cold). Without a swimming speed, each hour spent deeper than <b>100 feet</b> counts as <b>2 hours</b> for exhaustion; deeper than <b>200 feet</b>, it counts as <b>4 hours</b>.</li></ul>`),
+ vis: rule("Visibilidade Embaixo d'Água","Underwater Visibility",
+  `<p>A visibilidade depende da claridade da água e da luz disponível. A não ser que tenham fontes de luz, use a tabela abaixo para saber a que distância os personagens percebem um possível encontro.</p>`,
+  `<p>Visibility depends on water clarity and available light. Unless the characters have light sources, use the table below to determine how far away they notice a possible encounter.</p>`,
+  [{table:{cols:[{pt:"Claridade da Água",en:"Water Clarity"},{pt:"Distância de Encontro",en:"Encounter Distance"}], rows:[
+   [{pt:"Água límpida, luz plena",en:"Clear water, bright light"},{pt:"18 m",en:"60 ft"}],[{pt:"Água límpida, penumbra",en:"Clear water, dim light"},{pt:"9 m",en:"30 ft"}],
+   [{pt:"Água escura ou sem luz",en:"Murky water or no light"},{pt:"3 m",en:"10 ft"}]]}}]),
+ wreck: rule("Naufrágios","Shipwrecks",
+  `<p>Um naufrágio é um elemento de enredo que funciona muito bem se usado com moderação, especialmente para arrastar os personagens a uma ilha infestada de monstros ou (no caso de um dirigível) derrubá-los numa terra exótica. Não há regras para quando acontece: acontece quando você quiser ou precisar.</p><p>Até a embarcação mais resistente pode naufragar numa tormenta, encalhar em rochas ou recifes, afundar num ataque pirata ou ser arrastada por um monstro marinho; uma tempestade ou dragão faminto derruba um dirigível da mesma forma. Um naufrágio pode mudar a direção da campanha, mas não é uma boa forma de matar os personagens.</p><p>Presume-se que os personagens sobrevivem com o equipamento que vestem ou carregam. O destino de NPCs e da carga a bordo fica a seu critério.</p>`,
+  `<p>A shipwreck is a plot device best used sparingly, especially to strand the characters on a monster-infested island or (for an airship) drop them in an exotic land. There are no rules for when one happens: it happens when you want or need it to.</p><p>Even the sturdiest vessel can founder in a storm, run aground on rocks or reefs, sink in a pirate attack, or be dragged under by a sea monster; a storm or hungry dragon can bring down an airship just as easily. A shipwreck can change the direction of a campaign, but it isn't a good way to kill the characters.</p><p>Assume the characters survive with the gear they're wearing or carrying. The fate of NPCs and cargo aboard is up to you.</p>`),
+ seaWeather: rule("Clima no Mar","Weather at Sea",
+  `<p>Use as tabelas de Clima (em Ambientes → Ermos) para o clima no mar.</p><ul><li><b>Vento forte + chuva forte</b> = tormenta com ondas elevadas. A tripulação perde de vista todos os pontos de referência (a não ser um farol ou outra referência brilhante) e testes para navegar têm <b>desvantagem</b>.</li><li><b>Calmaria</b> (sem vento): barcos não se movem a vela e devem ser remados.</li><li>Um veleiro contra vento forte se move à <b>metade da velocidade</b>.</li></ul>`,
+  `<p>Use the Weather tables (in Environments → Wilderness) for weather at sea.</p><ul><li><b>Strong wind + heavy rain</b> = a storm with high waves. The crew loses sight of all landmarks (unless there's a lighthouse or other bright landmark), and checks to navigate have <b>disadvantage</b>.</li><li><b>Calm</b> (no wind): ships can't move by sail and must be rowed.</li><li>A sailing ship heading into a strong wind moves at <b>half speed</b>.</li></ul>`),
+ sea: rule("O Mar","The Sea",
+  `<p>Personagens podem remar 8 horas por dia, ou remar mais arriscando exaustão (como nas regras de marcha forçada do <i>Livro do Jogador</i>). Um veleiro totalmente tripulado navega o dia inteiro, com os marinheiros trabalhando em turnos.</p>`,
+  `<p>Characters can row a boat for 8 hours per day, or row longer at the risk of exhaustion (as with the forced march rules in the <i>Player's Handbook</i>). A fully crewed sailing ship can sail all day, with sailors working in shifts.</p>`),
+ nav: rule("Navegação","Navigation",
+  `<p>Embarcações ficam perto do litoral quando podem, pois é mais fácil navegar com pontos de referência à vista. Enquanto avistar terra, a embarcação não se perde. Do contrário, o navegador depende de cálculo de posição (direção e distância percorrida) ou do sol e das estrelas. Use a tabela de Navegação abaixo (como em Se Perdendo) para ver se a embarcação saiu do curso.</p>`,
+  `<p>Ships stay near the coast when they can, since landmarks make navigation easier. As long as a ship is in sight of land, it can't get lost. Otherwise, the navigator relies on dead reckoning (tracking direction and distance traveled) or the sun and stars. Use the Navigation table below (as in Becoming Lost) to see if the ship goes off course.</p>`,
+  [ENV_RULES.find(r => r.title.en === "Becoming Lost").blocks.at(-1)]),
+};
+
+// Treasure generator card: LS.treasure rolls it, this formats it.
+const hlRoll = {onRoll:(tt, keys) => { LAST_HIT[tt.id] = keys; if(TABLE_EL[tt.id]) markHits(tt); }};
+function treasureHTML(res){
+  const ul = tally => `<ul>${Object.entries(tally).map(([k,v]) => `<li>${v > 1 ? v + "× " : ""}${k}</li>`).join("")}</ul>`;
+  let h = res.kind === "hoard" ? `<div><b>${esc(L(res.table.title))}</b> <span class="die">${res.val}</span></div>` : "";
+  h += `<div><b>${esc(L(UI.coins))}</b><br>${res.coins.map(([n,i]) => `${fmt(n)} ${L(COINS[i])}`).join(" · ") || "–"}</div>`;
+  for(const l of res.loot) h += `<div><b>${l.count}× ${esc(L(l.table.title))}</b>${l.expr ? ` <span class="die">${l.expr}</span>` : ""}${
+    l.value ? ` = ${fmt(l.value)} ${L(COINS[3])}` : ""}${ul(l.tally)}</div>`;
+  return h;
+}
+const rollTreasure = (cr, kind) => treasureHTML(LS.treasure(cr, kind, hlRoll));
+// Chamber contents card: chamber roll + follow-ups + treasure for the chosen challenge.
+function chamberHTML(cr){
+  const c = LS.chamber(cr, hlRoll);
+  return `<div><b>${esc(L(DENC.chamber.title))}</b> <span class="die">${c.val}</span><br>${esc(c.content)}</div>`
+    + c.lines.filter(l => !/^Tesouro|^Treasure/.test(l.label)).map(l => `<div><b>${esc(l.label)}</b><br>${esc(l.text)}</div>`).join("")
+    + (c.treasure ? treasureHTML(c.treasure) : "");
+}
+function chamberPanel(){
+  return {gen:true, title:{pt:"Gerar conteúdo da câmara",en:"Generate chamber contents"}, blocks:[{html:`<div class="genrow">
+    <select class="tcr" aria-label="${esc(L(UI.challenge))}">${CRS.map(([v,n]) => `<option value="${v}">${esc(L(UI.challenge))} ${n}</option>`).join("")}</select>
+    <button class="rollbtn chambergen">${esc(L(UI.generate))}</button></div><div class="genout"></div>`}]};
+}
+function treasurePanel(){
+  return {gen:true, title:{pt:"Gerar tesouro",en:"Generate treasure"}, blocks:[{html:`<div class="genrow">
+    <select class="tcr" aria-label="${esc(L(UI.challenge))}">${CRS.map(([v,n]) => `<option value="${v}">${esc(L(UI.challenge))} ${n}</option>`).join("")}</select>
+    <select class="tkind" aria-label="${esc(L(UI.kind))}"><option value="ind">${esc(L(UI.individual))}</option><option value="hoard">${esc(L(UI.hoard))}</option></select>
+    <button class="rollbtn treasuregen">${esc(L(UI.generate))}</button></div><div class="genout"></div>`}]};
+}
+
+const ITEM_RULES = [
+ rule("Itens Mágicos","Magic Items",
+  `<p>Itens mágicos são obtidos dos tesouros de monstros derrotados ou descobertos em câmaras perdidas há muito tempo. Concedem capacidades que um personagem raramente teria de outra forma, ou complementam as capacidades de quem os usa de formas incríveis.</p>`,
+  `<p>Magic items are gleaned from the hoards of conquered monsters or discovered in long-lost vaults. They grant capabilities a character could rarely have otherwise, or complement their owner's capabilities in wondrous ways.</p>`),
+ rule("Raridade","Rarity",
+  `<ul><li>Cada item tem uma raridade: <b>comum, incomum, raro, muito raro ou lendário</b>. Comuns (como a <i>poção de cura</i>) são os mais abundantes; alguns lendários (como o <i>dispositivo de Kwalish</i>) são únicos.</li><li>Os segredos de criação dos itens mais poderosos se perderam; mesmo incomuns não são feitos com facilidade, e muitos itens são antiguidades.</li><li>A raridade mede o poder de forma grosseira e corresponde a um nível de personagem: um personagem normalmente não encontra um item raro antes do 9º nível. Mas isso não deve atrapalhar a história — se você quer que um <i>anel de invisibilidade</i> caia nas mãos de um personagem de 1º nível, que seja.</li><li>Se itens puderem ser negociados, a raridade ajuda a definir o preço. Um consumível (poção, pergaminho) costuma valer metade de um item permanente da mesma raridade.</li></ul>`,
+  `<ul><li>Every item has a rarity: <b>common, uncommon, rare, very rare, or legendary</b>. Common items (like a <i>potion of healing</i>) are the most plentiful; some legendary items (like the <i>apparatus of Kwalish</i>) are unique.</li><li>The secrets of creating the most powerful items were lost long ago; even uncommon items aren't easily made, and many items are antiques.</li><li>Rarity is a rough measure of power and corresponds to a character level: a character typically doesn't find a rare item until around 9th level. But don't let that get in the way of the story — if you want a <i>ring of invisibility</i> in the hands of a 1st-level character, so be it.</li><li>If items can be traded, rarity helps set the price. A consumable (potion, scroll) is typically worth half a permanent item of the same rarity.</li></ul>`,
+  [{table:{cols:[{pt:"Raridade",en:"Rarity"},{pt:"Nível",en:"Level"},{pt:"Valor",en:"Value"}], rows:[
+   [{pt:"Comum",en:"Common"},{pt:"1º ou maior",en:"1st or higher"},{pt:"50–100 po",en:"50–100 gp"}],
+   [{pt:"Incomum",en:"Uncommon"},{pt:"5º ou maior",en:"5th or higher"},{pt:"101–500 po",en:"101–500 gp"}],
+   [{pt:"Raro",en:"Rare"},{pt:"9º ou maior",en:"9th or higher"},{pt:"501–5.000 po",en:"501–5,000 gp"}],
+   [{pt:"Muito raro",en:"Very rare"},{pt:"13º ou maior",en:"13th or higher"},{pt:"5.001–50.000 po",en:"5,001–50,000 gp"}],
+   [{pt:"Lendário",en:"Legendary"},{pt:"17º ou maior",en:"17th or higher"},{pt:"50.001+ po",en:"50,001+ gp"}]]}}]),
+ rule("Comprando e Vendendo","Buying and Selling",
+  `<ul><li>A não ser que sua campanha funcione diferente, a maioria dos itens mágicos é rara demais para estar à venda.</li><li>Itens comuns (como a <i>poção de cura</i>) podem ser feitos por um alquimista, herborista ou conjurador, mas raramente é só entrar numa loja: o vendedor pode exigir um serviço em vez de moedas.</li><li>Numa cidade grande com academia de magia ou templo, comprar e vender pode ser possível, a seu critério — ainda assim como um mercado de arte fina, com leilões para convidados e tendência a atrair ladrões.</li><li>Vender é difícil: muitos querem uma espada mágica, poucos podem pagar, e esses têm gastos mais práticos (veja o capítulo 6).</li><li>Se itens forem abundantes no seu mundo, podem estar à venda em bazares, casas de leilão em locais fantásticos (Cidade de Bronze, Sigil) ou mercados negros. Artífices podem construí-los para forças militares e aventureiros (como em Eberron), e personagens podem criar itens (capítulo 6).</li></ul>`,
+  `<ul><li>Unless your campaign works differently, most magic items are too rare to be for sale.</li><li>Common items (like a <i>potion of healing</i>) can be made by an alchemist, herbalist, or spellcaster, but it's rarely as easy as walking into a shop: the seller might want a service instead of coin.</li><li>In a large city with a magic academy or temple, buying and selling might be possible at your discretion — still more like a fine art market, with invitation-only auctions and a tendency to attract thieves.</li><li>Selling is hard: many want a magic sword, few can afford one, and those who can usually have more practical expenses (see chapter 6).</li><li>If items are plentiful in your world, they might be sold in bazaars, auction houses in fantastic places (the City of Brass, Sigil), or black markets. Artificers might build them for armies and adventurers (as in Eberron), and characters can craft items (chapter 6).</li></ul>`),
+ rule("Identificando um Item Mágico","Identifying a Magic Item",
+  `<ul><li>Alguns itens mágicos parecem comuns; outros mostram sua natureza mágica claramente. Empunhar um item basta para perceber algo extraordinário, mas descobrir suas propriedades não é automático.</li><li>A magia <i>identificação</i> é o meio mais rápido.</li><li>Alternativamente, o personagem se concentra no item durante um <b>descanso curto</b>, em contato físico; ao fim, aprende suas propriedades e como usá-las.</li><li><b>Poções</b> são exceção: um pequeno gole basta para saber o efeito.</li><li>Às vezes o item dá pistas: uma palavra de comando gravada, ou plumas sugerindo um <i>anel de queda suave</i>.</li><li>Vestir ou experimentar também dá dicas: com um <i>anel de saltar</i>, "seus passos parecem estranhamente largos".</li></ul>`,
+  `<ul><li>Some magic items look mundane; others clearly reveal their magic. Handling an item is enough to sense something extraordinary, but learning its properties isn't automatic.</li><li>The <i>identify</i> spell is the fastest way.</li><li>Alternatively, a character focuses on the item during a <b>short rest</b> while in physical contact; at the end, they learn its properties and how to use them.</li><li><b>Potions</b> are an exception: a little taste is enough to know the effect.</li><li>Sometimes the item carries clues: an engraved command word, or feathers hinting at a <i>ring of feather falling</i>.</li><li>Wearing or trying an item also gives hints: with a <i>ring of jumping</i>, "your steps feel strangely springy".</li></ul>`),
+ rule("Variação: Identificação Mais Difícil","Variant: More Difficult Identification",
+  `<p>Para mais mistério, remova a identificação durante um descanso curto e exija a magia <i>identificação</i>, experimentação ou ambos para revelar o que o item faz.</p>`,
+  `<p>For more mystery, remove identification during a short rest and require the <i>identify</i> spell, experimentation, or both to reveal what an item does.</p>`),
+ rule("Sintonização","Attunement",
+  `<ul><li>Alguns itens exigem <b>sintonização</b> antes de usar suas propriedades mágicas. Alguns têm pré-requisito: de classe (ser membro dela) ou de conjurador (conseguir conjurar ao menos uma magia por traços ou características, não por item mágico).</li><li>Sem sintonização, a criatura só tem os benefícios não-mágicos (um escudo mágico funciona como escudo comum).</li><li>Sintonizar exige um <b>descanso curto</b> focado só no item, em contato físico (não o mesmo descanso usado para aprender suas propriedades): praticar com a arma, meditar etc. Se interrompido, falha. Ao fim, a criatura entende como ativá-lo, incluindo palavras de comando.</li><li>Um item se sintoniza a uma criatura por vez, e uma criatura se sintoniza a no máximo <b>três itens</b>; tentar um quarto falha. Não dá para se sintonizar a duas cópias do mesmo item.</li><li>A sintonização termina se a criatura deixar de cumprir os pré-requisitos, se o item ficar a mais de <b>30 m por 24 horas</b>, se a criatura morrer ou se outra se sintonizar ao item. Também pode terminar voluntariamente com outro descanso curto, exceto se o item for amaldiçoado.</li></ul>`,
+  `<ul><li>Some items require <b>attunement</b> before their magic can be used. Some have a prerequisite: a class (be a member of it) or spellcaster (able to cast at least one spell using its traits or features, not a magic item).</li><li>Without attunement, a creature gains only the nonmagical benefits (a magic shield works as a normal shield).</li><li>Attuning takes a <b>short rest</b> focused only on the item while in physical contact (not the same rest used to learn its properties): weapon practice, meditation, and so on. If interrupted, it fails. At the end, the creature understands how to activate it, including command words.</li><li>An item can be attuned to one creature at a time, and a creature can be attuned to no more than <b>three items</b>; trying a fourth fails. A creature can't attune to more than one copy of an item.</li><li>Attunement ends if the creature no longer meets the prerequisites, the item is more than <b>100 feet away for 24 hours</b>, the creature dies, or another creature attunes to it. It can also end voluntarily with another short rest, unless the item is cursed.</li></ul>`),
+ rule("Itens Amaldiçoados","Cursed Items",
+  `<ul><li>Alguns itens carregam maldições que atormentam o usuário, às vezes muito depois de começar a usá-los. A descrição do item diz se ele é amaldiçoado.</li><li>A maioria dos métodos de identificação, inclusive a magia <i>identificação</i>, não revela a maldição, embora o conhecimento sobre o item possa dar uma pista. A maldição deve ser uma surpresa quando seu efeito aparece.</li><li>A sintonização com um item amaldiçoado não pode terminar voluntariamente, a não ser que a maldição seja quebrada primeiro, como com <i>remover maldição</i>.</li></ul>`,
+  `<ul><li>Some items bear curses that bedevil their users, sometimes long after they start using them. The item's description says whether it's cursed.</li><li>Most identification methods, including the <i>identify</i> spell, fail to reveal the curse, though lore might hint at it. The curse should be a surprise when its effect is revealed.</li><li>Attunement to a cursed item can't be ended voluntarily unless the curse is broken first, such as with <i>remove curse</i>.</li></ul>`),
+];
+const GEM_NOTE = {pt:"Se uma pilha de tesouro incluir gemas, role na tabela do valor indicado. Role uma vez e assuma que todas são do mesmo tipo, ou role várias vezes para uma coleção variada.",
+  en:"If a hoard includes gemstones, roll on the table for their value. Roll once and assume all are the same kind, or roll several times for a mixed collection."};
+const ART_NOTE = {pt:"Se uma pilha de tesouro incluir objetos de arte, role na tabela do valor indicado uma vez para cada objeto. Pode haver mais de um de uma mesma obra.",
+  en:"If a hoard includes art objects, roll on the table for their value once per object. There can be more than one of the same piece."};
+
+const TABLES = Object.assign(LS.TABLES, ADV, NPC, ENV, TOWN, EVT);
+const tableCard = t => ({title:t.title, blocks:[...(t.note ? [{html:{pt:`<p>${t.note.pt}</p>`, en:`<p>${t.note.en}</p>`}}] : []), {table:t}]});
+// Generators. parts: [tableId, label?]; "?" = the table picked in the select.
+const GENS = {
+ adv:{title:{pt:"Gerar aventura (baseada em local)",en:"Generate adventure (location-based)"},
+  choose:{label:{pt:"Tipo de objetivo",en:"Goal type"}, options:["dungeon","wild","other"]},
+  parts:[["?",{pt:"Objetivo",en:"Goal"}],["villain",{pt:"Vilão",en:"Villain"}],["ally",{pt:"Aliado",en:"Ally"}],["patron",{pt:"Patrono",en:"Patron"}],
+   ["intro",{pt:"Introdução",en:"Introduction"}],["climax",{pt:"Clímax",en:"Climax"}],["twist",{pt:"Reviravolta",en:"Twist"}]]},
+ npc:{title:{pt:"Gerar NPC",en:"Generate NPC"},
+  choose:{label:{pt:"Ideal",en:"Ideal"}, options:["*", ...IDEALS]},
+  parts:[["race",{pt:"Raça",en:"Race"}],["gender",{pt:"Gênero",en:"Gender"}],["@name"],["appearance",{pt:"Aparência",en:"Appearance"}],["high"],["low"],["talent",{pt:"Dom",en:"Talent"}],["mannerism",{pt:"Maneirismo",en:"Mannerism"}],
+   ["trait",{pt:"Interação",en:"Interaction"}],["?"],["bond",{pt:"Vínculo",en:"Bond"}],["flaw",{pt:"Defeito ou segredo",en:"Flaw or secret"}]]},
+ dungeon:{title:{pt:"Gerar masmorra",en:"Generate dungeon"},
+  parts:[["location",{pt:"Localização",en:"Location"}],["creator",{pt:"Criador",en:"Creator"}],["purpose",{pt:"Propósito",en:"Purpose"}],["history",{pt:"História",en:"History"}]]},
+ weather:{title:{pt:"Gerar clima",en:"Generate weather"}, parts:[["temp"],["wind"],["precip"]]},
+ town:{title:{pt:"Gerar povoado",en:"Generate settlement"}, parts:[["relations"],["ruler"],["traits"],["known"],["calamity"]]},
+ building:{title:{pt:"Gerar construção",en:"Generate building"}, parts:[["building"]]},
+ tavernName:{title:{pt:"Gerar nome de taverna",en:"Generate tavern name"}, parts:[["@tavernName"]]},
+ villain:{title:{pt:"Gerar vilão",en:"Generate villain"},
+  parts:[["scheme",{pt:"Trama",en:"Scheme"}],["method",{pt:"Método",en:"Method"}],["weakness",{pt:"Fraqueza",en:"Weakness"}]]},
+};
+
+const SCREENS = [
+ {name:{pt:"Condições",en:"Conditions"}, panels:conditionPanels},
+ {name:{pt:"Criação de Aventura",en:"Adventure Making"}, panels:() => [
+  genPanel("adv"),
+  ...Object.values(ADV).map(tableCard),
+ ]},
+ {name:{pt:"Criação de NPC",en:"NPC Making"}, panels:() => [
+  genPanel("npc"), namePanel(), genPanel("villain"),
+  ...NPC_CARDS.map(c => typeof c === "string" ? tableCard(NPC[c]) : {title:c.title, blocks:c.tables.map(id => ({table:NPC[id]}))}),
+ ]},
+ {name:{pt:"Ambientes",en:"Environments"}, subs:[
+  {name:{pt:"Ermos",en:"Wilderness"}, panels:() => [
+   genPanel("weather"),
+   {title:{pt:"Clima",en:"Weather"}, blocks:[
+    {html:{pt:"<p>Escolha o clima que se encaixe na campanha ou role para determinar o clima de um dia, ajustando ao terreno e à estação.</p>",
+           en:"<p>Choose weather that fits your campaign or roll to determine a day's weather, adjusting for terrain and season.</p>"}},
+    ...["temp","wind","precip"].map(id => ({table:ENV[id]}))]},
+   ...["monument","weird"].map(id => tableCard(ENV[id])),
+   ...ENV_RULES,
+  ]},
+  {name:{pt:"Masmorras",en:"Dungeons"}, panels:() => [
+   genPanel("dungeon"),
+   ...["location","exotic","creator","cult","alignment","class","purpose","history"].map(id => tableCard(ENV[id])),
+  ]},
+  {name:{pt:"Povoados",en:"Settlements"}, panels:() => [
+   genPanel("town"), genPanel("building"),
+   rule("Povoados","Settlements",
+    `<p>Uma vila, cidade ou metrópole é um cenário excelente para uma aventura. Os aventureiros podem ser chamados para rastrear um criminoso escondido, resolver um homicídio, acabar com uma gangue de homens-rato ou duplos, ou proteger o povoado de um cerco.</p><p>Ao criar um povoado, foque nos locais mais relevantes para a aventura. Não se preocupe em batizar cada rua e identificar os habitantes de cada construção; assim você fica louco.</p>`,
+    `<p>A village, town, or city makes a great setting for an adventure. The adventurers might be called on to track down a criminal in hiding, solve a murder, stamp out a gang of wererats or doppelgangers, or protect the settlement from a siege.</p><p>When creating a settlement, focus on the locations most relevant to the adventure. Don't worry about naming every street and identifying the inhabitants of every building; that way lies madness.</p>`),
+   rule("Povoados Aleatórios","Random Settlements",
+    `<p>As tabelas a seguir permitem criar rapidamente um povoado. Elas assumem que você já determinou o tamanho e a forma básica de governo.</p>`,
+    `<p>The following tables let you quickly create a settlement. They assume you've already determined its size and basic form of government.</p>`),
+   ...["relations","ruler","traits","known","calamity"].map(id => tableCard(TOWN[id])),
+   rule("Construções Aleatórias","Random Buildings",
+    `<p>Perseguições e fugas dentro de uma cidade podem forçar os personagens a correr para dentro de construções. Quando precisar concretizar uma construção rapidamente, role na tabela <b>Tipo de Construção</b> e depois na tabela correspondente àquele tipo.</p><p>Se uma rolagem não fizer sentido para onde os personagens estão (como uma mansão luxuosa em uma parte degradada da cidade), role novamente ou escolha o resultado. Porém, esses resultados inesperados podem inspirar locais criativos e memoráveis.</p>`,
+    `<p>Chases and escapes through a town can send characters rushing into buildings. When you need to flesh out a building quickly, roll on the <b>Building Type</b> table, then on the table for that type.</p><p>If a roll doesn't make sense for where the characters are (such as a luxurious mansion in a rundown part of town), reroll or choose a result. Still, such unexpected results can inspire creative, memorable locations.</p>`),
+   ...["building","residence","religious","tavern"].map(id => tableCard(TOWN[id])),
+   {...genPanel("tavernName"), title:{pt:"Gerador de Nome de Taverna",en:"Tavern Name Generator"},
+    blocks:[...genPanel("tavernName").blocks, {table:TOWN.tavern1}, {table:TOWN.tavern2}]},
+   ...["warehouse","shop"].map(id => tableCard(TOWN[id])),
+  ]},
+ ]},
+ {name:{pt:"Eventos",en:"Events"}, subs:[
+  {name:{pt:"Cidade",en:"City"}, panels:() => [tableCard(EVT.urban), urbanDescCard()]},
+  {name:{pt:"Mar",en:"Sea"}, panels:() => [tableCard(EVT.sea), EVT_RULES.wreck, EVT_RULES.seaWeather, EVT_RULES.sea, EVT_RULES.nav]},
+  {name:{pt:"Submerso",en:"Underwater"}, panels:() => [EVT_RULES.underwater, tableCard(EVT.underwater), EVT_RULES.swim, EVT_RULES.vis]},
+  {name:{pt:"Floresta",en:"Forest"}, panels:() => [tableCard(EVT.forest)]},
+  {name:{pt:"Masmorra",en:"Dungeon"}, panels:() => [chamberPanel(),
+   rule("Conteúdo da Câmara","Chamber Contents",
+    `<p>Depois de definir o propósito das câmaras, pense no conteúdo: role ou escolha, misturando coisas interessantes e pitorescas (veja também "Diversidades da Masmorra" no apêndice).</p><ul><li><b>Habitante dominante:</b> a criatura que controla a área.</li><li><b>Animais de estimação e aliados:</b> subservientes ao habitante dominante.</li><li><b>Criaturas aleatórias:</b> necrófagos ou pragas, monstros solitários ou pequenos grupos de passagem — vermes da carniça, ratos atrozes, cubos gelatinosos, monstros da ferrugem. Veja o capítulo 3.</li></ul>`,
+    `<p>Once you know the chambers' purposes, think about their contents: roll or choose, mixing interesting and colorful things (see also "Dungeon Dressing" in the appendix).</p><ul><li><b>Dominant inhabitant:</b> the creature that controls the area.</li><li><b>Pets and allies:</b> subservient to the dominant inhabitant.</li><li><b>Random creatures:</b> scavengers or vermin, solitary monsters or small wandering groups — carrion crawlers, giant rats, gelatinous cubes, rust monsters. See chapter 3.</li></ul>`),
+   tableCard(DENC.chamber),
+   rule("Monstros e Motivações","Monsters and Motivations",
+    `<ul><li>Veja o capítulo 3 para montar encontros. Para variedade e suspense, misture dificuldades.</li><li>Uma criatura poderosa percebida cedo dá tensão: um dragão vermelho ancião dormindo no primeiro nível, com fumaça e respiração pesada enchendo as câmaras próximas, deixa todos cuidadosos.</li><li>Nem todo monstro é hostil: pense nas relações com criaturas próximas e na atitude com os aventureiros. Uma besta faminta pode ser acalmada com comida; criaturas inteligentes têm motivações complexas.</li><li>Grupos maiores podem ter uma motivação comum, ou cada subgrupo ter objetivos conflitantes.</li></ul>`,
+    `<ul><li>See chapter 3 to build encounters. For variety and suspense, mix difficulties.</li><li>A powerful creature glimpsed early builds tension: an ancient red dragon asleep on the first level, its smoke and heavy breathing filling nearby chambers, keeps everyone careful.</li><li>Not every monster is hostile: consider its relationships with nearby creatures and its attitude toward the adventurers. A hungry beast might be pacified with food; intelligent creatures have complex motivations.</li><li>Larger groups can share one motivation, or each subgroup can have conflicting goals.</li></ul>`),
+   tableCard(DENC.motivation),
+   rule("Perigos Aleatórios na Masmorra","Random Dungeon Hazards",
+    `<p>Perigos raramente aparecem em áreas habitadas, já que os monstros os venceram ou os evitam. Guinchadores e fungos violeta estão no <i>Manual dos Monstros</i>; os demais estão no capítulo 5.</p>`,
+    `<p>Hazards are rarely found in inhabited areas, since monsters have either cleared or avoid them. Shriekers and violet fungi are in the <i>Monster Manual</i>; the rest are in chapter 5.</p>`),
+   tableCard(DENC.hazard),
+   rule("Obstáculos Aleatórios","Random Obstacles",
+    `<ul><li>Obstáculos bloqueiam o progresso. O que é barreira para os aventureiros pode ser caminho fácil para os habitantes (uma câmara inundada para quem respira na água).</li><li>Podem afetar mais de uma sala: um abismo cortando várias passagens, ou ventos de um altar mágico soprando por centenas de metros.</li></ul>`,
+    `<ul><li>Obstacles block progress. A barrier to the adventurers can be an easy path for the inhabitants (a flooded chamber for water breathers).</li><li>They can span several rooms: a chasm cutting through passages, or winds from a magic altar blowing for hundreds of feet.</li></ul>`),
+   tableCard(DENC.obstacle),
+   rule("Armadilhas Aleatórias","Random Traps",
+    `<p>Use as armadilhas do capítulo 5 ou estas tabelas: role <b>Efeito</b> e <b>Gatilho</b> para definir o tipo, depois <b>Gravidade</b> para o quão mortal ela é (veja o capítulo 5 para dano por gravidade).</p>`,
+    `<p>Use the traps in chapter 5 or these tables: roll <b>Effect</b> and <b>Trigger</b> for the kind of trap, then <b>Severity</b> for how deadly it is (see chapter 5 for damage by severity).</p>`),
+   {title:{pt:"Gatilho e Gravidade",en:"Trigger and Severity"}, blocks:[{table:DENC.trapTrigger},{table:DENC.trapSeverity}]},
+   tableCard(DENC.trapEffect),
+   rule("Arapucas Aleatórias","Random Tricks",
+    `<p>Arapucas são mais estranhas e menos mortais que armadilhas: efeitos deixados pelos criadores da masmorra ou energia mágica que se manifesta no lugar. Role o <b>objeto</b>, depois o <b>efeito</b>. Algumas são permanentes; outras são temporárias ou podem ser anuladas com <i>dissipar magia</i>. Você decide.</p>`,
+    `<p>Tricks are stranger and less deadly than traps: effects left by the dungeon's creators or magical energy manifesting there. Roll the <b>object</b>, then the <b>effect</b>. Some are permanent; others are temporary or can be ended with <i>dispel magic</i>. You decide.</p>`),
+   tableCard(DENC.trickObject), tableCard(DENC.trickEffect)]},
+ ]},
+ {name:{pt:"Tesouros",en:"Treasure"}, subs:[
+  {name:{pt:"Gerador",en:"Generator"}, panels:() => [treasurePanel()]},
+  {name:{pt:"Individual",en:"Individual"}, panels:() => CRS.map(([c]) => tableCard(TREASURE["ind"+c]))},
+  {name:{pt:"Pilhas",en:"Hoards"}, panels:() => CRS.map(([c]) => tableCard(TREASURE["hoard"+c]))},
+  {name:{pt:"Gemas",en:"Gems"}, panels:() => [{title:{pt:"Gemas",en:"Gemstones"}, blocks:[{html:{pt:`<p>${GEM_NOTE.pt}</p>`,en:`<p>${GEM_NOTE.en}</p>`}}]},
+   ...[10,50,100,500,1000,5000].map(v => tableCard(TREASURE["gem"+v]))]},
+  {name:{pt:"Objetos de Arte",en:"Art Objects"}, panels:() => [{title:{pt:"Objetos de Arte",en:"Art Objects"}, blocks:[{html:{pt:`<p>${ART_NOTE.pt}</p>`,en:`<p>${ART_NOTE.en}</p>`}}]},
+   ...[25,250,750,2500,7500].map(v => tableCard(TREASURE["art"+v]))]},
+  {name:{pt:"Itens Mágicos",en:"Magic Items"}, panels:() => "ABCDEFGHI".split("").map(x => tableCard(TREASURE["mi"+x]))},
+  {name:{pt:"Regras de Itens",en:"Item Rules"}, panels:() => ITEM_RULES},
+ ]},
+ {name:{pt:"Combate",en:"Combat"}, panels:[
+  {title:"Actions in Combat", blocks:[{html:`<ul>
+    <li><b>Attack</b> — one melee or ranged attack (more with Extra Attack).</li>
+    <li><b>Cast a Spell</b> — casting time of 1 action.</li>
+    <li><b>Dash</b> — extra movement equal to your speed.</li>
+    <li><b>Disengage</b> — your movement doesn't provoke opportunity attacks.</li>
+    <li><b>Dodge</b> — attacks against you have disadvantage; Dex saves with advantage.</li>
+    <li><b>Help</b> — ally gains advantage on next check or attack vs. a target within 5 ft of you.</li>
+    <li><b>Hide</b> — Dexterity (Stealth) check.</li>
+    <li><b>Ready</b> — choose a trigger and a reaction.</li>
+    <li><b>Search</b> — Wisdom (Perception) or Intelligence (Investigation).</li>
+    <li><b>Use an Object</b> — interact with a second object or use one that needs an action.</li></ul>`}]},
+  {title:"Cover", blocks:[{table:{cols:["Cover","Effect"],rows:[
+    ["Half","+2 AC and Dex saves"],["Three-quarters","+5 AC and Dex saves"],["Total","Can't be targeted directly"]]}}]},
+ ]},
+ {name:{pt:"Testes e Viagem",en:"Checks & Travel"}, panels:[
+  {title:"Difficulty Classes", blocks:[{table:{cols:["Task","DC"],rows:[
+    ["Very easy","5"],["Easy","10"],["Medium","15"],["Hard","20"],["Very hard","25"],["Nearly impossible","30"]]}}]},
+  {title:"Travel Pace", blocks:[{table:{cols:["Pace","/ hour","/ day","Effect"],rows:[
+    ["Fast","4 mi","30 mi","−5 passive Perception"],["Normal","3 mi","24 mi","—"],["Slow","2 mi","18 mi","Can use stealth"]]}}]},
+  {title:"Example Roll Table", homebrew:true, blocks:[
+    {html:`<p>Placeholder — replace with your own tables. Click the die to roll.</p>`},
+    {table:{die:"d6",cols:["d6","Weather"],rows:[
+      ["1","Clear skies"],["2-3","Overcast"],["4","Light rain"],["5","Fog"],["6","Storm"]]}}]},
+ ]},
+];
+
+const UI = {
+ search:{pt:"Buscar em todos os painéis…",en:"Search all panels…"},
+ dice:{pt:"Dados",en:"Dice"}, roll:{pt:"Rolar",en:"Roll"}, log:{pt:"Histórico",en:"Log"},
+ clear:{pt:"Limpar histórico",en:"Clear log"}, homebrew:{pt:"CASEIRO",en:"HOMEBREW"},
+ nomatch:{pt:"nenhuma linha corresponde",en:"no matching row"}, noparse:{pt:"expressão inválida",en:"couldn't parse"},
+ coins:{pt:"Moedas",en:"Coins"}, challenge:{pt:"Desafio",en:"Challenge"}, kind:{pt:"Tipo",en:"Type"},
+ individual:{pt:"Individual",en:"Individual"}, hoard:{pt:"Pilha de tesouro",en:"Treasure hoard"},
+ generate:{pt:"Gerar",en:"Generate"}, random:{pt:"Aleatório",en:"Random"}, name:{pt:"Nome",en:"Name"},
+ race:{pt:"Raça",en:"Race"}, gender:{pt:"Gênero",en:"Gender"}, male:{pt:"Masculino",en:"Male"}, female:{pt:"Feminino",en:"Female"},
+ minimize:{pt:"Minimizar: mostrar só o resultado",en:"Minimize: show only the result"},
+ maximize:{pt:"Maximizar: mostrar todas as opções",en:"Maximize: show all options"},
+ rollToSee:{pt:"Role para ver o resultado.",en:"Roll to see the result."},
+ minAll:{pt:"⤡ Minimizar tudo",en:"⤡ Minimize all"}, maxAll:{pt:"⤢ Maximizar tudo",en:"⤢ Maximize all"},
+};
+
+/* ─── ENGINE ─────────────────────────────────────────────── */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let lang = "pt";
+try { lang = localStorage.getItem("dmscreen.lang") || "pt"; } catch {}
+LS.lang = lang;
+const L = x => x && typeof x === "object" ? (x[lang] ?? x.pt ?? x.en) : x;
+
+// Dice written in text ("1d4 + 2", "(1d4 + 1) × 30", "3d10 × 5") become buttons that roll into the log.
+const DICE_RE = /\(?\b\d+d\d+(?:\s*[+−-]\s*\d+(?!d))?\)?(?:\s*×\s*\d+)?/g;
+function linkDice(root){
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode: n =>
+    n.parentElement.closest("th,button,select,option,.die,.val,.what") || !/\d+d\d+/.test(n.data) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
+  const nodes = []; while(walker.nextNode()) nodes.push(walker.currentNode);
+  for(const n of nodes){
+    const frag = document.createDocumentFragment(); let last = 0;
+    for(const m of n.data.matchAll(DICE_RE)){
+      frag.append(n.data.slice(last, m.index));
+      const b = document.createElement("button");
+      b.className = "dice-inline"; b.textContent = m[0]; b.title = L(UI.roll) + " " + m[0];
+      frag.append(b); last = m.index + m[0].length;
+    }
+    frag.append(n.data.slice(last)); n.replaceWith(frag);
+  }
+}
+function rollInline(text){
+  const [base, mult] = text.replace(/[()]/g,"").split("×").map(s => s.trim());
+  const r = rollExpr(base); if(!r) return;
+  const total = r.total * (+mult || 1);
+  log(text, total, mult ? `${r.detail} = ${r.total} × ${mult}` : r.detail);
+}
+
+function log(what, val, res=""){
+  const d = document.createElement("div");
+  d.className = "entry";
+  d.innerHTML = `<div class="what">${esc(what)}</div><div class="val">${esc(val)}</div>${res ? `<div class="res">${res}</div>` : ""}`;
+  linkDice(d); $("#log").prepend(d);
+}
+
+// Rendered rollable tables by id, so tables can roll each other (links, generator).
+const TABLE_EL = {}, TABLE_DEF = {}, LAST_HIT = {};  // LAST_HIT keeps highlights across re-renders
+// Minimized tables show only the rolled row(s). Remembered per browser.
+let MINIMIZED = new Set();
+try { MINIMIZED = new Set(JSON.parse(localStorage.getItem("dmscreen.min") || "[]")); } catch {}
+const saveMin = () => { try { localStorage.setItem("dmscreen.min", JSON.stringify([...MINIMIZED])); } catch {} };
+
+// Rolls a table (LS.resolveRoll does the work) and highlights every table it touched.
+function rollTable(t){
+  const r = LS.resolveRoll(t, {onRoll:(tt, keys) => { LAST_HIT[tt.id] = keys; if(TABLE_EL[tt.id]) markHits(tt); }});
+  TABLE_EL[t.id]?.querySelector("tr.hit")?.scrollIntoView({block:"nearest"});
+  return r;
+}
+function markHits(t){
+  const el = TABLE_EL[t.id];
+  el.querySelectorAll("tr.hit").forEach(r => r.classList.remove("hit"));
+  (LAST_HIT[t.id] || []).forEach(k => el.querySelector(`tr[data-r="${k}"]`)?.classList.add("hit"));
+}
+
+function renderTable(t, title){
+  const rollable = !!t.die, n = t.cols.length;
+  const head = t.cols.map((c,i) => i === 0 && rollable
+    ? `<th><button class="rollbtn" title="${esc(L(UI.roll))} ${esc(t.die)}">${esc(L(c))}</button></th>` : `<th>${esc(L(c))}</th>`).join("");
+  let rows = t.rows.map((r,i) => { const sub = subOf(r);
+    if(!sub) return `<tr data-r="${i}">${r.map(c => `<td>${L(c)}</td>`).join("")}</tr>`;
+    return `<tr data-r="${i}" class="group"><td>${r[0]}</td><td colspan="${n-1}"><i>${L(r[1])}</i> <span class="die">(d${subDie(sub)})</span></td></tr>`
+      + sub.map((s,j) => `<tr data-r="${i}.${j}" class="sub"><td></td><td colspan="${n-1}"><span class="subn">${s[0]}</span>${L(s[1])}</td></tr>`).join("");
+  }).join("");
+  const el = document.createElement("table");
+  if(rollable){
+    t.id ??= "t" + Object.keys(TABLE_DEF).length;
+    t.title ??= title;
+    rows += `<tr class="empty"><td colspan="${n}">${esc(L(UI.rollToSee))}</td></tr>`;
+    el.className = "rollable" + (MINIMIZED.has(t.id) ? " min" : "");
+  }
+  el.innerHTML = `<thead><tr>${head}</tr></thead><tbody>${rows}</tbody>`;
+  if(rollable){
+    TABLE_EL[t.id] = el; TABLE_DEF[t.id] = t;
+    markHits(t);
+    el.querySelector(".rollbtn").onclick = () => { const r = rollTable(t); log(`${L(t.title)} (${t.die})`, r.val, r.text); };
+    const tog = document.createElement("button");
+    tog.className = "sizebtn";
+    const sync = () => { const m = el.classList.contains("min");
+      tog.textContent = m ? "⤢" : "⤡"; tog.title = tog.ariaLabel = L(m ? UI.maximize : UI.minimize); tog.ariaPressed = m; };
+    tog.onclick = () => { el.classList.toggle("min"); MINIMIZED[el.classList.contains("min") ? "add" : "delete"](t.id); saveMin(); sync(); syncSizeAll(); };
+    sync();
+    el.tHead.rows[0].lastElementChild.append(tog);
+  }
+  return el;
+}
+
+// Generators: a card that rolls several tables at once. `choose` adds a select whose
+// value fills the "?" part ("*" = random among the options).
+function genPanel(key){
+  const g = GENS[key], c = g.choose;
+  const select = c ? `<select aria-label="${esc(L(c.label))}">${c.options.map(k =>
+    `<option value="${k}">${esc(k === "*" ? L(UI.random) : L(TABLES[k].title))}</option>`).join("")}</select>` : "";
+  return {gen:true, title:g.title, blocks:[{html:`<div class="genrow" data-gen="${key}">${select}<button class="rollbtn gen">${esc(L(UI.generate))}</button></div><div class="genout"></div>`}]};
+}
+function namePanel(){
+  const races = [...RACES].sort((a,b) => L({pt:a[0],en:a[1]}).localeCompare(L({pt:b[0],en:b[1]}), lang));
+  return {gen:true, title:{pt:"Gerador de nomes",en:"Name generator"}, blocks:[{html:`<div class="genrow">
+    <select class="nrace" aria-label="${esc(L(UI.race))}"><option value="*">${esc(L(UI.random))}</option>
+      ${races.map(([pt,en]) => `<option value="${esc(en)}">${esc(lang === "pt" ? pt : en)}</option>`).join("")}</select>
+    <select class="ngender" aria-label="${esc(L(UI.gender))}"><option value="m">${esc(L(UI.male))}</option><option value="f">${esc(L(UI.female))}</option></select>
+    <button class="rollbtn namegen">${esc(L(UI.generate))}</button></div><ul class="names"></ul>`}]};
+}
+function generateNames(card){
+  const sel = card.querySelector(".nrace").value, g = card.querySelector(".ngender").value;
+  card.querySelector(".names").innerHTML = Array.from({length:6}, () => {
+    const v = rnd(100), race = sel !== "*" ? RACES.find(r => r[1] === sel)   // random uses the 85/10/5 race weights
+      : any(RACE_GROUPS.find(([r]) => { const [lo,hi] = range(r, 100); return v >= lo && v <= hi; })[2]);
+    return `<li>${esc(makeName(race[1], g))}${sel === "*" ? ` <span class="die">${esc(lang === "pt" ? race[0] : race[1])}</span>` : ""}</li>`;
+  }).join("");
+}
+function generate(key, card){
+  const g = GENS[key];
+  let chosen = card.querySelector("select")?.value;
+  if(chosen === "*"){ const o = g.choose.options.filter(k => k !== "*"); chosen = o[rnd(o.length) - 1]; }
+  const got = {};
+  const html = g.parts.map(([id, label]) => {
+    if(LINK_FN[id]){ const r = LINK_FN[id](); return `<div><b>${esc(L(r.title))}</b><br>${r.text}</div>`; }
+    if(id === "@name"){   // uses the race and gender rolled just before
+      const gender = ["m","f","o"][TABLES.gender.rows.indexOf(got.gender.picks[0])];
+      return `<div><b>${esc(L(UI.name))}</b><br>${esc(makeName(got.race.picks[0][1].en, gender))}</div>`;
+    }
+    const t = TABLES[id === "?" ? chosen : id], r = got[id] = rollTable(t);
+    return `<div><b>${esc(L(label ?? t.title))}</b> <span class="die">${r.val}</span><br>${r.text}</div>`; }).join("");
+  card.querySelector(".genout").innerHTML = html; linkDice(card.querySelector(".genout"));
+  log(L(g.title), "✦", html);
+}
+
+let current = 0;
+function render(){
+  document.documentElement.lang = lang === "pt" ? "pt-BR" : "en";
+  document.querySelectorAll("[data-ui]").forEach(el =>
+    el.tagName === "INPUT" ? (el.placeholder = el.ariaLabel = L(UI[el.dataset.ui])) : (el.textContent = L(UI[el.dataset.ui])));
+  document.querySelectorAll("#lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.l === lang));
+  $("#tabs").innerHTML = SCREENS.map((s,i) =>
+    `<button class="tab" role="tab" aria-selected="${i === current}" data-i="${i}">${esc(L(s.name))}</button>`).join("");
+  const s = SCREENS[current];
+  $("#subtabs").innerHTML = (s.subs || []).map((sub,j) =>
+    `<button class="tab" role="tab" aria-selected="${j === (SUB[current] ?? 0)}" data-j="${j}">${esc(L(sub.name))}</button>`).join("");
+  const grid = $("#grid"); grid.innerHTML = "";
+  const panelsOf = x => typeof x.panels === "function" ? x.panels() : x.panels;
+  SCREENS.forEach((s, si) => (s.subs ? s.subs.flatMap((sub,j) => panelsOf(sub).map(p => [p,j])) : panelsOf(s).map(p => [p])).forEach(([p,j]) => {
+    const card = document.createElement("details");
+    card.className = "card"; card.open = true; card.dataset.screen = si;
+    if(j != null) card.dataset.sub = j;
+    card.innerHTML = `<summary>${esc(L(p.title))}${p.homebrew ? `<span class="hbtag">${L(UI.homebrew)}</span>` : ""}</summary><div class="body"></div>`;
+    const body = card.querySelector(".body");
+    for(const b of p.blocks){
+      if(b.html) body.insertAdjacentHTML("beforeend", L(b.html));
+      if(b.table) body.append(renderTable(b.table, p.title));
+    }
+    // Rule cards (no roll table, no generator) minimize to just their title.
+    if(!p.gen && !p.blocks.some(b => b.table?.die)){
+      const key = "c:" + (p.title.en ?? p.title);
+      card.classList.add("rule"); card.dataset.key = key; card.open = !MINIMIZED.has(key);
+      const tog = document.createElement("button"), sum = card.querySelector("summary");
+      tog.className = "sizebtn cardbtn";
+      const sync = () => { tog.textContent = card.open ? "⤡" : "⤢"; tog.title = tog.ariaLabel = L(card.open ? UI.minimize : UI.maximize); };
+      tog.onclick = e => { e.preventDefault(); card.open = !card.open; };
+      card.addEventListener("toggle", () => { MINIMIZED[card.open ? "delete" : "add"](key); saveMin(); sync(); syncSizeAll(); });
+      sync(); sum.append(tog);
+    }
+    grid.append(card);
+  }));
+  linkDice(grid); filter();
+}
+
+// Selected sub-tab per screen.
+const SUB = {};
+function filter(){
+  const q = $("#q").value.trim().toLowerCase();
+  $("#subtabs").hidden = !!q || !SCREENS[current].subs;
+  document.querySelectorAll(".card").forEach(c => {
+    const show = q ? c.textContent.toLowerCase().includes(q)
+      : +c.dataset.screen === current && (c.dataset.sub == null || +c.dataset.sub === (SUB[current] ?? 0));
+    c.classList.toggle("hidden", !show);
+  });
+  syncSizeAll();
+}
+
+// One button sizes every roll table and rule card on screen: minimizes all unless all are already minimized.
+const shownTables = () => [...document.querySelectorAll(".card:not(.hidden) table.rollable")];
+const shownRules = () => [...document.querySelectorAll(".card.rule:not(.hidden)")];
+const allMin = () => shownTables().every(t => t.classList.contains("min")) && shownRules().every(c => !c.open);
+function syncSizeAll(){
+  const b = $("#sizeAll");
+  b.hidden = !shownTables().length && !shownRules().length;
+  b.textContent = L(allMin() ? UI.maxAll : UI.minAll);
+}
+$("#sizeAll").onclick = () => {
+  const minimize = !allMin();
+  for(const el of shownTables()){ const id = Object.keys(TABLE_EL).find(k => TABLE_EL[k] === el);
+    MINIMIZED[minimize ? "add" : "delete"](id); }
+  for(const c of shownRules()) MINIMIZED[minimize ? "add" : "delete"](c.dataset.key);
+  saveMin(); render();
+};
+$("#subtabs").onclick = e => { const b = e.target.closest(".tab"); if(!b) return;
+  SUB[current] = +b.dataset.j; render(); };
+
+$("#tabs").onclick = e => { const b = e.target.closest(".tab"); if(!b) return;
+  current = +b.dataset.i; $("#q").value = ""; render(); };
+$("#lang").onclick = e => { const b = e.target.closest("button"); if(!b) return;
+  lang = LS.lang = b.dataset.l; try { localStorage.setItem("dmscreen.lang", lang); } catch {} render(); };
+$("#q").oninput = filter;
+document.addEventListener("click", e => { const b = e.target.closest(".dice-inline"); if(b){ e.preventDefault(); rollInline(b.textContent); } });
+$("#grid").addEventListener("click", e => {
+  const b = e.target.closest(".gen"); if(b) generate(b.parentElement.dataset.gen, b.closest(".card"));
+  if(e.target.closest(".namegen")) generateNames(e.target.closest(".card"));
+  if(e.target.closest(".chambergen")){ const card = e.target.closest(".card"), out = card.querySelector(".genout");
+    out.innerHTML = chamberHTML(card.querySelector(".tcr").value); linkDice(out);
+    log(L({pt:"Câmara",en:"Chamber"}), "✦", out.innerHTML); }
+  if(e.target.closest(".treasuregen")){ const card = e.target.closest(".card"), out = card.querySelector(".genout");
+    out.innerHTML = rollTreasure(card.querySelector(".tcr").value, card.querySelector(".tkind").value); linkDice(out);
+    log(L({pt:"Tesouro",en:"Treasure"}), "✦", out.innerHTML); } });
+$("#dice").innerHTML = [4,6,8,10,12,20,100].map(n => `<button data-n="${n}">d${n}</button>`).join("") + `<button data-adv>adv</button>`;
+$("#dice").onclick = e => {
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.adv !== undefined){ const a = rnd(20), c = rnd(20);
+    return log("d20 adv / disadv", `${Math.max(a,c)} / ${Math.min(a,c)}`, `${a}, ${c}`); }
+  log("d" + b.dataset.n, rnd(+b.dataset.n));
+};
+$("#exprf").onsubmit = e => { e.preventDefault();
+  const r = rollExpr($("#expr").value);
+  r ? log($("#expr").value, r.total, r.detail) : log($("#expr").value, "?", L(UI.noparse)); };
+$("#clear").onclick = () => $("#log").innerHTML = "";
+render();
+</script>

@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Flagstone</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,8 +49,23 @@ button,input,select{font:inherit;color:inherit}
 .tool.on kbd{color:var(--accent)}
 /* stage */
 .stage{position:relative;overflow:hidden;background:radial-gradient(circle at 50% 40%, #1c1920, #0f0d12)}
-.stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+.stage > canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
 .hud{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;pointer-events:none;flex-wrap:wrap}
+.roompop{position:absolute;z-index:5;width:292px;max-width:calc(100% - 16px);max-height:calc(100% - 16px);overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.55);font-size:14px}
+.rp-head{display:flex;align-items:center;gap:10px;padding:10px 10px 8px 12px}
+.rp-head .kn{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-weight:700;font-family:var(--mono);font-size:13px}
+.rp-head>div{flex:1;min-width:0} .rp-head .kd{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.rp-x{border:0;background:transparent;color:var(--faint);font-size:20px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:5px} .rp-x:hover{color:var(--text);background:var(--panel2)}
+.rp-img{padding:0 12px;display:flex;justify-content:center} .rp-img canvas{border-radius:6px;border:1px solid var(--line);max-width:100%;object-fit:contain}
+.rp-body{display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px;line-height:1.4}
+.rp-body .field{margin-bottom:1px}
+.rp-body textarea{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 8px;color:var(--text);font:inherit;font-size:13.5px;resize:vertical;width:100%}
+.rp-body textarea:focus{outline:none;border-color:var(--accent)}
+.floors{position:absolute;left:12px;top:12px;display:flex;flex-direction:column;gap:3px;max-height:calc(100% - 70px);overflow-y:auto}
+.floor{background:rgba(20,18,23,.88);border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:13px;color:var(--muted);cursor:pointer;text-align:left;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.floor:hover{color:var(--text);border-color:var(--faint)}
+.floor.on{color:var(--accent-ink);background:var(--accent);border-color:var(--accent);font-weight:700}
+.floor.add{color:var(--faint);border-style:dashed;font-size:12px}
 .chip{background:rgba(20,18,23,.86);border:1px solid var(--line);border-radius:6px;padding:4px 9px;font-family:var(--mono);font-size:12px;color:var(--text)}
 .chip b{color:var(--accent);font-weight:600}
 /* panel */
@@ -62,6 +78,17 @@ button,input,select{font:inherit;color:inherit}
 .sw{border:1px solid var(--line);border-radius:7px;background:var(--panel2);padding:4px 2px 3px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;color:var(--muted);min-width:0}
 .sw canvas,.sw img{width:44px;height:44px;border-radius:4px;display:block;object-fit:cover;background:var(--panel3)}
 .panel input[type=range]{width:100%;accent-color:var(--accent)}
+.keylist{display:flex;flex-direction:column;gap:2px;max-height:420px;overflow-y:auto;margin-inline:-4px}
+.keyitem{display:flex;gap:10px;padding:7px 6px;border-radius:6px;cursor:pointer;font-size:14px;line-height:1.35}
+.keyitem:hover{background:var(--panel2)}
+.keyitem .kn{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:12.5px;font-family:var(--mono)}
+.keyitem .kd{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.ks{font-size:12.5px;color:var(--muted)}
+.floorrow{display:flex;flex-direction:column;gap:5px;padding:7px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+.floorrow.on{border-color:var(--accent)}
+.floorrow input{background:transparent;border:1px solid transparent;border-radius:5px;padding:3px 6px;font-size:14.5px;font-weight:600;color:var(--text)}
+.floorrow input:hover{border-color:var(--line)} .floorrow input:focus{outline:none;border-color:var(--accent);background:var(--panel)}
+.floorrow .btn{padding:3px 9px;font-size:13px}
 .fstatus{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .pill{font-size:12px;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:999px;border:1px solid}
 .pill.ok{color:#9fd38a;border-color:#4d6b43;background:#1f2a1c}
@@ -172,6 +199,8 @@ button,input,select{font:inherit;color:inherit}
   <main class="stage" id="stage">
     <canvas id="cv" aria-label="Battle map canvas"></canvas>
     <div class="hud"><span class="chip" id="hudCell">—</span><span class="chip" id="hudInfo"></span></div>
+    <div class="floors" id="floors" aria-label="Floors"></div>
+    <div class="roompop" id="roomPop" role="dialog" aria-label="Room preview" hidden></div>
   </main>
 
   <aside class="panel" id="panel"></aside>
@@ -179,6 +208,7 @@ button,input,select{font:inherit;color:inherit}
 <div class="toast" id="toast" role="status"></div>
 <div class="dropzone" id="dropZone" hidden><div><strong>Drop to import textures</strong><span>Folders keep their subfolders as categories</span></div></div>
 
+<script src="lightscreen-core.js"></script>
 <script>
 (() => {
 "use strict";
@@ -283,7 +313,13 @@ const TERRAIN = [
         g.addColorStop(0,'#4a4250'); g.addColorStop(1,'rgba(12,10,14,0)'); c.fillStyle=g; c.fillRect(Math.min(x0,x1),Math.min(y0,y1),Math.abs(x1-x0)||s,Math.abs(y1-y0)||s); };
       side(0,-1, 0,0, 0,e); side(0,1, 0,s, 0,s-e); side(-1,0, 0,0, e,0); side(1,0, s,0, s-e,0);
   }},
+  { key:'rock', name:'Solid rock', draw(c,s,r){   // the unexcavated mass around a dungeon
+      c.fillStyle=shade('#2b2724',(r(1)-.5)*.12); c.fillRect(0,0,s,s);
+      for(let i=0;i<5;i++){ c.fillStyle= r(20+i)>.5?'rgba(80,72,64,.45)':'rgba(10,8,8,.45)'; blobRock(c,r(i)*s,r(10+i)*s,s*(.08+r(30+i)*.12),r,40+i*7); }
+      c.strokeStyle='rgba(8,6,6,.5)'; c.lineWidth=s*.02; c.beginPath(); c.moveTo(r(60)*s,0); c.lineTo(r(61)*s,s*.5); c.lineTo(r(62)*s,s); c.stroke();
+  }},
 ];
+function blobRock(c,x,y,rad,r,k){ c.beginPath(); for(let i=0;i<6;i++){ const a=i/6*Math.PI*2, d=rad*(.7+r(k+i)*.5); c[i?'lineTo':'moveTo'](x+Math.cos(a)*d,y+Math.sin(a)*d); } c.closePath(); c.fill(); }
 function foam(c,s,same,col){
   const f=s*.07; c.fillStyle=col;
   if(!same(0,-1)) c.fillRect(0,0,s,f);
@@ -581,14 +617,40 @@ function doorAt(o,x,y){ const d=map.doors[doorKey(o,x,y)]; return d || {s:0,f:0,
 function curDoorData(){ const put=(arr,k)=>{ let i=arr.indexOf(k); if(i<0){ arr.push(k); i=arr.length-1; } return i; };
   return { s:put(map.doorKeys,settings.doorStyle||'drawn'), f:put(map.frameKeys,settings.doorFrame||'none'), m:0 }; }
 // draw one run of n door edges starting at (x0,y0) along o ('h' runs in x, 'v' in y)
+// Where the two posts sit inside a frame image: found once per image from its opaque pixels.
+const postCache=new WeakMap();
+function framePosts(img,squares){
+  let r=postCache.get(img); if(r) return r;
+  const w=img.width, h=img.height, cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+  const g=cv.getContext('2d'); g.drawImage(img,0,0); const px=g.getImageData(0,0,w,h).data;
+  const col=new Uint32Array(w); for(let y=0;y<h;y++) for(let x=0;x<w;x++) if(px[(y*w+x)*4+3]>40) col[x]++;
+  const runs=[]; for(let x=0;x<w;x++){ if(!col[x]) continue; const a=x; while(x<w&&col[x]) x++; runs.push([a,x]); }
+  const box=([a,b])=>{ let y0=h,y1=-1; for(let y=0;y<h;y++) for(let x=a;x<b;x++) if(px[(y*w+x)*4+3]>40){ if(y<y0) y0=y; if(y>y1) y1=y; } return {x:a,y:y0,w:b-a,h:y1-y0+1}; };
+  r = runs.length>=2 ? { left:box(runs[0]), right:box(runs[runs.length-1]), pps:w/squares, h } : null;
+  postCache.set(img,r); return r;
+}
 function drawDoorRun(c,s,o,x0,y0,n,d){
   const st=doorStyleFor(map.doorKeys[d.s]||'drawn'), fr=doorStyleFor(map.frameKeys[d.f]||'none',true), vert=o==='v';
   const at=(p,L)=> vert ? [x0, y0+p+L/2] : [x0+p+L/2, y0];
-  const put=(img,cx,cy,L,flip)=>{ c.save(); c.translate(cx*s,cy*s); if(vert) c.rotate(Math.PI/2); c.scale(flip&1?-1:1, flip&2?-1:1); c.drawImage(img,-L/2*s,-.5*s,L*s,s); c.restore(); };
-  if(st.img){ let p=0; while(p<n){ const L = st.len===2 && n-p>=2 ? 2 : 1; const [cx,cy]=at(p,L); put(st.img,cx,cy,L,d.m||0); p+=L; } }
+  const put=(img,cx,cy,L,flip,thick=1)=>{ c.save(); c.translate(cx*s,cy*s); if(vert) c.rotate(Math.PI/2); c.scale(flip&1?-1:1, flip&2?-1:1); c.drawImage(img,-L/2*s,-thick/2*s,L*s,thick*s); c.restore(); };
+  // 1. give the doorway back its floor, so wall caps and corner pieces never reach into it
+  const half=.24, rx = vert ? x0-half : x0, ry = vert ? y0 : y0-half, rw = vert ? half*2 : n, rh = vert ? n : half*2;
+  const cx0=Math.max(0,rx), cy0=Math.max(0,ry), cw_=Math.min(map.w,rx+rw)-cx0, ch_=Math.min(map.h,ry+rh)-cy0;
+  if(cw_>0 && ch_>0) c.drawImage(tcan,cx0*TS,cy0*TS,cw_*TS,ch_*TS,cx0*s,cy0*s,cw_*s,ch_*s);
+  // 2. the leaves: a thicker board with a shadow so a door never reads as more wall
+  if(st.img){ c.save(); c.shadowColor='rgba(0,0,0,.6)'; c.shadowBlur=Math.max(2,s*.07); c.shadowOffsetY=Math.max(1,s*.02);
+    let p=0, k=0; while(p<n){ const L = st.len===2 && n-p>=2 ? 2 : 1; const [cx,cy]=at(p,L);
+      // single leaves side by side: every other leaf is mirrored so a pair meets in the middle with hinges at the outer ends
+      put(st.img,cx,cy,L,(d.m||0)^(L===1 && n>1 && k%2===0 ? 1 : 0),1.5); p+=L; k++; }
+    c.restore(); }
   else for(let p=0;p<n;p++){ const [cx,cy]=at(p,1); drawnDoor(c,s,cx,cy,vert); }
-  const fimg = n===1 ? fr.imgs&&fr.imgs.single : n===2 ? fr.imgs&&fr.imgs.double : null;
-  if(fimg){ const [cx,cy]=at(0,n); put(fimg,cx,cy,n+1,0); }
+  // 3. frame posts, cut out of the frame image and centred exactly on the two ends of the doorway
+  const fimg=fr.imgs && (fr.imgs.single||fr.imgs.double);
+  if(fimg){ const P=framePosts(fimg, fr.imgs.single?2:3);
+    if(P) for(const [post,end] of [[P.left,0],[P.right,n]]){
+      const ex = vert ? x0 : x0+end, ey = vert ? y0+end : y0, pw=post.w/P.pps, ph=post.h/P.pps, off=(post.y+post.h/2-P.h/2)/P.pps;
+      c.save(); c.translate(ex*s,ey*s); if(vert) c.rotate(Math.PI/2);
+      c.drawImage(fimg,post.x,post.y,post.w,post.h,-pw/2*s,(off-ph/2)*s,pw*s,ph*s); c.restore(); } }
 }
 function drawnDoor(c,s,cx,cy,vert){ c.save(); c.translate(cx*s,cy*s); if(vert) c.rotate(Math.PI/2);
   c.fillStyle='#1c1a1d'; c.fillRect(-.5*s,-.1*s,.12*s,.2*s); c.fillRect(.38*s,-.1*s,.12*s,.2*s);
@@ -690,16 +752,17 @@ async function importProps(list){
   const imgs=list.filter(x=>/\.(png|webp)$/i.test(x.path));
   if(!imgs.length){ toast('No PNG or WebP images found there — props need transparent images'); return; }
   importing={ kind:'props', total:imgs.length, done:0, failed:0, cancel:false, current:'', firstCat:null };
-  if(tool!=='prop') setTool('prop'); else renderPanel();
+  if(tool!=='prop' && tool!=='stairs') setTool('prop'); else renderPanel();
   if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
-  let i=0, quota=false;
+  let i=0, quota=false, firstStair=null;
   const worker=async()=>{ while(i<imgs.length && !importing.cancel && !quota){ const it=imgs[i++]; importing.current=prettify(it.path.split('/').pop());
-      try{ const m=await importPropOne(it); if(!importing.firstCat) importing.firstCat=m.catId; }
+      try{ const m=await importPropOne(it); if(!firstStair && isStairCat({cat:m.cat,group:m.group,id:m.catId})) firstStair=m.catId; if(!importing.firstCat) importing.firstCat=m.catId; }
       catch(e){ importing.failed++; if(e && e.name==='QuotaExceededError') quota=true; }
       importing.done++; updateImportUI(); } };
   await Promise.all([worker(),worker(),worker(),worker()]);
   const ok=importing.done-importing.failed, failed=importing.failed, cancelled=importing.cancel, first=importing.firstCat; importing=null;
   if(first && !settings.propCat.startsWith('lib:')) settings.propCat='lib:'+first;
+  if(firstStair && tool==='stairs' && settings.stairCat==='drawn') settings.stairCat='lib:'+firstStair;
   renderPanel(); draw();
   const n=ok.toLocaleString();
   toast(quota ? `Browser storage is full — ${n} props imported. Remove some categories to make room.` : cancelled ? `Import stopped — ${n} props added` : `Imported ${n} props`+(failed?` · ${failed} couldn’t be read`:''));
@@ -744,6 +807,9 @@ const PROPS = {
   stairs:{ name:'Stairs', layer:0, draw(c){ const n=6; for(let i=0;i<n;i++){ c.fillStyle=shade('#8b8680',-.08-i*.1); c.fillRect(-.46,-.46+i*.92/n,.92,.92/n); }
     c.strokeStyle='rgba(20,18,16,.7)'; c.lineWidth=.02; for(let i=0;i<=n;i++){ c.beginPath(); c.moveTo(-.46,-.46+i*.92/n); c.lineTo(.46,-.46+i*.92/n); c.stroke(); }
     c.strokeRect(-.46,-.46,.92,.92); c.fillStyle='rgba(236,229,216,.7)'; poly(c,[[0,.3],[-.1,.14],[.1,.14]]); c.fill(); }},
+  ladder:{ name:'Ladder', layer:1, draw(c){ shadow(c,.3); c.strokeStyle='#5a3a1e'; c.lineCap='round';
+    c.lineWidth=.06; c.beginPath(); c.moveTo(-.2,-.46); c.lineTo(-.2,.46); c.moveTo(.2,-.46); c.lineTo(.2,.46); c.stroke();
+    c.lineWidth=.045; c.strokeStyle='#8a5a2e'; c.beginPath(); for(let k=0;k<5;k++){ const y=-.36+k*.18; c.moveTo(-.2,y); c.lineTo(.2,y); } c.stroke(); }},
   crate:{ name:'Crate', layer:1, draw(c){ shadow(c,.36); c.fillStyle='#9a6b3a'; c.fillRect(-.34,-.34,.68,.68); c.strokeStyle='#4b3017'; c.lineWidth=.045; c.strokeRect(-.34,-.34,.68,.68);
     c.lineWidth=.03; c.beginPath(); c.moveTo(-.34,-.34); c.lineTo(.34,.34); c.moveTo(.34,-.34); c.lineTo(-.34,.34); c.stroke(); c.strokeRect(-.27,-.27,.54,.54); }},
   barrel:{ name:'Barrel', layer:1, draw(c){ shadow(c,.33); c.fillStyle='#8a5a2e'; circle(c,0,0,.32); c.strokeStyle='#3b2a1a'; c.lineWidth=.04; c.beginPath(); c.arc(0,0,.32,0,7); c.stroke();
@@ -823,7 +889,9 @@ function initials(name){
 function blankMap(w,h,t=0){
   return { v:1, id:newId(), name:'Untitled map', w, h, terrain:new Array(w*h).fill(t), hw:new Array(w*(h+1)).fill(0), vw:new Array((w+1)*h).fill(0), props:[], tokens:[], fog:new Array(w*h).fill(0), texScale:{},
     hws:new Array(w*(h+1)).fill(0), vws:new Array((w+1)*h).fill(0), wallKeys:['drawn'],   // wall style per edge, as indices into wallKeys
-    doors:{}, doorKeys:['drawn'], frameKeys:['none'] };   // doors: 'h:x:y' -> {s: door style, f: frame, m: flip bits}
+    doors:{}, doorKeys:['drawn'], frameKeys:['none'],
+    labels:[], dungeon:null,
+    levels:[{ id:newId(), name:'Ground floor', data:null }], level:0 };   // labels: GM marks {x,y,text,kind:'room'|'note'|'secret'|'lock'|'trap'}; dungeon: generated key   // doors: 'h:x:y' -> {s: door style, f: frame, m: flip bits}
 }
 function sampleMap(){
   const m=blankMap(28,20,0); m.name='The Ruined Keep at Hollow Ford';
@@ -873,8 +941,10 @@ let map;
 const settings = { grid:true, names:true, diag:'5', fogView:'gm', exportPx:100, libQuality:1024, recent:[], cat:'painted',
   wallStyle:'inc:stone_a/earthy', wallCat:'inc:Stone', wallRecent:[], wallQ:'',
   propCat:'drawn', propQ:'', propRecent:[], propSnap:false, propRandom:false, rotStep:15,
-  doorStyle:'inc:wood_dark_a', doorFrame:'inc:stone_earthy_a', doorCat:'inc', doorRecent:[] };
-const cur = { terrain:4, q:'', get cat(){ return settings.cat; }, set cat(v){ settings.cat=v; }, prop:'tree', rot:0, scale:1, flip:false, brush:1, fogMode:'hide', token:{ name:'Goblin', kind:'foe', color:'#5a8f3c', size:1 } };
+  doorStyle:'inc:wood_dark_a', doorFrame:'inc:stone_earthy_a', doorCat:'inc', doorRecent:[],
+  stairTo:'up', stairPair:true, stairCat:'drawn', stairRecent:[], ghostBelow:true, dgWhere:'replace',
+  showLabels:true, exportLabels:false, dgType:'general', dgSize:'medium', dgState:true, dgEnc:true, dgCR:'04', dgRoomFloor:'tex:brick/brick_floor_c_01', dgCorrFloor:'stone', dgSeed:'' };
+const cur = { terrain:4, q:'', get cat(){ return settings.cat; }, set cat(v){ settings.cat=v; }, prop:'tree', stair:'stairs', rot:0, scale:1, flip:false, brush:1, fogMode:'hide', token:{ name:'Goblin', kind:'foe', color:'#5a8f3c', size:1 } };
 let tool='select', sel=null, hover=null, action=null, spaceDown=false;
 const undoStack=[], redoStack=[];
 const view={ s:32, ox:0, oy:0 };
@@ -885,6 +955,8 @@ let cw=0, ch=0, dpr=1;
 const TOOLS = [
   { id:'file', key:'N', name:'Maps', hint:'Start a new map, save this one, or open one you saved. <kbd>Ctrl S</kbd> saves.',
     icon:'<path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2z"/><path d="M9 4v14M15 6v14"/>' },
+  { id:'dungeon', key:'G', name:'Masmorra', hint:'Gera uma masmorra aleatória rolando as tabelas de masmorras aleatórias do Apêndice A do Livro do Mestre: área inicial, passagens, portas, câmaras, saídas e escadas.',
+    icon:'<path d="M12 2.5l8.5 5v9L12 21.5l-8.5-5v-9z"/><path d="M12 2.5L7.5 15h9zM3.5 7.5l4 7.5M20.5 7.5l-4 7.5M7.5 15L12 21.5 16.5 15"/>' },
   'sep',
   { id:'select', key:'V', name:'Select & move', hint:'Drag tokens and props to move them. A selected prop shows handles: the circle above rotates it, the square at the corner resizes it. Drag empty ground to pan. <kbd>Del</kbd> removes the selection.',
     icon:'<path d="M5 3l14 8-6.5 1.8L9.5 19z"/>' },
@@ -899,6 +971,8 @@ const TOOLS = [
   { id:'wall', key:'W', name:'Walls', hint:'Drag along grid lines to build walls. Click a single edge to add or remove one.', icon:'<rect x="3" y="5" width="18" height="14"/><path d="M3 9.7h18M3 14.3h18M9 5v4.7M15 5v4.7M6 9.7v4.6M12 9.7v4.6M18 9.7v4.6M9 14.3V19M15 14.3V19"/>' },
   { id:'door', key:'D', name:'Doors', hint:'Click any grid edge to place a door with the style and frame below. Shift+click a door to flip which side it hinges and swings.', icon:'<path d="M6 21V4h12v17M3 21h18"/><circle cx="14.5" cy="12.5" r=".6" fill="currentColor"/>' },
   { id:'prop', key:'P', name:'Props', hint:'Click to place a prop anywhere — keep holding to slide it into position. Drag the handles to rotate or resize it. <kbd>R</kbd> rotates, <kbd>[ ]</kbd> resizes.', icon:'<path d="M12 2.5a6 6 0 0 1 6 6.2 5 5 0 0 1-6 7.3 5 5 0 0 1-6-7.3 6 6 0 0 1 6-6.2z"/><path d="M12 16v5.5"/>' },
+  { id:'stairs', key:'S', name:'Stairs', hint:'Place stairs or ladders that link two floors. A matching stair appears on the other floor. Double-click a stair to go through it.',
+    icon:'<path d="M3 20h5v-5h5v-5h5V5h3"/><path d="M3 20V9"/>' },
   { id:'token', key:'T', name:'Tokens', hint:'Click a square to place a creature. Repeat names get numbered: Goblin, Goblin 2…', icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.2-2.3 3.2-3.5 5.5-3.5s4.3 1.2 5.5 3.5"/>' },
   'sep',
   { id:'erase', key:'E', name:'Eraser', hint:'Drag over tokens, props and walls to remove them. Paint terrain to change the ground.', icon:'<path d="M15.5 3.5l5 5-10 10H6l-3-3z"/><path d="M9 10l5 5M10.5 18.5H21"/>' },
@@ -910,46 +984,99 @@ const TOOL_BY = Object.fromEntries(TOOLS.filter(t=>t!=='sep').map(t=>[t.id,t]));
 /* ---------- persistence ---------- */
 // terrain is stored as indices plus the key list they refer to, so maps survive palette changes
 // texInfo keeps a name and colour for library textures, so a map opened without them still reads
+/* Floors: a map has map.levels = [{id, name, data}], bottom floor first. The floor being edited lives in the
+   map's own fields (terrain, walls, props…) and its entry's data is null; every other floor keeps its fields in data. */
+const LEVEL_KEYS=['terrain','hw','vw','hws','vws','doors','props','tokens','fog','labels','dungeon'];
+const levelSnapshot=()=>Object.fromEntries(LEVEL_KEYS.map(k=>[k,map[k]]));
+function blankLevelData(w,h,t){ const b=blankMap(w,h,t); return Object.fromEntries(LEVEL_KEYS.map(k=>[k,b[k]])); }
+function allLevelData(){ return map.levels.map((l,i)=> i===map.level ? levelSnapshot() : l.data); }
 const serialize = () => { const texInfo={}, wallInfo={}; for(const t of TERRAIN) if(t.tex && t.tex.lib) texInfo[t.key]={name:t.name,color:t.tex.color,sq:t.tex.sq};
   for(const k of map.wallKeys){ const st=WALLSTYLES.get(k); if(st && st.lib) wallInfo[k]={name:st.name,cat:st.cat}; }
-  const propInfo={}; for(const p of map.props) if(!PROPS[p.type] && !propInfo[p.type]){ const [sw,sh]=propSize(p); propInfo[p.type]={name:propName(p.type),sw,sh}; }
+  const propInfo={}; for(const d of allLevelData()) for(const p of d.props) if(!PROPS[p.type] && !propInfo[p.type]){ const [sw,sh]=propSize(p); propInfo[p.type]={name:propName(p.type),sw,sh}; }
   return JSON.stringify({ ...map, terrainKeys:TERRAIN.map(t=>t.key), texInfo, wallInfo, propInfo }); };
+function normProps(list){
+  return (list||[]).filter(p=>p && (PROPS[p.type] || (typeof p.type==='string' && p.type.startsWith('lib:')))).map(p=>{
+    const q={ id:p.id||newId(), type:p.type, cx: p.cx ?? (p.x+.5), cy: p.cy ?? (p.y+.5), rot:+p.rot||0, scale:+p.scale||1 };   // older maps stored x,y squares
+    if(p.flip) q.flip=true; if(p.layer!==undefined) q.layer=p.layer; if(p.link && p.link.to) q.link={to:p.link.to,pair:p.link.pair||null};
+    return q; }).filter(p=>isFinite(p.cx)&&isFinite(p.cy));
+}
+// fill in / repair one floor's fields against a blank of the right size
+function normLevel(d,b,remap){
+  const out={};
+  out.terrain = Array.isArray(d.terrain)&&d.terrain.length===b.terrain.length ? d.terrain.map(remap) : b.terrain.slice();
+  for(const k of ['hw','vw','hws','vws','fog']) out[k] = Array.isArray(d[k])&&d[k].length===b[k].length ? d[k] : b[k].slice();
+  out.doors = d.doors && typeof d.doors==='object' && !Array.isArray(d.doors) ? d.doors : {};
+  out.props = normProps(d.props); out.tokens = Array.isArray(d.tokens) ? d.tokens : [];
+  out.labels = Array.isArray(d.labels) ? d.labels : []; out.dungeon = d.dungeon && typeof d.dungeon==='object' ? d.dungeon : null;
+  return out;
+}
 function loadMapObj(o){
   if(!o || !o.w || !o.h || !Array.isArray(o.terrain) || o.terrain.length!==o.w*o.h) throw new Error('bad map');
   const b=blankMap(o.w,o.h);
-  let terrain=o.terrain.map(i=> (i>=0&&i<TERRAIN.length) ? i : 0);
+  const levels=Array.isArray(o.levels)&&o.levels.length ? o.levels : [{ id:newId(), name:'Ground floor', data:null }];
+  const active=clamp(o.level|0,0,levels.length-1);
+  let remap=i=> (i>=0&&i<TERRAIN.length) ? i : 0;
   if(Array.isArray(o.terrainKeys)){
-    const used=new Set(o.terrain);
+    const used=new Set(o.terrain); for(const l of levels) if(l && l.data && Array.isArray(l.data.terrain)) for(const i of l.data.terrain) used.add(i);
     const idx=o.terrainKeys.map((k,i)=>{ const j=TERRAIN.findIndex(t=>t.key===k); if(j>=0) return j;
       return (used.has(i) && typeof k==='string' && k.startsWith('lib:')) ? ensureLibTerrain(k,(o.texInfo||{})[k]) : -1; });
-    terrain=o.terrain.map(i=> idx[i]>=0 ? idx[i] : 0); }
-  const { terrainKeys, texInfo, wallInfo, settings:_s, ...rest } = o;
+    remap=i=> idx[i]>=0 ? idx[i] : 0; }
+  const { terrainKeys, texInfo, wallInfo, propInfo, settings:_s, ...rest } = o;
   if(Array.isArray(o.wallKeys)) for(const k of o.wallKeys) if(typeof k==='string' && k.startsWith('lib:')) ensureWallStyle(k,(wallInfo||{})[k]);
-  Object.assign(propInfoCache, o.propInfo||{});
-  const props=(o.props||[]).filter(p=>p && (PROPS[p.type] || (typeof p.type==='string' && p.type.startsWith('lib:')))).map(p=>{
-    const q={ id:p.id||newId(), type:p.type, cx: p.cx ?? (p.x+.5), cy: p.cy ?? (p.y+.5), rot:+p.rot||0, scale:+p.scale||1 };   // older maps stored x,y squares
-    if(p.flip) q.flip=true; if(p.layer!==undefined) q.layer=p.layer; return q; }).filter(p=>isFinite(p.cx)&&isFinite(p.cy));
-  const { propInfo, ...rest2 } = rest;
-  map={ ...b, ...rest2, terrain, texScale:{...(o.texScale||{})}, props, tokens:o.tokens||[] };
-  if(!Array.isArray(map.fog)||map.fog.length!==map.w*map.h) map.fog=b.fog;
-  if(!Array.isArray(map.hw)||map.hw.length!==b.hw.length) map.hw=b.hw;
-  if(!Array.isArray(map.vw)||map.vw.length!==b.vw.length) map.vw=b.vw;
-  if(!Array.isArray(map.hws)||map.hws.length!==b.hws.length) map.hws=b.hws.slice();
-  if(!Array.isArray(map.vws)||map.vws.length!==b.vws.length) map.vws=b.vws.slice();
+  Object.assign(propInfoCache, propInfo||{});
+  map={ ...b, ...rest, ...normLevel(o,b,remap), texScale:{...(o.texScale||{})} };
+  map.levels=levels.map((l,i)=>({ id:(l&&l.id)||newId(), name:(l&&l.name)||`Floor ${i+1}`, data: i===active ? null : normLevel((l&&l.data)||{},b,remap) }));
+  map.level=active;
   if(!Array.isArray(map.wallKeys)||!map.wallKeys.length) map.wallKeys=['drawn'];
   if(typeof map.id!=='string' || !map.id) map.id=newId();
-  if(!map.doors || typeof map.doors!=='object' || Array.isArray(map.doors)) map.doors={};
   if(!Array.isArray(map.doorKeys)||!map.doorKeys.length) map.doorKeys=['drawn'];
   if(!Array.isArray(map.frameKeys)||!map.frameKeys.length) map.frameKeys=['none'];
+}
+const levelIndex=id=>map.levels.findIndex(l=>l.id===id);
+function nextFloorName(where){
+  const base=map.levels.filter(l=>/^basement/i.test(l.name)).length, up=map.levels.length-base;
+  return where==='below' ? `Basement ${base+1}` : `Floor ${up+1}`;
+}
+// insert a floor above or below the one being edited; returns its index
+function addLevel(where,data,name){
+  const lvl={ id:newId(), name:name||nextFloorName(where), data:data||blankLevelData(map.w,map.h,TI('rock')) };
+  const at = where==='below' ? map.level : map.level+1;
+  map.levels.splice(at,0,lvl); if(at<=map.level) map.level++;
+  return at;
+}
+function deleteLevel(i){
+  if(map.levels.length<2) return;
+  if(i===map.level) switchLevel(i>0?i-1:i+1);
+  map.levels.splice(i,1); if(i<map.level) map.level--;
+}
+function moveLevel(i,dir){ const j=i+dir; if(j<0||j>=map.levels.length) return;
+  const a=map.levels; [a[i],a[j]]=[a[j],a[i]]; if(map.level===i) map.level=j; else if(map.level===j) map.level=i; }
+function updateFloors(){
+  const el=$('floors'); if(!el) return;
+  const L=map.levels, items=L.map((l,i)=>({l,i})).reverse();
+  el.innerHTML = items.map(({l,i})=>`<button class="floor ${i===map.level?'on':''}" data-floor="${i}" title="${esc(l.name)}${i===map.level?' (editing)':''}">${esc(l.name)}</button>`).join('')
+    + `<button class="floor add" data-act="floorAddAbove" title="Add a floor above this one">+ Floor</button>`;
+}
+function switchLevel(i,focus){
+  if(i<0||i>=map.levels.length) return;
+  closeRoomPop();
+  if(i!==map.level){
+    map.levels[map.level].data=levelSnapshot();
+    const d=map.levels[i].data; for(const k of LEVEL_KEYS) map[k]=d[k];
+    map.levels[i].data=null; map.level=i; sel=null; action=null;
+    rebuildTerrain(); autosave(); updateDims(); updateFloors(); renderPanel();
+  }
+  if(focus){ view.ox=cw/2-focus[0]*view.s; view.oy=ch/2-focus[1]*view.s; }
+  draw();
 }
 let saveTimer=null;
 function autosave(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{ localStorage.setItem('flagstone.map', serialize()); localStorage.setItem('flagstone.settings', JSON.stringify(settings)); }catch(e){} }, 400); }
 function pushUndo(){ undoStack.push(serialize()); if(undoStack.length>80) undoStack.shift(); redoStack.length=0; updateUndo(); }
-function restore(json){ loadMapObj(JSON.parse(json)); if(sel && !findSel()) sel=null; rebuildTerrain(); afterChange(true); }
+function restore(json){ closeRoomPop(); loadMapObj(JSON.parse(json)); if(sel && !findSel()) sel=null; rebuildTerrain(); afterChange(true); }
 function undo(){ if(!undoStack.length) return; redoStack.push(serialize()); restore(undoStack.pop()); }
 function redo(){ if(!redoStack.length) return; undoStack.push(serialize()); restore(redoStack.pop()); }
 function updateUndo(){ $('undoBtn').disabled=!undoStack.length; $('redoBtn').disabled=!redoStack.length; }
-function afterChange(panelToo){ autosave(); updateUndo(); updateDims(); if(panelToo) renderPanel(); draw(); }
+function afterChange(panelToo){ autosave(); updateUndo(); updateDims(); updateFloors(); if(panelToo) renderPanel(); draw(); }
 
 /* ---------- terrain canvas ---------- */
 const tAt=(x,y)=> (x<0||y<0||x>=map.w||y>=map.h) ? -1 : map.terrain[y*map.w+x];
@@ -998,13 +1125,22 @@ function drawScene(c, s, opts={}){
   c.drawImage(tcan,0,0,W*s,H*s);
   if(settings.grid){ c.strokeStyle='rgba(20,16,12,.32)'; c.lineWidth=Math.max(1,s*.02); c.beginPath();
     for(let x=0;x<=W;x++){ c.moveTo(x*s,0); c.lineTo(x*s,H*s); } for(let y=0;y<=H;y++){ c.moveTo(0,y*s); c.lineTo(W*s,y*s); } c.stroke(); }
+  if(!opts.export && settings.ghostBelow && map.level>0){   // the floor below's walls, faintly, to line things up
+    const g=map.levels[map.level-1].data;
+    if(g){ c.save(); c.strokeStyle='rgba(150,190,255,.45)'; c.lineWidth=Math.max(1.5,s*.06); c.setLineDash([s*.25,s*.15]); c.beginPath();
+      for(let y=0;y<=H;y++)for(let x=0;x<W;x++) if(g.hw[y*W+x]){ c.moveTo(x*s,y*s); c.lineTo((x+1)*s,y*s); }
+      for(let y=0;y<H;y++)for(let x=0;x<=W;x++) if(g.vw[y*(W+1)+x]){ c.moveTo(x*s,y*s); c.lineTo(x*s,(y+1)*s); }
+      c.stroke(); c.restore(); }
+  }
   const props=propOrder();
   for(const p of props) if(propLayer(p)<2) drawProp(c,p,s,1);
   drawWalls(c,s);
   for(const p of props) if(propLayer(p)>=2) drawProp(c,p,s,1);
+  // GM marks (room numbers, doors, encounter markers) never show in Player view
+  if(settings.showLabels && settings.fogView!=='player' && (!opts.export || settings.exportLabels || opts.preview)){ drawLabels(c,s); drawStairBadges(c,s); }
   for(const t of map.tokens) drawToken(c,t,t.x,t.y,s,1, !opts.export && sel && sel.type==='token' && sel.id===t.id);
   if(map.fog.some(v=>v)){
-    const pv = opts.export ? settings.fogView==='player' : settings.fogView==='player';
+    const pv = settings.fogView==='player';
     c.fillStyle= pv ? '#0d0b10' : 'rgba(12,10,16,.58)';
     c.beginPath(); for(let y=0;y<H;y++)for(let x=0;x<W;x++) if(map.fog[y*W+x]) c.rect(x*s-.5,y*s-.5,s+1,s+1); c.fill();
     if(!pv){ c.save(); c.clip(); c.strokeStyle='rgba(180,170,200,.12)'; c.lineWidth=Math.max(1,s*.03); c.beginPath();
@@ -1012,6 +1148,40 @@ function drawScene(c, s, opts={}){
   }
   c.strokeStyle='rgba(0,0,0,.6)'; c.lineWidth=2; c.strokeRect(0,0,W*s,H*s);
 }
+const LABEL_COLORS={ secret:'#b98cf0', lock:'#f0c878', trap:'#e0735a' };
+// encounter markers from the Light Screen chamber roll: Monstro, Perigo, Obstáculo, Armadilha, Arapuca, Tesouro
+const ENC_COLORS={ M:'#ff7b7b', P:'#8fd18f', O:'#8fc3ff', A:'#e0735a', '?':'#b98cf0', $:'#f4d58a' };
+function drawLabels(c,s){
+  const font=getComputedStyle(document.body).getPropertyValue('--body');
+  c.save(); c.textAlign='center'; c.textBaseline='middle';
+  for(const l of map.labels){
+    const x=l.x*s, y=l.y*s;
+    if(l.kind==='room'){ const r=Math.max(9,s*.36);
+      c.fillStyle='rgba(20,18,23,.9)'; circle(c,x,y,r); c.strokeStyle='#d4a24c'; c.lineWidth=Math.max(1.5,s*.05); c.beginPath(); c.arc(x,y,r,0,7); c.stroke();
+      c.fillStyle='#f4d58a'; c.font=`700 ${Math.max(10,r*(l.text.length>2?.8:1.05))}px ${font}`; c.fillText(l.text,x,y+r*.05); }
+    else if(LABEL_COLORS[l.kind]||l.kind==='enc'){ const r=Math.max(7,s*.2), col=l.kind==='enc'?ENC_COLORS[l.text]||'#ece5d8':LABEL_COLORS[l.kind];
+      c.fillStyle='rgba(20,18,23,.92)'; circle(c,x,y,r); c.strokeStyle=col; c.lineWidth=Math.max(1.2,s*.03); c.beginPath(); c.arc(x,y,r,0,7); c.stroke();
+      c.fillStyle=col; c.font=`700 ${Math.max(9,r*1.1)}px ${font}`; c.fillText(l.text,x,y+r*.06); }
+    else { const fs=Math.max(10,s*.3); c.font=`700 ${fs}px ${font}`; const w=c.measureText(l.text).width+fs*.8;
+      c.fillStyle='rgba(20,18,23,.88)'; c.beginPath(); c.roundRect(x-w/2,y-fs*.7,w,fs*1.4,fs*.35); c.fill(); c.strokeStyle='rgba(212,162,76,.8)'; c.lineWidth=1; c.stroke();
+      c.fillStyle='#ece5d8'; c.fillText(l.text,x,y+fs*.04); }
+  }
+  c.restore();
+}
+// a small tag on every stair that leads to another floor: arrow plus that floor's name
+function drawStairBadges(c,s){
+  const font=getComputedStyle(document.body).getPropertyValue('--body');
+  c.save(); c.textAlign='center'; c.textBaseline='middle';
+  for(const p of map.props){ if(!p.link) continue;
+    const i=levelIndex(p.link.to), txt = i<0 ? '? missing floor' : `${i>map.level?'↑':'↓'} ${map.levels[i].name}`;
+    const fs=Math.max(10,Math.min(14,s*.26)); c.font=`700 ${fs}px ${font}`; const w=c.measureText(txt).width+fs;
+    const [pw,ph]=propSize(p), half=Math.max(pw,ph)*(p.scale||1)/2, x=p.cx*s, y=(p.cy+half)*s+fs*.9;   // just below the stair
+    c.fillStyle='rgba(20,18,23,.9)'; c.beginPath(); c.roundRect(x-w/2,y-fs*.75,w,fs*1.5,fs*.75); c.fill();
+    c.strokeStyle= i<0 ? '#e0735a' : '#8fc3ff'; c.lineWidth=1.5; c.stroke();
+    c.fillStyle= i<0 ? '#e0735a' : '#cfe4ff'; c.fillText(txt,x,y+fs*.04); }
+  c.restore();
+}
+function labelAt(fx,fy){ for(let i=map.labels.length-1;i>=0;i--){ const l=map.labels[i]; if(Math.hypot(l.x-fx,l.y-fy)<(l.kind==='room'?.45:.3)) return l; } return null; }
 function drawProp(c,p,s,alpha){
   const sc=p.scale||1;
   c.save(); c.globalAlpha=alpha; c.translate(p.cx*s,p.cy*s); c.rotate((p.rot||0)*Math.PI/180); c.scale(p.flip?-sc:sc,sc);
@@ -1102,7 +1272,7 @@ function drawOverlay(c,s){
   const a=action;
   const hl=(x,y,w,h,col='rgba(244,213,138,.9)',fill='rgba(244,213,138,.14)')=>{ c.fillStyle=fill; c.fillRect(x*s,y*s,w*s,h*s); c.strokeStyle=col; c.lineWidth=2; c.strokeRect(x*s,y*s,w*s,h*s); };
   const sp=sel&&sel.type==='prop'?findSel():null;
-  if(sp && (tool==='select'||tool==='prop')) drawPropHandles(c,sp,s);
+  if(sp && (tool==='select'||tool==='prop'||tool==='stairs')) drawPropHandles(c,sp,s);
   if(a && (a.type==='rotateProp'||a.type==='scaleProp') && sp){ const {hh}=propFrame(sp,s);
     label(c, a.type==='rotateProp' ? `${normDeg(sp.rot)}°` : `${Math.round(sp.scale*100)}%`, sp.cx*s, sp.cy*s-hh-HANDLE_GAP-12); return; }
   if(a && a.type==='moveProp' && a.moved) return;
@@ -1124,7 +1294,7 @@ function drawOverlay(c,s){
   const {fx,fy}=hover, x=Math.floor(fx), y=Math.floor(fy);
   if(tool==='brush'||tool==='fog'){ const b=cur.brush, o=Math.floor((b-1)/2); hl(x-o,y-o,b,b); }
   else if(tool==='fill'||tool==='rect'||tool==='room'||tool==='measure'){ if(inMap(x,y)) hl(x,y,1,1); }
-  else if(tool==='prop'){ if(!inMap(x,y)) return; if(sp && (propHandleAt(sp,fx,fy) || propHit(sp,fx,fy))) return; drawProp(c,ghostProp(fx,fy,false),s,.55); }
+  else if(tool==='prop'||tool==='stairs'){ if(!inMap(x,y)) return; if(sp && (propHandleAt(sp,fx,fy) || propHit(sp,fx,fy))) return; drawProp(c,ghostProp(fx,fy,false,tool==='stairs'?cur.stair:null),s,.55); }
   else if(tool==='token'){ const n=SIZES.find(z=>z.k===cur.token.size).n; if(inMap(x,y)) drawToken(c,{...cur.token,name:nextTokenName(cur.token.name)},clamp(x,0,map.w-n),clamp(y,0,map.h-n),s,.5,false); }
   else if(tool==='wall'){ const vx=Math.round(fx), vy=Math.round(fy); if(vx>=0&&vy>=0&&vx<=map.w&&vy<=map.h){ c.fillStyle='#f4d58a'; circle(c,vx*s,vy*s,Math.max(3,s*.09)); } }
   else if(tool==='door'||tool==='erase'){
@@ -1165,29 +1335,73 @@ function commitWall(a){
 }
 let shiftHeld=false;
 const snapOn=()=> !!settings.propSnap !== shiftHeld;   // Shift flips the snap setting while held
-function ghostProp(fx,fy,commit){
-  const p={ type:cur.prop, cx:fx, cy:fy, rot:cur.rot, scale:cur.scale };
+function ghostProp(fx,fy,commit,type){
+  const p={ type:type||cur.prop, cx:fx, cy:fy, rot:cur.rot, scale:cur.scale };
   if(cur.flip) p.flip=true;
-  if(commit && settings.propRandom){ p.rot=normDeg(Math.random()*360); p.scale=Math.round(cur.scale*(.85+Math.random()*.3)*100)/100; if(Math.random()<.5) p.flip=!p.flip; }
+  if(commit && settings.propRandom && !type){ p.rot=normDeg(Math.random()*360); p.scale=Math.round(cur.scale*(.85+Math.random()*.3)*100)/100; if(Math.random()<.5) p.flip=!p.flip; }
   if(snapOn()) [p.cx,p.cy]=snapProp(p,fx,fy);
   return p;
+}
+/* stairs: a prop with link {to: floor id, pair: id of the matching stair on that floor} */
+function stairTarget(){   // floor index the next stair leads to, creating the floor if needed
+  const t=settings.stairTo||'up';
+  if(t==='up'){ return map.level<map.levels.length-1 ? map.level+1 : addLevel('above'); }
+  if(t==='down'){ if(map.level>0) return map.level-1; addLevel('below'); return map.level-1; }
+  const i=levelIndex(t); return i>=0 && i!==map.level ? i : (map.level<map.levels.length-1 ? map.level+1 : addLevel('above'));
+}
+function placeStairAt(fx,fy){
+  const ti=stairTarget(), target=map.levels[ti];
+  const p=ghostProp(fx,fy,true,cur.stair); p.id=newId(); p.cx=clamp(p.cx,0,map.w); p.cy=clamp(p.cy,0,map.h);
+  p.link={to:target.id,pair:null}; map.props.push(p);
+  if(settings.stairPair!==false && target.data){ const q={...p,id:newId(),link:{to:map.levels[map.level].id,pair:p.id}}; p.link.pair=q.id; target.data.props.push(q); }
+  settings.stairRecent=[p.type,...(settings.stairRecent||[]).filter(k=>k!==p.type)].slice(0,8);
+  return p;
+}
+function goStairs(p){
+  const li=levelIndex(p.link.to); if(li<0){ toast('The floor this stair led to was deleted'); return; }
+  const pair=(map.levels[li].data||{props:[]}).props.find(q=>q.id===p.link.pair);
+  switchLevel(li, pair?[pair.cx,pair.cy]:[p.cx,p.cy]);
+  if(pair){ sel={type:'prop',id:pair.id}; if(tool!=='select'&&tool!=='stairs') setTool('select'); renderPanel(); draw(); }
+  toast('Now on '+map.levels[map.level].name);
+}
+// a token counts as on a stair when its centre is within the stair's footprint, give or take a little
+// (tokens snap to squares, stairs don't)
+function stairUnder(t){ const n=sizeOf(t).n, cx=t.x+n/2, cy=t.y+n/2;
+  return map.props.find(p=>{ if(!p.link) return false; const [w,h]=propSize(p), k=(p.scale||1)/2, [lx,ly]=propLocal(p,cx,cy); return Math.abs(lx)<=w*k+.35+n/2-.5 && Math.abs(ly)<=h*k+.35+n/2-.5; }) || null; }
+function takeStairs(t,s){
+  const li=levelIndex(s.link.to); if(li<0){ toast('The floor this stair led to was deleted'); return; }
+  pushUndo();
+  const data=map.levels[li].data, pair=data.props.find(q=>q.id===s.link.pair), n=sizeOf(t).n, at=pair||s;
+  map.tokens=map.tokens.filter(o=>o!==t);
+  data.tokens.push({...t, x:clamp(Math.round(at.cx-n/2),0,map.w-n), y:clamp(Math.round(at.cy-n/2),0,map.h-n)});
+  switchLevel(li,[at.cx,at.cy]); sel={type:'token',id:t.id}; afterChange(true); toast(`${t.name} took the stairs to ${map.levels[map.level].name}`);
 }
 function placePropAt(fx,fy){ const p=ghostProp(fx,fy,true); p.id=newId(); p.cx=clamp(p.cx,0,map.w); p.cy=clamp(p.cy,0,map.h); map.props.push(p);
   settings.propRecent=[p.type,...(settings.propRecent||[]).filter(k=>k!==p.type)].slice(0,8); return p; }
 function nextTokenName(base){ base=base.trim()||'Creature'; const b=base.replace(/\s+\d+$/,''); const same=map.tokens.filter(t=>t.name===b||new RegExp('^'+b.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+' \\d+$').test(t.name));
   if(!same.length) return base; let n=1; for(const t of same){ const m=t.name.match(/ (\d+)$/); n=Math.max(n,m?+m[1]:1); } return b+' '+(n+1); }
 function eraseAt(fx,fy){ const t=tokenAt(fx,fy); if(t){ map.tokens=map.tokens.filter(o=>o!==t); if(sel&&sel.id===t.id) sel=null; return 'token'; }
+  const lb=settings.showLabels && labelAt(fx,fy); if(lb){ map.labels=map.labels.filter(o=>o!==lb); return 'label'; }
   const p=propAt(fx,fy); if(p){ map.props=map.props.filter(o=>o!==p); if(sel&&sel.id===p.id) sel=null; return 'prop'; }
   const e=nearestEdge(fx,fy); if(e && e.d<.22 && edgeGet(e)){ edgeSet(e,0); return 'edge'; } return null; }
-function resizeMap(w,h){ w=clamp(w|0,4,120); h=clamp(h|0,4,120); if(w===map.w&&h===map.h) return; pushUndo();
-  const o=map, n=blankMap(w,h,0); n.name=o.name;
-  for(let y=0;y<Math.min(h,o.h);y++)for(let x=0;x<Math.min(w,o.w);x++){ n.terrain[y*w+x]=o.terrain[y*o.w+x]; n.fog[y*w+x]=o.fog[y*o.w+x]; }
-  for(let y=0;y<=Math.min(h,o.h);y++)for(let x=0;x<Math.min(w,o.w);x++){ n.hw[y*w+x]=o.hw[y*o.w+x]; n.hws[y*w+x]=o.hws[y*o.w+x]; }
-  for(let y=0;y<Math.min(h,o.h);y++)for(let x=0;x<=Math.min(w,o.w);x++){ n.vw[y*(w+1)+x]=o.vw[y*(o.w+1)+x]; n.vws[y*(w+1)+x]=o.vws[y*(o.w+1)+x]; }
-  n.wallKeys=o.wallKeys.slice(); n.texScale={...o.texScale};
-  n.doorKeys=o.doorKeys.slice(); n.frameKeys=o.frameKeys.slice(); n.doors={...o.doors};
+// one floor's fields at a new size: kept where they overlap, new area filled with terrain `fill`
+function resizeLevelData(o,ow,oh,w,h,fill=0){
+  const n=blankLevelData(w,h,fill);
+  for(let y=0;y<Math.min(h,oh);y++)for(let x=0;x<Math.min(w,ow);x++){ n.terrain[y*w+x]=o.terrain[y*ow+x]; n.fog[y*w+x]=o.fog[y*ow+x]; }
+  for(let y=0;y<=Math.min(h,oh);y++)for(let x=0;x<Math.min(w,ow);x++){ n.hw[y*w+x]=o.hw[y*ow+x]; n.hws[y*w+x]=o.hws[y*ow+x]; }
+  for(let y=0;y<Math.min(h,oh);y++)for(let x=0;x<=Math.min(w,ow);x++){ n.vw[y*(w+1)+x]=o.vw[y*(ow+1)+x]; n.vws[y*(w+1)+x]=o.vws[y*(ow+1)+x]; }
+  n.doors=Object.fromEntries(Object.entries(o.doors).filter(([k])=>{ const [e,x,y]=k.split(':'); return e==='h' ? (+x<w&&+y<=h) : (+x<=w&&+y<h); }));
   n.props=o.props.filter(p=>p.cx<=w&&p.cy<=h); n.tokens=o.tokens.filter(t=>t.x+sizeOf(t).n<=w&&t.y+sizeOf(t).n<=h);
-  map=n; rebuildTerrain(); fit(); afterChange(true); }
+  n.labels=o.labels.filter(l=>l.x<=w&&l.y<=h); n.dungeon=o.dungeon;
+  return n;
+}
+function resizeAllLevels(w,h,fill=0){
+  const cur=resizeLevelData(levelSnapshot(),map.w,map.h,w,h,fill);
+  for(const l of map.levels) if(l.data) l.data=resizeLevelData(l.data,map.w,map.h,w,h,fill);
+  Object.assign(map,cur); map.w=w; map.h=h;
+}
+function resizeMap(w,h){ w=clamp(w|0,4,120); h=clamp(h|0,4,120); if(w===map.w&&h===map.h) return; pushUndo();
+  resizeAllLevels(w,h,0); rebuildTerrain(); fit(); afterChange(true); }
 
 /* ---------- pointer input ---------- */
 const pointers=new Map(); let pinch=null;
@@ -1201,15 +1415,15 @@ cv.addEventListener('pointerdown',e=>{
   if(e.button===1 || e.button===2 || spaceDown || tool==='pan'){ action={type:'pan',sx:p.sx,sy:p.sy,ox:view.ox,oy:view.oy}; cv.style.cursor='grabbing'; return; }
   if(e.button!==0) return;
   // handles of the selected prop win over everything under them
-  const sp=(tool==='select'||tool==='prop') && sel && sel.type==='prop' ? findSel() : null, hnd=sp && propHandleAt(sp,fx,fy);
+  const sp=(tool==='select'||tool==='prop'||tool==='stairs') && sel && sel.type==='prop' ? findSel() : null, hnd=sp && propHandleAt(sp,fx,fy);
   if(hnd==='rotate'){ action={type:'rotateProp',obj:sp,moved:false}; draw(); return; }
   if(hnd==='scale'){ action={type:'scaleProp',obj:sp,d0:Math.max(.05,Math.hypot(fx-sp.cx,fy-sp.cy)),s0:sp.scale||1,moved:false}; draw(); return; }
-  if(tool==='prop' && sp && propHit(sp,fx,fy)){ action={type:'moveProp',obj:sp,offX:fx-sp.cx,offY:fy-sp.cy,moved:false}; draw(); return; }
+  if((tool==='prop'||tool==='stairs') && sp && propHit(sp,fx,fy)){ action={type:'moveProp',obj:sp,offX:fx-sp.cx,offY:fy-sp.cy,moved:false}; draw(); return; }
   switch(tool){
     case 'select': {
       const t=tokenAt(fx,fy); if(t){ sel={type:'token',id:t.id}; map.tokens=map.tokens.filter(o=>o!==t).concat(t); action={type:'moveToken',obj:t,sx:t.x,sy:t.y,offX:fx-t.x,offY:fy-t.y,moved:false}; renderPanel(); break; }
       const pr=propAt(fx,fy); if(pr){ sel={type:'prop',id:pr.id}; action={type:'moveProp',obj:pr,offX:fx-pr.cx,offY:fy-pr.cy,moved:false}; renderPanel(); break; }
-      if(sel){ sel=null; renderPanel(); } action={type:'pan',sx:p.sx,sy:p.sy,ox:view.ox,oy:view.oy}; cv.style.cursor='grabbing'; break; }
+      if(sel){ sel=null; renderPanel(); } action={type:'pan',sx:p.sx,sy:p.sy,ox:view.ox,oy:view.oy,fx,fy,click:true}; cv.style.cursor='grabbing'; break; }
     case 'brush': case 'fog': { const snap=serialize(); action={type:'paint',snap,changed:paintBrush(fx,fy)}; break; }
     case 'fill': { const snap=serialize(); if(floodFill(x,y)){ undoStack.push(snap); redoStack.length=0; afterChange(); } break; }
     case 'rect': case 'room': if(inMap(x,y)) action={type:tool,x0:x,y0:y,x1:x,y1:y}; break;
@@ -1221,6 +1435,8 @@ cv.addEventListener('pointerdown',e=>{
       else if(was===2){ edgeSet(e2,1); delete map.doors[k]; }                            // back to wall
       else { edgeSet(e2,2); map.doors[k]=want; if(!was) (e2.o==='h'?map.hws:map.vws)[edgeIdx(e2)]=curWallIdx(); }
       afterChange(); break; }
+    case 'stairs': { if(!inMap(x,y)) break; pushUndo(); const np=placeStairAt(fx,fy); sel={type:'prop',id:np.id};
+      action={type:'moveProp',obj:np,offX:fx-np.cx,offY:fy-np.cy,moved:true}; afterChange(true); break; }
     case 'prop': { if(!inMap(x,y)) break; pushUndo(); const np=placePropAt(fx,fy); sel={type:'prop',id:np.id};
       // keep holding to slide the new prop into place
       action={type:'moveProp',obj:np,offX:fx-np.cx,offY:fy-np.cy,moved:true}; afterChange(true); break; }
@@ -1240,7 +1456,7 @@ cv.addEventListener('pointermove',e=>{
   const a=action, x=Math.floor(fx), y=Math.floor(fy);
   if(!a){ draw(); return; }
   switch(a.type){
-    case 'pan': view.ox=a.ox+p.sx-a.sx; view.oy=a.oy+p.sy-a.sy; break;
+    case 'pan': view.ox=a.ox+p.sx-a.sx; view.oy=a.oy+p.sy-a.sy; if(Math.hypot(p.sx-a.sx,p.sy-a.sy)>4){ a.dragged=true; closeRoomPop(); } break;
     case 'paint': if(paintBrush(fx,fy)) a.changed=true; break;
     case 'erase': if(eraseAt(fx,fy)) a.changed=true; break;
     case 'rect': case 'room': case 'measure': a.x1=clamp(x,0,map.w-1); a.y1=clamp(y,0,map.h-1); break;
@@ -1259,6 +1475,7 @@ cv.addEventListener('pointermove',e=>{
 });
 function endAction(){
   const a=action; action=null; cv.style.cursor=''; if(!a) return;
+  if(a.type==='pan' && a.click && !a.dragged){ const r=roomAt(a.fx,a.fy); if(r) openRoomPop(r,a.sx,a.sy); else closeRoomPop(); return; }
   if((a.type==='rotateProp'||a.type==='scaleProp') && a.moved){ afterChange(true); }
   else if((a.type==='paint'||a.type==='erase') && a.changed){ undoStack.push(a.snap); if(undoStack.length>80) undoStack.shift(); redoStack.length=0; afterChange(a.type==='erase'); }
   else if(a.type==='rect'||a.type==='room'){ pushUndo(); fillRect(a,a.type==='room'); afterChange(); }
@@ -1270,8 +1487,9 @@ const up=e=>{ pointers.delete(e.pointerId); if(pinch){ if(pointers.size<2) pinch
 cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
 cv.addEventListener('pointerleave',()=>{ if(!action){ hover=null; draw(); $('hudCell').textContent='—'; } });
 cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('dblclick',e=>{ const p=spos(e), {fx,fy}=toWorld(p.sx,p.sy), s=propAt(fx,fy); if(s && s.link){ action=null; goStairs(s); } });
 cv.addEventListener('wheel',e=>{ e.preventDefault(); const p=spos(e); zoomAt(p.sx,p.sy,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015))); },{passive:false});
-function zoomAt(sx,sy,f){ const ns=clamp(view.s*f,6,200); const wx=(sx-view.ox)/view.s, wy=(sy-view.oy)/view.s; view.s=ns; view.ox=sx-wx*ns; view.oy=sy-wy*ns; draw(); }
+function zoomAt(sx,sy,f){ closeRoomPop(); const ns=clamp(view.s*f,6,200); const wx=(sx-view.ox)/view.s, wy=(sy-view.oy)/view.s; view.s=ns; view.ox=sx-wx*ns; view.oy=sy-wy*ns; draw(); }
 function fit(){ const pad=36; view.s=clamp(Math.min((cw-pad*2)/map.w,(ch-pad*2)/map.h),6,200); view.ox=(cw-map.w*view.s)/2; view.oy=(ch-map.h*view.s)/2; draw(); }
 function updateHud(fx,fy){ const x=Math.floor(fx), y=Math.floor(fy);
   $('hudCell').innerHTML = inMap(x,y) ? `<b>${colName(x)}${y+1}</b> · ${TERRAIN[tAt(x,y)].name}` : '—'; }
@@ -1288,15 +1506,15 @@ window.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey) return;
   if(e.code==='Space'){ if(!spaceDown){ spaceDown=true; cv.style.cursor='grab'; } e.preventDefault(); return; }
   if(k==='delete'||k==='backspace'){ const o=findSel(); if(o){ pushUndo(); if(sel.type==='token') map.tokens=map.tokens.filter(t=>t!==o); else map.props=map.props.filter(p=>p!==o); sel=null; afterChange(true); } return; }
-  if(k==='escape'){ sel=null; action=null; renderPanel(); draw(); return; }
+  if(k==='escape'){ closeRoomPop(); sel=null; action=null; renderPanel(); draw(); return; }
   if(k==='r'){ rotate(e.shiftKey?-1:1); return; }
-  const selProp = sel && sel.type==='prop' && (tool==='select'||tool==='prop') ? findSel() : null;
+  const selProp = sel && sel.type==='prop' && (tool==='select'||tool==='prop'||tool==='stairs') ? findSel() : null;
   if(selProp && e.key.startsWith('Arrow')){ e.preventDefault(); const st=e.shiftKey?1:.1, d={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[e.key];
     if(!nudgeTimer) pushUndo(); clearTimeout(nudgeTimer); nudgeTimer=setTimeout(()=>{ nudgeTimer=null; afterChange(true); },500);
     selProp.cx=Math.round(clamp(selProp.cx+d[0],0,map.w)*100)/100; selProp.cy=Math.round(clamp(selProp.cy+d[1],0,map.h)*100)/100; draw(); return; }
-  if(k==='x' && (selProp || tool==='prop')){ if(selProp){ pushUndo(); selProp.flip=!selProp.flip; afterChange(true); } else { cur.flip=!cur.flip; renderPanel(); draw(); } return; }
+  if(k==='x' && (selProp || tool==='prop' || tool==='stairs')){ if(selProp){ pushUndo(); selProp.flip=!selProp.flip; afterChange(true); } else { cur.flip=!cur.flip; renderPanel(); draw(); } return; }
   if((k==='pageup'||k==='pagedown') && selProp){ e.preventDefault(); reorderProp(selProp, k==='pageup'?'front':'back'); return; }
-  if((k==='['||k===']') && (selProp || tool==='prop')){ const f=k===']'?1.1:1/1.1;
+  if((k==='['||k===']') && (selProp || tool==='prop' || tool==='stairs')){ const f=k===']'?1.1:1/1.1;
     if(selProp){ pushUndo(); selProp.scale=clamp(Math.round(selProp.scale*f*100)/100,.1,10); afterChange(true); } else { cur.scale=clamp(Math.round(cur.scale*f*100)/100,.1,10); renderPanel(); draw(); } return; }
   if(k==='+'||k==='='){ zoomAt(cw/2,ch/2,1.25); return; } if(k==='-'){ zoomAt(cw/2,ch/2,.8); return; } if(k==='0'){ fit(); return; }
   if(k==='['||k===']'){ if(tool==='brush'||tool==='fog'){ cur.brush=clamp(cur.brush+(k===']'?1:-1),1,5); renderPanel(); draw(); } return; }
@@ -1306,8 +1524,8 @@ window.addEventListener('keyup',e=>{ if(e.code==='Space'){ spaceDown=false; cv.s
 let nudgeTimer=null;
 function rotate(dir){
   const step=(settings.rotStep||15)*dir;
-  let p=sel&&sel.type==='prop'&&(tool==='select'||tool==='prop')?findSel():null;
-  if(!p && tool==='prop'){ cur.rot=normDeg(cur.rot+step); renderPanel(); draw(); return; }
+  let p=sel&&sel.type==='prop'&&(tool==='select'||tool==='prop'||tool==='stairs')?findSel():null;
+  if(!p && (tool==='prop'||tool==='stairs')){ cur.rot=normDeg(cur.rot+step); renderPanel(); draw(); return; }
   if(!p&&hover) p=propAt(hover.fx,hover.fy);
   if(p){ pushUndo(); p.rot=normDeg((p.rot||0)+step); afterChange(true); }
 }
@@ -1321,7 +1539,7 @@ function buildRail(){
     `<button class="tool" data-tool="${t.id}" title="${t.name} (${t.key})" aria-label="${t.name}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg><kbd>${t.key}</kbd></button>`).join('');
   $('rail').addEventListener('click',e=>{ const b=e.target.closest('[data-tool]'); if(b) setTool(b.dataset.tool); });
 }
-function setTool(id){ tool=id; if(id!=='select'&&id!=='token'&&!(id==='prop'&&sel&&sel.type==='prop')) sel=null; document.querySelectorAll('.tool').forEach(b=>b.classList.toggle('on',b.dataset.tool===id)); renderPanel(); draw(); }
+function setTool(id){ tool=id; closeRoomPop(); if(id!=='select'&&id!=='token'&&!((id==='prop'||id==='stairs')&&sel&&sel.type==='prop')) sel=null; document.querySelectorAll('.tool').forEach(b=>b.classList.toggle('on',b.dataset.tool===id)); renderPanel(); draw(); }
 function updateDims(){ $('dims').textContent=`${map.w}×${map.h} squares · ${map.w*FT}×${map.h*FT} ft`; if(document.activeElement!==$('mapName')) $('mapName').value=map.name; }
 
 function swatchCanvas(drawFn){ const c=document.createElement('canvas'); c.width=88; c.height=88; drawFn(c.getContext('2d')); return c; }
@@ -1364,9 +1582,10 @@ function renderPanel(){
     h+=propLibrarySection();
   }
   if(tool==='prop') h+=propMoveSection();
+  if(tool==='stairs'){ const o=findSel(); if(o && sel.type==='prop') h+=propEditor(o); h+=stairsTab(); }
   if(tool==='fog'){
     h+=sec('Brush', seg('fogMode',[['hide','Hide'],['reveal','Reveal']],cur.fogMode)+seg('brush',[1,2,3,5].map(n=>[n,`${n*FT} ft`]),cur.brush));
-    h+=sec('Fog shows as', seg('fogView',[['gm','GM view'],['player','Player view']],settings.fogView)+`<p class="hint">Player view makes fog opaque. Exported PNGs use the view you pick here.</p>`);
+    h+=sec('Fog shows as', seg('fogView',[['gm','GM view'],['player','Player view']],settings.fogView)+`<p class="hint">Player view makes fog opaque and hides GM marks (room numbers, secret doors, encounter markers). Exported PNGs use the view you pick here.</p>`);
     h+=`<div class="btnrow"><button class="btn" data-act="fogAll">Fog whole map</button><button class="btn" data-act="fogNone">Clear all fog</button></div>`;
   }
   if(tool==='token') h+=tokenForm();
@@ -1377,11 +1596,13 @@ function renderPanel(){
   if(tool==='measure'||tool==='select'||tool==='token') h+=sec('Diagonal rule', seg('diag',[['5','Every 5 ft'],['5-10','5 / 10 ft'],['euclid','True']],settings.diag)+`<p class="hint">“5 / 10” alternates diagonal costs, as in older editions and many variant rules.</p>`);
   if(tool==='wall'||tool==='door'||tool==='pan') h+=sec('Shortcuts',`<div class="keys"><kbd>Ctrl Z</kbd><span>Undo</span><kbd>Space</kbd><span>Hold and drag to pan</span><kbd>0</kbd><span>Fit map</span><kbd>R</kbd><span>Rotate prop</span><kbd>[ ]</kbd><span>Brush size</span></div>`);
   if(tool==='file') h+=fileTab();
+  if(tool==='dungeon') h+=dungeonTab();
   P.innerHTML=h;
   if($('terrGrid')) fillTerrGrid();
   if($('wallGrid')) fillWallGrid();
   if($('propGrid')) fillPropGrid();
   if($('doorGrid')) fillDoorGrid();
+  if($('stairGrid')) fillStairGrid();
   hydrate(P);
   if(importing) updateImportUI();
 }
@@ -1498,6 +1719,37 @@ function fillPropGrid(){
   $('propRecent').innerHTML= rec.length && !settings.propQ.trim() ? `<div class="stack" style="gap:6px"><span class="field">Recently used</span><div class="sw-grid">${rec.map(propSwatchHTML).join('')}</div></div>` : '';
   hydrate(g.parentElement);
   g.parentElement.querySelectorAll('img[data-pthumb]').forEach(img=>{ const u=thumbUrls.get('p|'+img.dataset.pthumb); if(u) img.src=u; else if(thumbObserver) thumbObserver.observe(img); else loadPropThumb(img); });
+}
+/* Stairs tab: stair picker (drawn + library categories that look like stairs), destination, stairs on this floor */
+const isStairCat=c=>/stair|ladder|escad/i.test(c.cat+' '+c.group+' '+c.id);
+function stairsTab(){
+  const cats=propCatalog().filter(isStairCat);
+  if(settings.stairCat.startsWith('lib:') && !cats.some(c=>'lib:'+c.id===settings.stairCat)) settings.stairCat='drawn';
+  const s_=v=>settings.stairCat===v?'selected':'';
+  const opts=`<option value="drawn" ${s_('drawn')}>Drawn (2)</option>`+(cats.length?`<optgroup label="Your stairs">${cats.map(c=>`<option value="lib:${esc(c.id)}" ${s_('lib:'+c.id)}>${esc(c.cat)} (${c.count})</option>`).join('')}</optgroup>`:'');
+  const above=map.levels[map.level+1], below=map.levels[map.level-1];
+  const dest=[['up',`Up — ${above?esc(above.name):'new floor above'}`],['down',`Down — ${below?esc(below.name):'new floor below'}`]]
+    .concat(map.levels.map((l,i)=>({l,i})).filter(({i})=>i!==map.level&&i!==map.level+1&&i!==map.level-1).map(({l})=>[l.id,esc(l.name)]));
+  const here=map.props.filter(p=>p.link);
+  let h=`<div class="stack"><h3>Stair</h3><label class="field">Category<select id="stairCat">${opts}</select></label>
+    <div class="sw-grid" id="stairGrid"></div></div>`;
+  h+=sec('Leads to',`<label class="field">Destination<select id="stairTo">${dest.map(([v,l])=>`<option value="${esc(v)}" ${settings.stairTo===v?'selected':''}>${l}</option>`).join('')}</select></label>
+    <label class="check"><input type="checkbox" id="stairPair" ${settings.stairPair!==false?'checked':''}> Also place a matching stair on that floor</label>
+    <div class="row"><label class="field">Rotation °<input id="curRot" type="number" step="any" value="${cur.rot}"></label><label class="field">Scale %<input id="curScale" type="number" min="10" max="1000" step="any" value="${Math.round(cur.scale*100)}"></label></div>`);
+  h+=sec(`On ${esc(map.levels[map.level].name)}${here.length?' · '+here.length:''}`, here.length ? `<div class="tlist">${here.map(p=>{ const i=levelIndex(p.link.to);
+      return `<div class="titem"><span class="nm">${esc(propName(p.type))} <span class="meta">${colName(Math.floor(p.cx))}${Math.floor(p.cy)+1}</span></span><span class="meta">${i<0?'missing floor':(i>map.level?'↑ ':'↓ ')+esc(map.levels[i].name)}</span>${i<0?'':`<button class="btn" data-act="goStair" data-id="${p.id}" style="padding:2px 8px">Go</button>`}</div>`; }).join('')}</div>`
+    : '<p class="empty">No stairs on this floor yet.</p>');
+  h+=`<div class="stack" id="libSec"><h3>Your stairs</h3>`+(importing
+    ? `<div id="libProg" class="stack" style="gap:6px"><div class="bar"><i style="width:${(importing.done/importing.total*100).toFixed(1)}%"></i></div><span class="ptext hint" style="margin:0">Importing…</span><div><button class="btn" data-act="cancelImport">Stop import</button></div></div>`
+    : `<p class="hint" style="margin:0">Import your <b>Stairs_and_Ladders</b> folder. They go into your prop library, and any category with “stairs” or “ladder” in its name shows up here.</p><div class="btnrow"><button class="btn primary" data-act="importProps">Import stairs folder…</button></div>`)+'</div>';
+  return h;
+}
+function fillStairGrid(){
+  const g=$('stairGrid'); if(!g) return;
+  const c=settings.stairCat, items = c==='drawn' ? ['stairs','ladder'] : [...PLIB.values()].filter(m=>'lib:'+m.catId===c).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true})).map(m=>m.key);
+  g.innerHTML=items.slice(0,GRID_LIMIT).map(k=>propSwatchHTML(k).replace('data-prop=','data-stair=').replace(/class="sw[^"]*"/,`class="sw ${cur.stair===k?'on':''}"`)).join('')||'<p class="empty" style="grid-column:1/-1">Nothing here yet.</p>';
+  hydrate(g);
+  g.querySelectorAll('img[data-pthumb]').forEach(img=>{ const u=thumbUrls.get('p|'+img.dataset.pthumb); if(u) img.src=u; else if(thumbObserver) thumbObserver.observe(img); else loadPropThumb(img); });
 }
 function propLibrarySection(){
   const cats=propCatalog(), bytes=cats.reduce((s,c)=>s+c.bytes,0), mb=(bytes/1048576).toFixed(bytes>1048576*10?0:1);
@@ -1653,10 +1905,433 @@ function tokenEditor(o){
   return sec('Selected token',`<label class="field">Name<input id="edName" value="${esc(o.name)}" maxlength="40"></label>
     <div class="row"><label class="field">Side<select id="edKind">${Object.entries(KINDS).map(([k,v])=>`<option value="${k}" ${o.kind===k?'selected':''}>${v.name}</option>`).join('')}</select></label>
     <label class="field">Size<select id="edSize">${SIZES.map(z=>`<option value="${z.k}" ${o.size===z.k?'selected':''}>${z.name}</option>`).join('')}</select></label></div>
-    ${colorPicker(o.color,'edit')}<div class="btnrow"><button class="btn" data-act="dupSel">Duplicate</button><button class="btn danger" data-act="delSel">Remove</button></div>`); }
+    ${colorPicker(o.color,'edit')}${(()=>{ const s=stairUnder(o), i=s?levelIndex(s.link.to):-1;
+      return i>=0 ? `<button class="btn primary" data-act="takeStairs">Take the stairs to ${esc(map.levels[i].name)}</button>` : ''; })()}
+    <div class="btnrow"><button class="btn" data-act="dupSel">Duplicate</button><button class="btn danger" data-act="delSel">Remove</button></div>`); }
 function tokenList(){ if(!map.tokens.length) return sec('On the map','<p class="empty">No tokens yet. Use the Tokens tool (T) to add some.</p>');
   const order={hero:0,ally:1,foe:2}; const list=[...map.tokens].sort((a,b)=>(order[a.kind]-order[b.kind])||a.name.localeCompare(b.name,undefined,{numeric:true}));
   return sec(`On the map · ${map.tokens.length}`,`<div class="tlist">${list.map(t=>`<div class="titem ${sel&&sel.id===t.id?'on':''}" data-tok="${t.id}"><span class="dot" style="background:${t.color};--ring:${KINDS[t.kind].ring}"></span><span class="nm">${esc(t.name)}</span><span class="meta">${colName(t.x)}${t.y+1}</span><button class="x" data-del="${t.id}" aria-label="Remove ${esc(t.name)}">×</button></div>`).join('')}</div>`); }
+/* ---------- Random dungeon generator ----------
+   Follows the dice mechanics of the DMG's Appendix A (random dungeons): starting area, passages, passage
+   width, doors, what lies beyond doors, chambers, chamber exits, stairs and chamber state, with the same
+   die sizes and ranges. Room purposes and states are short descriptions in our own words.
+   Sizes are in 5-ft squares (the book's 3 m = 2 squares). One dungeon = one level. */
+const DG_PASSAGE=[[2,'straight'],[3,'doorR'],[4,'doorL'],[5,'endDoor'],[7,'sideR'],[9,'sideL'],[10,'dead'],[12,'turnR'],[14,'turnL'],[19,'chamber'],[20,'stairs']];
+const DG_WIDTH=[[2,{w:1,ft:5}],[12,{w:2,ft:10}],[14,{w:4,ft:20}],[16,{w:6,ft:30}],[17,{w:8,ft:40,cols:1}],[18,{w:8,ft:40,cols:2}],[19,{w:8,ft:40,high:1}],[20,{w:8,ft:40,gallery:1}]];
+const DG_DOOR=[[10,{m:'wood',t:'madeira'}],[12,{m:'wood',t:'madeira, barrada ou trancada',lock:1}],[13,{m:'stone',t:'pedra'}],[14,{m:'stone',t:'pedra, barrada ou trancada',lock:1}],[15,{m:'iron',t:'ferro'}],[16,{m:'iron',t:'ferro, barrada ou trancada',lock:1}],
+  [17,{m:'port',t:'grade levadiça'}],[18,{m:'port',t:'grade levadiça travada',lock:1}],[19,{m:'secret',t:'porta secreta',secret:1}],[20,{m:'secret',t:'porta secreta, barrada ou trancada',secret:1,lock:1}]];
+const DG_BEYOND=[[2,'T'],[8,'passage'],[18,'chamber'],[19,'stairs'],[20,'false']];
+const DG_CHAMBER=[[2,{s:'sq',a:4,b:4}],[4,{s:'sq',a:6,b:6}],[6,{s:'sq',a:8,b:8}],[9,{s:'rect',a:4,b:6}],[12,{s:'rect',a:6,b:8}],[14,{s:'rect',a:8,b:10,big:1}],[15,{s:'rect',a:10,b:16,big:1}],
+  [16,{s:'circle',a:6,b:6}],[17,{s:'circle',a:10,b:10,big:1}],[18,{s:'oct',a:8,b:8,big:1}],[19,{s:'oct',a:12,b:12,big:1}],[20,{s:'trap',a:8,b:12,big:1}]];
+const DG_EXITS=[[3,[0,0]],[5,[0,1]],[8,[1,1]],[11,[1,2]],[13,[2,2]],[15,[2,3]],[17,[3,3]],[18,[3,4]],[19,[4,5]],[20,[4,6]]];
+const DG_EXITLOC=[[7,'opp'],[12,'left'],[17,'right'],[20,'same']];
+const DG_EXITTYPE=[[10,'door'],[20,'corridor']];
+const DG_STAIRS=[[4,{l:'↓1',t:'escada desce 1 nível até uma câmara'}],[8,{l:'↓1',t:'escada desce 1 nível até um corredor de 20 ft'}],[9,{l:'↓2',t:'escada desce 2 níveis até uma câmara'}],[10,{l:'↓2',t:'escada desce 2 níveis até um corredor de 20 ft'}],
+  [11,{l:'↓3',t:'escada desce 3 níveis até uma câmara'}],[12,{l:'↓3',t:'escada desce 3 níveis até um corredor de 20 ft'}],[13,{l:'↑1',t:'escada sobe 1 nível até uma câmara'}],[14,{l:'↑1',t:'escada sobe 1 nível até um corredor de 20 ft'}],
+  [15,{l:'↑✕',t:'escada sobe até um beco sem saída'}],[16,{l:'↓✕',t:'escada desce até um beco sem saída'}],[17,{l:'⇡1',t:'chaminé sobe 1 nível até um corredor de 20 ft',shaft:1}],[18,{l:'⇡2',t:'chaminé sobe 2 níveis até um corredor de 20 ft',shaft:1}],
+  [19,{l:'⇣1',t:'fosso (com ou sem elevador) desce 1 nível até uma câmara',shaft:1}],[20,{l:'⇕1',t:'fosso sobe 1 nível e desce 1 nível, até câmaras',shaft:1}]];
+const DG_STATE=[[3,'escombros; parte do teto desabou'],[5,'buracos; parte do piso desabou'],[7,'cinzas; quase tudo queimado'],[9,'usada como acampamento'],[11,'alagada; o conteúdo original foi estragado pela água'],
+  [16,'mobília destruída, mas ainda no lugar'],[18,'CONVERTED'],[19,'completamente saqueada'],[20,'intacta, como foi feita']];
+// room purposes by dungeon type: [die, rows "max|description"]
+const DG_TYPES={
+  general:{name:'Geral (qualquer masmorra)',die:100,rows:`1|Antecâmara;3|Arsenal;4|Sala de audiências;5|Aviário;7|Salão de banquetes;10|Alojamento;11|Banheiro ou latrina;12|Quarto;13|Bestiário;16|Cela;17|Altar;18|Capela;20|Cisterna;21|Sala de aula;22|Rouparia;24|Sala de conjuração;26|Corte;29|Cripta;31|Sala de jantar;33|Sala de adivinhação;34|Dormitório;35|Provador;36|Vestíbulo;38|Galeria;40|Sala de jogos;43|Guarita;45|Salão;47|Grande salão;49|Pátio interno;50|Canil;52|Cozinha;54|Laboratório;57|Biblioteca;59|Salão de festas;60|Sala de meditação;61|Observatório;62|Escritório;64|Despensa;66|Cárcere;68|Recepção;70|Refeitório;71|Vestiário;72|Sala de visitas;74|Santuário;76|Sala de estar;78|Forja;79|Estábulo;81|Depósito;83|Cofre;85|Sala de estudos;88|Templo;90|Sala do trono;91|Câmara de tortura;93|Sala de treino;95|Sala de troféus;96|Sala de espera;97|Enfermaria;98|Poço;100|Oficina`},
+  deathtrap:{name:'Armadilha mortal',die:20,rows:`1|Antessala onde espectadores assistem;8|Guarita fortificada contra invasores;11|Cofre de tesouro atrás de porta trancada ou secreta (75% de chance de armadilha);14|Sala com um enigma que evita uma armadilha ou monstro;19|Armadilha feita para matar ou capturar;20|Sala de observação de onde se vigia a masmorra`},
+  lair:{name:'Covil',die:20,rows:`1|Arsenal com armas e armaduras;2|Sala de audiências para convidados;3|Salão de banquetes;4|Alojamento dos defensores;5|Quarto dos líderes;6|Capela dos moradores;7|Cisterna ou poço de água;9|Guarita;10|Canil de animais e bestas de guarda;11|Cozinha e despensa;12|Cela de prisioneiros;14|Depósito, quase tudo não perecível;15|Sala do trono dos líderes;16|Câmara de tortura;17|Sala de treino;18|Sala de troféus ou museu;19|Latrina ou banheiro;20|Oficina de armas, armaduras e ferramentas`},
+  maze:{name:'Labirinto',die:20,rows:`1|Sala de conjuração dos guardiões;5|Guarita das sentinelas;10|Covil das bestas que patrulham;11|Cela acessível só por porta secreta;12|Santuário de um deus ou divindade;14|Depósito de comida e ferramentas de manutenção;18|Armadilha para confundir ou matar;19|Poço de água potável;20|Oficina onde portas e mobília são consertadas`},
+  mine:{name:'Mina',die:20,rows:`2|Barracão dos mineiros;3|Quarto do supervisor;4|Capela da divindade dos mineiros;5|Cisterna de água potável;7|Guarita;8|Cozinha dos trabalhadores;9|Laboratório para testar minérios estranhos;15|Veio de minério (75% de chance de estar esgotado);16|Escritório do supervisor;17|Ferraria para consertar ferramentas;19|Depósito de ferramentas e equipamentos;20|Cofre onde o minério aguarda transporte`},
+  portal:{name:'Portal planar',die:100,rows:`3|Vestíbulo decorado;8|Arsenal dos guardiões do portal;10|Sala de audiências para visitantes;19|Alojamento dos guardas do portal;23|Quartos da alta hierarquia da ordem;30|Capela das divindades ligadas ao portal;35|Cisterna de água fresca;38|Sala de aula para iniciantes nos segredos do portal;39|Sala de conjuração para invocar criaturas;41|Cripta dos que morreram guardando o portal;47|Refeitório;50|Sala de adivinhação sobre o portal;55|Dormitório de visitantes e guardas;57|Vestíbulo de entrada;59|Galeria de troféus ligados ao portal;67|Guarita que protege o portal;72|Cozinha;77|Laboratório de experimentos com o portal;80|Biblioteca sobre a história do portal;85|Cárcere para criaturas vindas do portal;87|Junção planar onde fica o portal (25% de chance de estar ativo);90|Depósito;91|Cofre com tesouros e fundos dos guardiões;93|Sala de estudo;94|Câmara de interrogatório;98|Latrina ou banheiro;100|Oficina de ferramentas para estudar o portal`},
+  stronghold:{name:'Fortaleza',die:100,rows:`2|Antecâmara de quem pede acesso;5|Arsenal de alta qualidade, com armas de cerco leves;6|Sala de audiências do senhor da fortaleza;7|Aviário ou zoológico de criaturas exóticas;11|Salão de banquetes;15|Alojamento da guarda de elite;16|Banho luxuoso;17|Quarto do senhor ou de hóspedes importantes;18|Capela da divindade do senhor;21|Cisterna;25|Sala de jantar íntima;26|Rouparia;28|Galeria de arte e troféus;32|Salão de jogos;50|Guarita;51|Canil de monstros ou animais de guarda;57|Cozinha para grandes banquetes;61|Biblioteca de livros raros;62|Salão;70|Despensa e adega;74|Sala de estar da família;78|Estábulo;86|Depósito;87|Cofre (75% de chance de ficar atrás de porta secreta);92|Escritório;93|Sala do trono;96|Sala de espera para visitantes menores;98|Latrina ou banheiro;100|Cripta do senhor da fortaleza ou de alguém importante`},
+  temple:{name:'Templo ou santuário',die:100,rows:`3|Arsenal com estandartes de batalha;5|Sala de audiências dos sacerdotes;7|Salão de banquetes para dias sagrados;10|Alojamento da escolta armada;14|Celas de contemplação silenciosa;24|Templo central de rituais;28|Capela de uma divindade menor;31|Sala de aula para iniciantes;34|Sala de conjuração santificada;40|Cripta de um alto sacerdote, bem guardada;42|Refeitório dos sacerdotes menores;43|Refeitório dos altos sacerdotes;46|Sala de adivinhação com runas;50|Dormitório;56|Guarita;57|Canil de criaturas sagradas;60|Cozinha;65|Biblioteca de textos religiosos;68|Prisão;73|Vestiário de trajes cerimoniais;74|Estábulo;79|Depósito;80|Cofre de relíquias, com armadilhas;82|Câmara de tortura;89|Sala de troféus sagrados;90|Latrina ou banheiro;94|Poço defensável;100|Oficina de armas e itens religiosos`},
+  tomb:{name:'Tumba',die:20,rows:`1|Antecâmara para quem vem prestar homenagem;3|Capela das divindades que guardam os mortos;8|Cripta de sepultamentos menores;9|Sala de adivinhação para consultar os mortos;10|Cripta falsa com armadilha contra ladrões;11|Galeria dos feitos do falecido;12|Cripta de um nobre ou sacerdote;14|Guarita com guardas que não dormem nem comem;15|Vestiário para rituais fúnebres;17|Depósito de ferramentas funerárias;18|Tumba principal, com portas secretas e armadilhas;20|Oficina de embalsamamento`},
+  vault:{name:'Câmara de tesouro',die:20,rows:`1|Antecâmara para dignitários;2|Arsenal com equipamento mundano e mágico;4|Alojamento dos guardas;5|Cisterna;9|Guarita;10|Canil de bestas de guarda;11|Cozinha dos guardas;12|Sala de vigia;13|Prisão para invasores capturados;15|Cofre, atrás de porta trancada ou secreta;16|Câmara de tortura;20|Armadilha para matar ou capturar`},
+};
+for(const t of Object.values(DG_TYPES)) t.table=t.rows.split(';').map(r=>{ const [m,txt]=r.split('|'); return [+m,txt]; });
+const DG_SIZES={ small:{rooms:6,map:50,name:'Pequena'}, medium:{rooms:12,map:70,name:'Média'}, large:{rooms:20,map:90,name:'Grande'}, huge:{rooms:30,map:110,name:'Enorme'} };
+const DG_DIRS=[[0,-1],[1,0],[0,1],[-1,0]];                 // N E S W
+const dgRight=d=>(d+1)%4, dgLeft=d=>(d+3)%4, dgBack=d=>(d+2)%4;
+const pickRow=(roll,rows)=>rows.find(r=>roll<=r[0])[1];
+function mulberry(a){ return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+function generateDungeon(o){
+  const R=mulberry(+hashStr(o.seed)), d=n=>1+Math.floor(R()*n);
+  const W=o.W, H=o.H, G=new Int32Array(W*H), regions=[null], rooms=[], doors=[], props=[], labels=[], features=[], q=[];
+  const openings=new Set();   // edges between different areas that are deliberately open (everything else gets a wall)
+  const edgeId=(a,b)=> (a[1]<b[1]||(a[1]===b[1]&&a[0]<b[0])) ? a+'|'+b : b+'|'+a;
+  const open=(a,b)=>openings.add(edgeId(a,b));
+  let steps=0;
+  const inB=(x,y)=>x>=1&&y>=1&&x<W-1&&y<H-1;
+  const at=(x,y)=>(x<0||y<0||x>=W||y>=H)?-1:G[y*W+x];
+  const cellAt=(b,f,i,j)=>{ const l=dgRight(f); return [b[0]+i*DG_DIRS[f][0]+j*DG_DIRS[l][0], b[1]+i*DG_DIRS[f][1]+j*DG_DIRS[l][1]]; };
+  const region=(kind)=>{ regions.push({kind}); return regions.length-1; };
+  const full=()=>rooms.length>=o.rooms;
+  const rollWidth=(die,cap)=>{ let r=pickRow(d(die),DG_WIDTH); while(cap && r.w>cap){ const i=DG_WIDTH.findIndex(x=>x[1]===r); r=DG_WIDTH[Math.max(0,i-1)][1]; if(i===0) break; } return r; };
+  // a passage: base = left-most cell of its first row, heading f, width w squares; pos = rows carved so far
+  const passage=(b,f,wd,from,rid)=>({ b, f, w:wd.w, wd, pos:0, rid: rid||region('corridor'), allow:new Set([from]) });
+  function carve(P,n){
+    const l=dgRight(P.f);
+    for(let k=0;k<n;k++){
+      const row=[]; for(let j=0;j<P.w;j++) row.push(cellAt(P.b,P.f,P.pos,j));
+      if(row.some(([x,y])=>!inB(x,y))) return 'edge';
+      if(row.some(([x,y])=>at(x,y)>0 && at(x,y)!==P.rid)){
+        if(P.pos===0) return 'blocked';
+        row.forEach((c,j)=>{ if(at(...c)>0 && at(...c)!==P.rid) open(c,cellAt(P.b,P.f,P.pos-1,j)); });   // ran into another area: open into it
+        return 'joined'; }
+      const s1=cellAt(P.b,P.f,P.pos,-1), s2=cellAt(P.b,P.f,P.pos,P.w);
+      for(const [x,y] of [s1,s2]){ const v=at(x,y); if(v>0 && v!==P.rid && !P.allow.has(v)) return 'blocked'; }
+      if(P.pos===0) row.forEach((c,j)=>{ const bh=cellAt(P.b,P.f,-1,j); if(at(...bh)>0) open(c,bh); });   // mouth opens onto where it started
+      for(const [x,y] of row) G[y*W+x]=P.rid;
+      if(P.wd.cols && P.pos%2===1){ const cols=P.wd.cols===1?[P.w/2]:[P.w/4,P.w*3/4];
+        for(const j of cols){ const [x,y]=cellAt(P.b,P.f,P.pos,0); props.push({type:'pillar',cx:x+.5+(j-.5)*DG_DIRS[l][0],cy:y+.5+(j-.5)*DG_DIRS[l][1],scale:.9}); } }
+      P.pos++;
+    }
+    return 'ok';
+  }
+  const blockCenter=(P,i0,i1)=>{ const a=cellAt(P.b,P.f,i0,0), c=cellAt(P.b,P.f,i1,P.w-1); return [(a[0]+c[0])/2+.5,(a[1]+c[1])/2+.5]; };
+  function addDoor(inside,outside,forced){
+    const dt=forced||pickRow(d(20),DG_DOOR), door={ edges:[[inside,outside]], type:dt, pending:true };
+    doors.push(door); return door;
+  }
+  function sidePassage(P,side,p){
+    const wd=rollWidth(12,Math.max(1,P.w*2)); const w2=wd.w;
+    if(p===undefined) p=Math.max(0,P.pos-4+Math.floor((4-w2)/2)); p=Math.max(0,Math.min(p,P.pos-1));
+    const f=side>0?dgRight(P.f):dgLeft(P.f);
+    const b= side>0 ? cellAt(P.b,P.f,p+w2-1,P.w) : cellAt(P.b,P.f,p,-1);
+    const Q=passage(b,f,wd,P.rid); if(carve(Q,2)==='ok') q.push(()=>passageStep(Q));
+  }
+  function sideDoor(P,side){
+    const i=Math.max(0,P.pos-3), inside=cellAt(P.b,P.f,i,side>0?P.w-1:0), out=cellAt(P.b,P.f,i,side>0?P.w:-1), f=side>0?dgRight(P.f):dgLeft(P.f);
+    if(!inB(...out) || at(...out)!==0) return;
+    const door=addDoor(inside,out); q.push(()=>beyondDoor({b:out,f,w:1,from:P.rid,door}));
+  }
+  function endDoor(P,forcedType){
+    const dw=Math.min(P.w,2), j0=Math.floor((P.w-dw)/2), door={edges:[],type:forcedType||pickRow(d(20),DG_DOOR),pending:true};
+    for(let j=j0;j<j0+dw;j++) door.edges.push([cellAt(P.b,P.f,P.pos-1,j),cellAt(P.b,P.f,P.pos,j)]);
+    const out=cellAt(P.b,P.f,P.pos,j0); if(!inB(...out) || at(...out)!==0) return;
+    doors.push(door); q.push(()=>beyondDoor({b:out,f:P.f,w:dw,from:P.rid,door}));
+  }
+  function stairsAt(P){
+    if(carve(P,2)!=='ok') return;
+    const s=pickRow(d(20),DG_STAIRS), [cx,cy]=blockCenter(P,P.pos-2,P.pos-1);
+    if(s.shaft) features.push({kind:'shaft',x:Math.floor(cx),y:Math.floor(cy)});
+    else props.push({type:'stairs',cx,cy,rot:{0:180,1:270,2:0,3:90}[P.f],scale:Math.min(2,P.w)});
+    labels.push({x:cx,y:cy,text:s.l,kind:'note'}); features.push({kind:'note',text:`${s.l}: ${s.t}`});
+  }
+  function passageStep(P){
+    if(full() || ++steps>2500) return;
+    const kind=pickRow(d(20),DG_PASSAGE), ok=n=>carve(P,n)==='ok';
+    switch(kind){
+      case 'straight': if(ok(6)) q.push(()=>passageStep(P)); break;
+      case 'doorR': case 'doorL': if(!ok(4)) break; sideDoor(P,kind==='doorR'?1:-1); if(ok(2)) q.push(()=>passageStep(P)); break;
+      case 'endDoor': if(ok(4)) endDoor(P); break;
+      case 'sideR': case 'sideL': if(!ok(4)) break; sidePassage(P,kind==='sideR'?1:-1); if(ok(2)) q.push(()=>passageStep(P)); break;
+      case 'dead': if(ok(4) && d(10)===1) endDoor(P,DG_DOOR[8][1]); break;          // 10%: a secret door
+      case 'turnR': case 'turnL': { if(!ok(Math.max(4,P.w))) break;
+        const right=kind==='turnR', f=right?dgRight(P.f):dgLeft(P.f), b=right?cellAt(P.b,P.f,P.pos-1,P.w):cellAt(P.b,P.f,P.pos-P.w,-1);
+        const Q={...P,b,f,pos:0}; if(carve(Q,2)==='ok') q.push(()=>passageStep(Q)); break; }
+      case 'chamber': placeRoom({b:cellAt(P.b,P.f,P.pos,0),f:P.f,w:P.w,from:P.rid}); break;
+      case 'stairs': stairsAt(P); break;
+    }
+  }
+  function beyondDoor(M){
+    if(full()) return;
+    M.door.pending=false;
+    const r=pickRow(d(20),DG_BEYOND);
+    const wd={w:M.w,ft:M.w*5};
+    // nothing could be built beyond: if the door opens straight into another area it still connects, otherwise it goes
+    const fail=()=>{ if(!(at(...M.b)>0)) M.door.remove=true; };
+    if(r==='false'){ M.door.falseDoor=true; M.door.trap=true; return; }
+    if(r==='chamber'){ if(!placeRoom(M)) fail(); return; }
+    const P=passage(M.b,M.f,wd,M.from);
+    if(r==='stairs'){ stairsAt(P); if(P.pos===0) fail(); return; }
+    const st=carve(P,r==='T'?2:4);
+    if(st!=='ok'){ if(P.pos===0) fail(); return; }
+    if(r==='T'){ sidePassage(P,1,Math.max(0,P.pos-P.w)); sidePassage(P,-1,Math.max(0,P.pos-P.w)); }
+    else q.push(()=>passageStep(P));
+  }
+  function mask(spec,D,L){
+    const m=[];
+    for(let i=0;i<D;i++) for(let j=0;j<L;j++){
+      let inn=true;
+      if(spec.s==='circle'){ const a=(i+.5-D/2)/(D/2), b=(j+.5-L/2)/(L/2); inn=a*a+b*b<=1.08; }
+      else if(spec.s==='oct'){ const c=Math.round(Math.min(D,L)*.3); inn=Math.min(i,D-1-i)+Math.min(j,L-1-j)>=c; }
+      else if(spec.s==='trap'){ const t=spec.flip?i/(D-1):1-i/(D-1), wi=Math.round(L*(.55+.45*t)), j0=Math.floor((L-wi)/2); inn=j>=j0&&j<j0+wi; }
+      if(inn) m.push([i,j]);
+    }
+    return m;
+  }
+  // place a chamber whose entrance row starts at M.b (left-most cell), heading M.f, entrance M.w wide
+  function placeRoom(M,forcedSpec){
+    if(full()) return false;
+    for(let attempt=0;attempt<4;attempt++){
+      const spec={...(forcedSpec||pickRow(attempt<2?d(20):d(9),DG_CHAMBER))}; spec.flip=d(2)===1;
+      const dims=spec.a===spec.b?[[spec.a,spec.b]]:(d(2)===1?[[spec.a,spec.b],[spec.b,spec.a]]:[[spec.b,spec.a],[spec.a,spec.b]]);
+      for(const [D,L] of dims){
+        if(L<M.w) continue;
+        const round=spec.s==='circle'||spec.s==='oct'||spec.s==='trap', span=L-M.w;
+        const offs=round?[-Math.floor(span/2)]:[-Math.floor(R()*(span+1)),-Math.floor(span/2),0,-span];
+        for(const o of offs){
+          const cells=mask(spec,D,L).map(([i,j])=>[i,j+o]);
+          const key=new Set(cells.map(([i,j])=>i+','+j));
+          for(let j=0;j<M.w;j++) if(!key.has('0,'+j)){ cells.push([0,j]); key.add('0,'+j); }
+          const abs=cells.map(([i,j])=>cellAt(M.b,M.f,i,j));
+          if(abs.some(([x,y])=>!inB(x,y)||at(x,y)!==0)) continue;
+          // rooms may share a wall with other areas, but a room hugging lots of existing space reads as a mistake
+          let touch=0;
+          for(const [i,j] of cells) for(const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){ const ni=i+di, nj=j+dj; if(key.has(ni+','+nj) || (ni===-1&&nj>=0&&nj<M.w)) continue;
+            if(at(...cellAt(M.b,M.f,ni,nj))>0) touch++; }
+          if(touch>Math.max(2,Math.round((D+L)/3))) continue;
+          const rid=region('room'); for(const [x,y] of abs) G[y*W+x]=rid;
+          for(let j=0;j<M.w;j++){ const bh=cellAt(M.b,M.f,-1,j); if(at(...bh)>0) open(cellAt(M.b,M.f,0,j),bh); }
+          const room={ n:rooms.length+1, rid, spec, Dft:D*5, Lft:L*5, cells:abs, f:M.f, rel:cells, b:M.b, o, D, L };
+          rooms.push(room); roomExits(room); return true;
+        }
+      }
+    }
+    return false;
+  }
+  function wallCells(room,wd){      // room cells on the side facing wd whose outside neighbour is rock
+    const [dx,dy]=DG_DIRS[wd], set=new Set(room.cells.map(([x,y])=>x+','+y));
+    let best=-1e9; const c=[];
+    for(const [x,y] of room.cells){ if(set.has((x+dx)+','+(y+dy))) continue; const p=x*dx+y*dy; if(p>best) best=p; c.push([x,y,p]); }
+    return c.filter(([x,y,p])=>p>=best-1 && inB(x+dx,y+dy) && at(x+dx,y+dy)===0);
+  }
+  function addExit(room,wd,type,forcedDoor,slot,slots){
+    let cand=wallCells(room,wd); if(!cand.length) return;
+    const l=dgRight(wd), lp=([x,y])=>x*DG_DIRS[l][0]+y*DG_DIRS[l][1];
+    cand.sort((a,b)=>lp(a)-lp(b));
+    const [dx,dy]=DG_DIRS[wd];
+    if(type==='door'){
+      const k = slots ? Math.min(cand.length-1,Math.floor((slot+.5)/slots*cand.length)) : Math.floor(R()*cand.length);
+      const [x,y]=cand[k], out=[x+dx,y+dy], door=addDoor([x,y],out,forcedDoor);
+      q.push(()=>beyondDoor({b:out,f:wd,w:1,from:room.rid,door})); return;
+    }
+    const longest=Math.max(room.D,room.L), wdt=rollWidth(room.start?12:20,Math.max(1,longest-1));
+    // longest straight run of wall cells on the outermost line
+    const line=Math.max(...cand.map(c=>c[2])), run=cand.filter(c=>c[2]===line);
+    const w=Math.min(wdt.w,run.length); if(!w) return;
+    const k0 = slots ? Math.min(run.length-w,Math.max(0,Math.floor((slot+.5)/slots*run.length-w/2))) : Math.floor(R()*(run.length-w+1));
+    const [x,y]=run[k0], Q=passage([x+dx,y+dy],wd,{...wdt,w},room.rid);
+    if(carve(Q,2)==='ok') q.push(()=>passageStep(Q));
+  }
+  function roomExits(room){
+    const [n,big]=pickRow(d(20),DG_EXITS); const count=room.spec.big?big:n;
+    room.exits=count;
+    for(let e=0;e<count;e++){
+      const loc=pickRow(d(20),DG_EXITLOC), wd={opp:room.f,left:dgLeft(room.f),right:dgRight(room.f),same:dgBack(room.f)}[loc];
+      addExit(room,wd,pickRow(d(20),DG_EXITTYPE));
+    }
+  }
+  // starting area, centred on the map
+  const start=d(10), cx=Math.floor(W/2), cy=Math.floor(H/2);
+  const startRoom=(spec,D,L,walls)=>{
+    const b=[cx-Math.floor(L/2),cy-Math.floor(D/2)], rel=mask(spec,D,L), cells=rel.map(([i,j])=>[b[0]+j,b[1]+i]);
+    const rid=region('room'); for(const [x,y] of cells) G[y*W+x]=rid;
+    const room={ n:1, rid, spec, Dft:D*5, Lft:L*5, cells, f:2, D, L, start:true };
+    rooms.push(room);
+    for(const [wd,kind,count] of walls) for(let k=0;k<count;k++)
+      addExit(room,wd,kind==='passage'?'corridor':'door',kind==='secret'?DG_DOOR[8][1]:null,k,count);
+    return room;
+  };
+  const sq={s:'sq'}, rect={s:'rect'}, circ={s:'circle'};
+  const four=k=>[[0,k,1],[1,k,1],[2,k,1],[3,k,1]];
+  let startDesc='';
+  switch(start){
+    case 1: startRoom(sq,4,4,four('passage')); startDesc='Quadrada, 20×20 ft, uma passagem em cada parede'; break;
+    case 2: startRoom(sq,4,4,[[0,'door',1],[1,'door',1],[2,'passage',1]]); startDesc='Quadrada, 20×20 ft, portas em duas paredes e passagem na terceira'; break;
+    case 3: startRoom(sq,8,8,[[0,'door',1],[1,'door',1],[3,'door',1]]); startDesc='Quadrada, 40×40 ft, portas em três paredes'; break;
+    case 4: { const r=startRoom(rect,4,16,[[0,'passage',2],[2,'passage',2],[1,'door',1],[3,'door',1]]);
+      for(let k=1;k<8;k++) props.push({type:'pillar',cx:cx-8+k*2,cy:cy,scale:.9});
+      startDesc='Retangular, 80×20 ft, fileira de colunas no meio, duas passagens em cada parede longa e portas nas curtas'; break; }
+    case 5: startRoom(rect,8,4,four('passage')); startDesc='Retangular, 20×40 ft, uma passagem em cada parede'; break;
+    case 6: startRoom(circ,8,8,four('passage')); startDesc='Circular, 40 ft de diâmetro, uma passagem em cada direção'; break;
+    case 7: startRoom(circ,8,8,four('passage')); features.push({kind:'shaft',x:cx-1,y:cy-1,size:2}); labels.push({x:cx,y:cy,text:'Poço',kind:'note'});
+      features.push({kind:'note',text:'Poço no centro da área inicial (pode levar a um nível abaixo)'}); startDesc='Circular, 40 ft de diâmetro, uma passagem em cada direção e um poço no centro'; break;
+    case 8: startRoom(sq,4,4,[[0,'door',1],[1,'door',1],[2,'passage',1],[3,'secret',1]]); startDesc='Quadrada, 20×20 ft, portas em duas paredes, passagem na terceira e porta secreta na quarta'; break;
+    default: { // 9: T intersection, 10: four-way — a 10-ft-wide crossing
+      const rid=region('corridor'); for(let y=cy-1;y<=cy;y++) for(let x=cx-1;x<=cx;x++) G[y*W+x]=rid;
+      const arms = start===9 ? [1,3,2] : [0,1,2,3];
+      for(const f of arms){ const b={0:[cx-1,cy-2],1:[cx+1,cy-1],2:[cx,cy+1],3:[cx-2,cy]}[f];
+        const Q=passage(b,f,{w:2,ft:10},rid); if(carve(Q,2)==='ok') q.push(()=>passageStep(Q)); }
+      startDesc = start===9 ? 'Passagem de 10 ft de largura, interseção em T' : 'Passagem de 10 ft de largura, interseção de quatro vias';
+    }
+  }
+  while(q.length && !full() && steps<2500) q.shift()();
+  // doors whose far side was never generated become plain wall
+  const liveDoors=doors.filter(dr=>!dr.pending && !dr.remove);
+  return { W,H,G,regions,rooms,doors:liveDoors,props,labels,features,openings,start,startDesc,startIsRoom:start<=8,cx,cy };
+}
+const DG_SHAPES={sq:'quadrada',rect:'retangular',circle:'circular',oct:'octogonal',trap:'trapezoidal'};
+const DG_COMPASS=['norte','leste','sul','oeste'];
+function dgFloorIndex(key){ return key && key.startsWith('lib:') ? ensureLibTerrain(key) : TI(key||'stone'); }
+// trim the generation grid to the dug-out area plus a rim of rock, shifting everything that holds coordinates
+function cropDungeon(g,pad){
+  let x0=g.W, y0=g.H, x1=-1, y1=-1;
+  for(let y=0;y<g.H;y++) for(let x=0;x<g.W;x++) if(g.G[y*g.W+x]>0){ x0=Math.min(x0,x); y0=Math.min(y0,y); x1=Math.max(x1,x); y1=Math.max(y1,y); }
+  if(x1<0) return g;
+  x0=Math.max(0,x0-pad); y0=Math.max(0,y0-pad); x1=Math.min(g.W-1,x1+pad); y1=Math.min(g.H-1,y1+pad);
+  const W=x1-x0+1, H=y1-y0+1, G=new Int32Array(W*H);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++) G[y*W+x]=g.G[(y+y0)*g.W+x+x0];
+  const sc=c=>[c[0]-x0,c[1]-y0];
+  const openings=new Set([...g.openings].map(k=>k.split('|').map(p=>{ const [a,b]=p.split(',').map(Number); return [a-x0,b-y0]; }).join('|')));
+  return { ...g, W, H, G, openings,
+    rooms:g.rooms.map(r=>({...r,cells:r.cells.map(sc)})),
+    doors:g.doors.map(dr=>({...dr,edges:dr.edges.map(([a,b])=>[sc(a),sc(b)])})),
+    props:g.props.map(p=>({...p,cx:p.cx-x0,cy:p.cy-y0})),
+    labels:g.labels.map(l=>({...l,x:l.x-x0,y:l.y-y0})),
+    features:g.features.map(f=>f.x===undefined?f:{...f,x:f.x-x0,y:f.y-y0}),
+    cx:g.cx-x0, cy:g.cy-y0 };
+}
+function buildDungeon(o){
+  const size=DG_SIZES[o.size]||DG_SIZES.medium;
+  let g=null;
+  for(let t=0;t<8;t++){   // a few layouts dead-end early; keep the first that reaches most of the target
+    const c=generateDungeon({W:size.map,H:size.map,rooms:size.rooms,seed:o.seed+(t?'·'+t:'')});
+    if(!g || c.rooms.length>g.rooms.length) g=c;
+    if(c.rooms.length>=Math.ceil(size.rooms*.75)) break;
+  }
+  g=cropDungeon(g,2);
+  const R=mulberry(+hashStr(o.seed+'|conteúdo')), d=n=>1+Math.floor(R()*n);
+  const RE=mulberry(+hashStr(o.seed+'|encontros')), dEnc=n=>1+Math.floor(RE()*n);   // own stream: old seeds keep their key
+  const {W,H,G,regions}=g, m=blankMap(W,H,dgFloorIndex('rock'));
+  const type=DG_TYPES[o.type]||DG_TYPES.general;
+  m.name=o.name||`Masmorra: ${type.name}`;
+  const roomF=dgFloorIndex(o.roomFloor), corrF=dgFloorIndex(o.corrFloor);
+  for(let i=0;i<W*H;i++) if(G[i]>0) m.terrain[i]= regions[G[i]].kind==='room' ? roomF : corrF;
+  for(const f of g.features) if(f.kind==='shaft'){ const s=f.size||1; for(let y=f.y;y<f.y+s;y++) for(let x=f.x;x<f.x+s;x++) if(x>=0&&y>=0&&x<W&&y<H) m.terrain[y*W+x]=TI('pit'); }
+  // walls wherever two different areas meet, unless that edge was left open on purpose
+  const wk=settings.wallStyle||'drawn'; m.wallKeys=['drawn']; if(wk!=='drawn') m.wallKeys.push(wk); const wi=m.wallKeys.length-1;
+  const isOpen=(a,b)=>g.openings.has((a[1]<b[1]||(a[1]===b[1]&&a[0]<b[0]))?a+'|'+b:b+'|'+a);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const a=G[y*W+x];
+    if(x+1<W){ const b=G[y*W+x+1]; if(a!==b && (a>0||b>0) && !isOpen([x,y],[x+1,y])){ const i=y*(W+1)+x+1; m.vw[i]=1; m.vws[i]=wi; } }
+    if(y+1<H){ const b=G[(y+1)*W+x]; if(a!==b && (a>0||b>0) && !isOpen([x,y],[x,y+1])){ const i=(y+1)*W+x; m.hw[i]=1; m.hws[i]=wi; } } }
+  // doors: material picks the style — wood uses your door style, stone and iron use the included ones
+  const styleFor={ wood:settings.doorStyle||'inc:wood_dark_a', stone:'inc:stone_earthy_a', iron:'inc:metal_gray_a', port:'inc:metal_gray_a' };
+  const keyIdx=(arr,k)=>{ let i=arr.indexOf(k); if(i<0){ arr.push(k); i=arr.length-1; } return i; };
+  const fi=keyIdx(m.frameKeys,settings.doorFrame||'none');
+  const edgeOf=(a,b)=> a[0]===b[0] ? ['h',a[0],Math.max(a[1],b[1])] : ['v',Math.max(a[0],b[0]),a[1]];
+  const doorInfo=[];
+  for(const dr of g.doors){
+    const t=dr.type;
+    for(const [a,b] of dr.edges){ const [eo,ex,ey]=edgeOf(a,b), arr=eo==='h'?m.hw:m.vw, i=eo==='h'?ey*W+ex:ey*(W+1)+ex;
+      if(t.secret){ arr[i]=1; (eo==='h'?m.hws:m.vws)[i]=wi; }
+      else { arr[i]=2; m.doors[doorKey(eo,ex,ey)]={ s:keyIdx(m.doorKeys,styleFor[t.m]||styleFor.wood), f:t.m==='port'?0:fi, m:0 }; } }
+    const [a,b]=dr.edges[0], mid=[(a[0]+b[0])/2+.5,(a[1]+b[1])/2+.5];
+    if(t.secret) m.labels.push({id:newId(),x:mid[0],y:mid[1],text:'S',kind:'secret'});
+    if(dr.trap) m.labels.push({id:newId(),x:mid[0],y:mid[1],text:'A',kind:'trap'});
+    else if(t.lock && !t.secret) m.labels.push({id:newId(),x:mid[0],y:mid[1],text:'T',kind:'lock'});
+    doorInfo.push({a,b,t,trap:dr.trap});
+  }
+  for(const p of g.props) m.props.push({ id:newId(), type:p.type, cx:p.cx, cy:p.cy, rot:p.rot||0, scale:p.scale||1 });
+  for(const l of g.labels) m.labels.push({ id:newId(), ...l });
+  // the key: every chamber gets a purpose (and, if asked, its current state)
+  const rooms=g.rooms.map(r=>{
+    const set=new Set(r.cells.map(c=>c+'')); let sx=0, sy=0; for(const [x,y] of r.cells){ sx+=x; sy+=y; }
+    const mx=sx/r.cells.length, my=sy/r.cells.length, c=r.cells.reduce((best,p)=>Math.hypot(p[0]-mx,p[1]-my)<Math.hypot(best[0]-mx,best[1]-my)?p:best);
+    m.labels.push({ id:newId(), x:c[0]+.5, y:c[1]+.5, text:String(r.n), kind:'room' });
+    const purpose=pickRow(d(type.die),type.table);
+    let state=null;
+    if(o.state){ state=pickRow(d(20),DG_STATE); if(state==='CONVERTED') state='convertida para outro uso: '+pickRow(d(100),DG_TYPES.general.table).toLowerCase();
+      if(/escombros|buracos/.test(state)) for(let k=0;k<3;k++){ const p=r.cells[Math.floor(R()*r.cells.length)]; m.props.push({id:newId(),type:'rubble',cx:p[0]+.5,cy:p[1]+.5,rot:Math.round(R()*360),scale:1}); }
+      if(/alagada/.test(state)){ const p=r.cells[Math.floor(R()*r.cells.length)]; for(const [dx,dy] of [[0,0],[1,0],[0,1],[1,1]]) if(set.has([p[0]+dx,p[1]+dy]+'')) m.terrain[(p[1]+dy)*W+p[0]+dx]=TI('water'); } }
+    const exits=doorInfo.filter(x=>set.has(x.a+'')||set.has(x.b+'')).map(x=>{ const inA=set.has(x.a+''), from=inA?x.a:x.b, to=inA?x.b:x.a;
+      const dir=to[1]<from[1]?0:to[0]>from[0]?1:to[1]>from[1]?2:3; return `${x.trap?'porta falsa com armadilha':x.t.t} (${DG_COMPASS[dir]})`; });
+    const dims = r.spec.s==='circle' ? `${r.Dft} ft de diâmetro` : `${Math.min(r.Dft,r.Lft)}×${Math.max(r.Dft,r.Lft)} ft`;
+    const xs=r.cells.map(p=>p[0]), ys=r.cells.map(p=>p[1]);
+    return { n:r.n, title: r.start ? 'Área inicial' : `Câmara ${DG_SHAPES[r.spec.s]}`, shape:DG_SHAPES[r.spec.s], dims, big:!!r.spec.big, purpose, state, doors:exits, x:c[0]+.5, y:c[1]+.5,
+      box:[Math.min(...xs),Math.min(...ys),Math.max(...xs)+1,Math.max(...ys)+1], cells:r.cells.flat(),   // cells: flat x,y pairs
+      enc: o.enc && !r.start ? rollChamber(o.cr,dEnc) : null };
+  });
+  for(const r of rooms) placeEncMarkers(m,r);
+  if(!g.startIsRoom) m.labels.push({id:newId(),x:g.cx,y:g.cy,text:'Entrada',kind:'note'});
+  else if(rooms[0]) rooms[0].title='Área inicial (entrada)';
+  m.dungeon={ type:o.type, typeName:type.name, seed:o.seed, size:o.size, start:g.startDesc, rooms, notes:g.features.filter(f=>f.kind==='note').map(f=>f.text),
+    doors:g.doors.length, secret:g.doors.filter(x=>x.type.secret).length };
+  return m;
+}
+// add a generated dungeon (a one-floor map) to this map as a new floor; sizes are evened out by padding with rock
+function mergeGenerated(gm,where){
+  const rock=TI('rock'), W=Math.max(map.w,gm.w), H=Math.max(map.h,gm.h);
+  if(W!==map.w||H!==map.h) resizeAllLevels(W,H,rock);
+  const ki=(arr,k)=>{ let i=arr.indexOf(k); if(i<0){ arr.push(k); i=arr.length-1; } return i; };
+  const wm=gm.wallKeys.map(k=>ki(map.wallKeys,k)), dm=gm.doorKeys.map(k=>ki(map.doorKeys,k)), fm=gm.frameKeys.map(k=>ki(map.frameKeys,k));
+  let d=Object.fromEntries(LEVEL_KEYS.map(k=>[k,gm[k]]));
+  d.hws=d.hws.map(i=>wm[i]||0); d.vws=d.vws.map(i=>wm[i]||0);
+  d.doors=Object.fromEntries(Object.entries(d.doors).map(([k,v])=>[k,{...v,s:dm[v.s]||0,f:fm[v.f]||0}]));
+  if(gm.w!==W||gm.h!==H) d=resizeLevelData(d,gm.w,gm.h,W,H,rock);
+  return addLevel(where,d);
+}
+/* chamber contents from the Light Screen (lightscreen-core.js): monster + motivation, hazard, obstacle, trap, trick, treasure */
+const HAS_LS = typeof LS!=='undefined';
+if(HAS_LS) LS.lang='pt';
+const DG_CRS = HAS_LS ? LS.CRS : [['04','0–4']];
+function rollChamber(cr,rng){
+  if(!HAS_LS) return null;
+  const c=LS.chamber(cr||'04',{rng});
+  return { content:c.content, lines:c.lines.map(l=>`${l.label}: ${l.text}`), codes:c.codes };
+}
+// one GM-only marker per kind of content, spread over the room's squares around its number
+function placeEncMarkers(m,r){
+  m.labels=m.labels.filter(l=>!(l.kind==='enc' && l.room===r.n));
+  if(!r.enc || !r.enc.codes.length) return;
+  const cells=[]; if(r.cells) for(let i=0;i<r.cells.length;i+=2) cells.push([r.cells[i]+.5,r.cells[i+1]+.5]);
+  const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]), c0=[r.x,r.y], placed=[c0];
+  cells.sort((a,b)=>dist(a,c0)-dist(b,c0));
+  for(const code of r.enc.codes){
+    const p=cells.find(c=>placed.every(q=>dist(c,q)>=.95)) || [r.x+.6*placed.length,r.y+.6];
+    placed.push(p); m.labels.push({ id:newId(), x:p[0], y:p[1], text:code, kind:'enc', room:r.n });
+  }
+}
+const ENC_LEGEND='<b style="color:#ff7b7b">M</b> monstro · <b style="color:#8fd18f">P</b> perigo · <b style="color:#8fc3ff">O</b> obstáculo · <b style="color:#e0735a">A</b> armadilha · <b style="color:#b98cf0">?</b> arapuca · <b style="color:#f4d58a">$</b> tesouro';
+/* room preview: click a generated room (or its number) with the Select tool to see a close-up and its key entry */
+let popRoom=null, popAt=[0,0];
+function roomAt(fx,fy){
+  const k=map.dungeon; if(!k) return null;
+  const lb=settings.showLabels && labelAt(fx,fy); if(lb && lb.kind==='room'){ const r=k.rooms.find(x=>String(x.n)===lb.text); if(r) return r; }
+  const x=Math.floor(fx), y=Math.floor(fy);
+  for(const r of k.rooms){ if(!r.cells) continue; for(let i=0;i<r.cells.length;i+=2) if(r.cells[i]===x && r.cells[i+1]===y) return r; }
+  return null;
+}
+function roomThumb(r){
+  const fx=Math.floor(r.x), fy=Math.floor(r.y);   // maps generated before rooms stored their area: frame the number instead
+  const [x0,y0,x1,y1]=r.box||[fx-3,fy-3,fx+4,fy+4], pad=1, bw=x1-x0+pad*2, bh=y1-y0+pad*2, s=Math.min(268/bw,150/bh), dpr=Math.min(2,window.devicePixelRatio||1);
+  const c=document.createElement('canvas'); c.width=Math.round(bw*s*dpr); c.height=Math.round(bh*s*dpr); c.style.width=Math.round(bw*s)+'px'; c.style.height=Math.round(bh*s)+'px';
+  const g=c.getContext('2d'); g.scale(dpr,dpr); g.translate(-(x0-pad)*s,-(y0-pad)*s); drawScene(g,s,{export:true,preview:true}); return c;
+}
+function openRoomPop(r,sx,sy){
+  popRoom=r; popAt=[sx,sy]; const el=$('roomPop');
+  el.innerHTML=`<div class="rp-head"><span class="kn">${r.n}</span><div><b>${esc(r.title)}</b><div class="kd">${esc(r.dims)}${r.big?' · grande':''}</div></div>
+      <button class="rp-x" data-act="closePop" aria-label="Fechar">×</button></div>
+    <div class="rp-img"></div>
+    <div class="rp-body"><div><span class="field">Propósito</span><div>${esc(r.purpose)}</div></div>
+      ${r.state?`<div><span class="field">Estado</span><div>${esc(r.state)}</div></div>`:''}
+      ${r.doors.length?`<div><span class="field">Portas</span><div>${esc(r.doors.join('; '))}</div></div>`:''}
+      ${r.enc?`<div><span class="field">Conteúdo</span><div>${esc(r.enc.content)}</div>${r.enc.lines.map(l=>`<div class="ks">${esc(l)}</div>`).join('')}</div>`:''}
+      ${HAS_LS?`<div class="btnrow"><button class="btn" data-act="encRoll">${r.enc?'Rolar de novo':'Rolar conteúdo'}</button>${r.enc?'<button class="btn" data-act="encClear">Limpar</button>':''}</div>`:''}
+      <label class="field">Notas do mestre<textarea id="roomNotes" rows="3" placeholder="Monstros, tesouro, armadilhas…">${esc(r.notes||'')}</textarea></label></div>`;
+  el.querySelector('.rp-img').appendChild(roomThumb(r));
+  el.hidden=false;
+  const st=stage.getBoundingClientRect(), w=el.offsetWidth, h=el.offsetHeight;
+  let left=sx+18, top=sy-40; if(left+w>st.width-8) left=sx-w-18; left=clamp(left,8,Math.max(8,st.width-w-8)); top=clamp(top,8,Math.max(8,st.height-h-8));
+  el.style.left=left+'px'; el.style.top=top+'px';
+}
+function closeRoomPop(){ const el=$('roomPop'); if(el && !el.hidden){ el.hidden=true; popRoom=null; } }
+$('roomPop').addEventListener('click',e=>{ if(e.target.closest('[data-act="closePop"]')) closeRoomPop();
+  const a=e.target.closest('[data-act="encRoll"],[data-act="encClear"]'); if(!a || !popRoom) return;
+  pushUndo(); popRoom.enc = a.dataset.act==='encRoll' ? rollChamber(settings.dgCR,LS.rnd) : null;
+  placeEncMarkers(map,popRoom); afterChange(tool==='dungeon'); openRoomPop(popRoom,...popAt); });
+$('roomPop').addEventListener('input',e=>{ if(e.target.id==='roomNotes' && popRoom){ popRoom.notes=e.target.value; autosave(); } });
+$('roomPop').addEventListener('change',e=>{ if(e.target.id==='roomNotes' && tool==='dungeon') renderPanel(); });
+function dungeonKeyText(){
+  const k=map.dungeon; if(!k) return '';
+  let t=`# ${map.name}\n\nMasmorra do tipo **${k.typeName}** · semente \`${k.seed}\` · ${map.w}×${map.h} quadrados (${map.w*FT}×${map.h*FT} ft)\n\nÁrea inicial: ${k.start}.\n\n`;
+  t+=`Legenda do mapa: números = câmaras · S = porta secreta · T = porta trancada ou barrada · A = porta falsa com armadilha · conteúdo: M monstro, P perigo, O obstáculo, A armadilha, ? arapuca, $ tesouro\n\n## Câmaras\n\n`;
+  for(const r of k.rooms){ t+=`**${r.n}. ${r.title}** — ${r.dims}${r.big?' (grande)':''}\n- Propósito: ${r.purpose}\n`; if(r.state) t+=`- Estado atual: ${r.state}\n`; if(r.doors.length) t+=`- Portas: ${r.doors.join('; ')}\n`;
+    if(r.enc){ t+=`- Conteúdo: ${r.enc.content}\n`; for(const l of r.enc.lines) t+=`  - ${l}\n`; }
+    if(r.notes && r.notes.trim()) t+=`- Notas: ${r.notes.trim().replace(/\n+/g,' / ')}\n`; t+='\n'; }
+  if(k.notes.length) t+=`## Outras características\n\n${k.notes.map(n=>'- '+n).join('\n')}\n`;
+  return t;
+}
+
 /* ---------- Maps tab: this map, maps saved in this browser, new map, files ---------- */
 let savedMaps=[];                 // [{id,name,w,h,updated,thumb}] — map data stays in storage until opened
 const memMaps=new Map();
@@ -1700,6 +2375,42 @@ async function deleteLocal(id){
 function mapThumbURL(m){ const k='m|'+m.id; let u=thumbUrls.get(k); if(!u && m.thumb){ u=URL.createObjectURL(m.thumb); thumbUrls.set(k,u); } return u||''; }
 function when(ts){ const d=(Date.now()-ts)/1000; if(d<60) return 'just now'; if(d<3600) return Math.round(d/60)+' min ago'; if(d<86400) return Math.round(d/3600)+' h ago';
   return new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year: new Date(ts).getFullYear()===new Date().getFullYear()?undefined:'numeric'}); }
+function dungeonTab(){
+  const floors=TERRAIN.map((t,i)=>({t,i})).filter(x=>!(x.t.tex&&x.t.tex.lib)||settings.recent.includes(x.t.key)).concat(
+    (settings.recent||[]).filter(k=>k.startsWith('lib:')&&LIB.has(k)&&!TERRAIN.some(t=>t.key===k)).map(k=>({t:{key:k,name:LIB.get(k).name,group:LIB.get(k).cat}})));
+  const fopt=sel_=>floors.map(x=>`<option value="${esc(x.t.key)}" ${sel_===x.t.key?'selected':''}>${esc(x.t.group==='Painted'?x.t.name:x.t.group+' · '+x.t.name)}</option>`).join('');
+  const ws=WALLSTYLES.get(settings.wallStyle)||WALLSTYLES.get('drawn'), ds=DOORSTYLES.get(settings.doorStyle)||{name:'Desenhada'};
+  let h=sec('Gerar',`<label class="field">Tipo de masmorra (propósito das câmaras)<select id="dgType">${Object.entries(DG_TYPES).map(([k,t])=>`<option value="${k}" ${settings.dgType===k?'selected':''}>${esc(t.name)}</option>`).join('')}</select></label>
+    <div class="stack" style="gap:6px"><span class="field">Tamanho</span>${seg('dgSize',Object.entries(DG_SIZES).map(([k,s])=>[k,s.name]),settings.dgSize)}
+      <span class="hint" style="margin:0">Até ${DG_SIZES[settings.dgSize].rooms} câmaras num mapa de ${DG_SIZES[settings.dgSize].map}×${DG_SIZES[settings.dgSize].map} quadrados.</span></div>
+    <label class="check"><input type="checkbox" id="dgState" ${settings.dgState?'checked':''}> Rolar o estado atual de cada câmara (masmorra antiga)</label>
+    ${HAS_LS?`<label class="check"><input type="checkbox" id="dgEnc" ${settings.dgEnc?'checked':''}> Rolar o conteúdo de cada câmara (monstros, perigos, armadilhas, arapucas, tesouro) com o Light Screen</label>
+    <label class="field">Desafio do tesouro<select id="dgCR">${DG_CRS.map(([v,n])=>`<option value="${v}" ${settings.dgCR===v?'selected':''}>Desafio ${n}</option>`).join('')}</select></label>`
+    :'<p class="hint" style="margin:0">Coloque <code>lightscreen-core.js</code> na mesma pasta para rolar o conteúdo das câmaras.</p>'}
+    <div class="stack" style="gap:6px"><span class="field">Onde colocar</span>${seg('dgWhere',[['replace','Novo mapa'],['below','Andar abaixo'],['above','Andar acima']],settings.dgWhere)}
+      <span class="hint" style="margin:0">“Andar abaixo/acima” adiciona a masmorra como um novo andar deste mapa, sem apagar os outros.</span></div>
+    <div class="row"><label class="field">Piso das câmaras<select id="dgRoomFloor">${fopt(settings.dgRoomFloor)}</select></label></div>
+    <div class="row"><label class="field">Piso dos corredores<select id="dgCorrFloor">${fopt(settings.dgCorrFloor)}</select></label></div>
+    <p class="hint" style="margin:0">Paredes: <b style="color:var(--text)">${esc(ws.name)}</b> · portas de madeira: <b style="color:var(--text)">${esc(ds.name)}</b>. Troque nas ferramentas Paredes (W) e Portas (D). Portas de pedra e ferro usam os estilos incluídos.</p>
+    <label class="field">Semente<input id="dgSeed" value="${esc(settings.dgSeed||'')}" placeholder="vazia = aleatória" autocomplete="off" spellcheck="false"></label>
+    <div class="btnrow"><button class="btn primary" data-act="dgGen">Gerar masmorra</button>${settings.dgSeed?'<button class="btn" data-act="dgNew">Gerar outra</button>':''}</div>
+    <p class="hint" style="margin:0">Substitui o mapa atual. <kbd>Ctrl Z</kbd> traz o anterior de volta. A mesma semente com as mesmas opções gera a mesma masmorra.</p>`);
+  const k=map.dungeon;
+  if(k){
+    h+=sec(`Chave da masmorra · ${k.rooms.length} câmaras`,`<p class="hint" style="margin:0">${esc(k.typeName)} · semente <code>${esc(k.seed)}</code> · ${k.doors} portas${k.secret?`, ${k.secret} secretas`:''}. Área inicial: ${esc(k.start)}.</p>
+      <label class="check"><input type="checkbox" id="optLabels" ${settings.showLabels?'checked':''}> Mostrar números e marcações no mapa</label>
+      <label class="check"><input type="checkbox" id="optExportLabels" ${settings.exportLabels?'checked':''}> Incluir as marcações no PNG exportado</label>
+      <p class="hint" style="margin:0"><b style="color:#b98cf0">S</b> porta secreta · <b style="color:#f0c878">T</b> trancada ou barrada · <b style="color:#e0735a">A</b> porta falsa com armadilha</p>
+      <p class="hint" style="margin:0">Conteúdo: ${ENC_LEGEND}</p>
+      <div class="stack" style="gap:6px"><span class="field">Mostrar o mapa para</span>${seg('fogView',[['gm','Mestre'],['player','Jogadores']],settings.fogView)}
+        <span class="hint" style="margin:0">Para os jogadores, números, portas secretas e marcadores de conteúdo ficam escondidos e a névoa fica opaca (também no PNG).</span></div>
+      <div class="keylist">${k.rooms.map(r=>`<div class="keyitem" data-room="${r.n}"><span class="kn">${r.n}</span><div><b>${esc(r.title)}</b> <span class="kd">${esc(r.dims)}${r.big?' · grande':''}</span>
+        <div>${esc(r.purpose)}</div>${r.state?`<div class="ks">Estado: ${esc(r.state)}</div>`:''}${r.enc?`<div class="ks">Conteúdo: ${esc(r.enc.content)}</div>`:''}${r.doors.length?`<div class="ks">Portas: ${esc(r.doors.join('; '))}</div>`:''}</div></div>`).join('')}</div>
+      ${k.notes.length?`<div class="stack" style="gap:4px"><span class="field">Outras características</span>${k.notes.map(n=>`<div class="ks">${esc(n)}</div>`).join('')}</div>`:''}
+      <div class="btnrow"><button class="btn" data-act="dgExport">Exportar chave (.md)</button><button class="btn" data-act="dgCopy">Copiar chave</button></div>`);
+  }
+  return h;
+}
 function fileTab(){
   const rec=savedMaps.find(m=>m.id===map.id), dirty=isDirty();
   const status = !rec ? '<span class="pill warn">Not saved yet</span>' : dirty ? `<span class="pill warn">Unsaved changes</span><span class="hint" style="margin:0">last saved ${when(rec.updated)}</span>` : `<span class="pill ok">Saved</span><span class="hint" style="margin:0">${when(rec.updated)}</span>`;
@@ -1709,6 +2420,14 @@ function fileTab(){
     <div class="row"><label class="field">Width<input id="mapW" type="number" min="4" max="120" value="${map.w}"></label><label class="field">Height<input id="mapH" type="number" min="4" max="120" value="${map.h}"></label><button class="btn" data-act="resize" style="flex:none">Resize</button></div>
     <label class="check"><input type="checkbox" id="optGrid" ${settings.grid?'checked':''}> Show grid</label>
     <label class="check"><input type="checkbox" id="optNames" ${settings.names?'checked':''}> Show token names</label>`);
+  const L=map.levels;
+  h+=sec(`Floors · ${L.length}`,`<div class="stack" style="gap:6px">${L.map((l,i)=>({l,i})).reverse().map(({l,i})=>`<div class="floorrow ${i===map.level?'on':''}">
+      <input data-lname="${i}" value="${esc(l.name)}" aria-label="Floor name" maxlength="40">
+      <div class="btnrow">${i===map.level?'<span class="pill ok">Editing</span>':`<button class="btn" data-act="floorGo" data-i="${i}">Go</button>`}
+        <button class="btn icon" data-act="floorUp" data-i="${i}" title="Move up" ${i===L.length-1?'disabled':''}>↑</button><button class="btn icon" data-act="floorDown" data-i="${i}" title="Move down" ${i===0?'disabled':''}>↓</button>
+        ${L.length>1?`<button class="btn danger" data-act="floorDel" data-i="${i}">Delete</button>`:''}</div></div>`).join('')}</div>
+    <div class="btnrow"><button class="btn" data-act="floorAddAbove">+ Floor above</button><button class="btn" data-act="floorAddBelow">+ Floor below</button><button class="btn" data-act="floorDup">Duplicate this floor</button></div>
+    <label class="check"><input type="checkbox" id="optGhost" ${settings.ghostBelow?'checked':''}> Show the walls of the floor below, faintly</label>`);
   const others=savedMaps;
   h+=sec(`Saved in this browser${others.length?' · '+others.length:''}`, others.length ? `<div class="maplist">${others.map(m=>`<div class="mapitem ${m.id===map.id?'on':''}" data-mid="${esc(m.id)}">
       ${m.thumb?`<img src="${mapThumbURL(m)}" alt="">`:'<span class="nothumb"></span>'}
@@ -1740,6 +2459,7 @@ panel.addEventListener('click',e=>{
   if(b.dataset.terr){ pickTerrain(TERRAIN[+b.dataset.terr].key); renderPanel(); return; }
   if(b.dataset.lib){ pickTerrain(b.dataset.lib); renderPanel(); return; }
   if(b.dataset.wall){ pickWall(b.dataset.wall); renderPanel(); return; }
+  if(b.dataset.stair){ cur.stair=b.dataset.stair; if(tool==='stairs') sel=null; renderPanel(); draw(); return; }
   if(b.dataset.door){ const k=b.dataset.door; settings.doorStyle=k; settings.doorRecent=[k,...(settings.doorRecent||[]).filter(x=>x!==k)].slice(0,8); autosave(); renderPanel(); return; }
   if(b.dataset.prop){ cur.prop=b.dataset.prop; if(tool==='prop') sel=null; renderPanel(); draw(); return; }
   const sg=b.closest('[data-seg]'); if(sg){ const n=sg.dataset.seg, v=b.dataset.v;
@@ -1747,6 +2467,8 @@ panel.addEventListener('click',e=>{
     else if(n==='exportPx'){ settings.exportPx=+v; autosave(); }
     else if(n==='libQuality'){ settings.libQuality=+v; autosave(); }
     else if(n==='rotStep'){ settings.rotStep=+v; autosave(); }
+    else if(n==='dgSize'){ settings.dgSize=v; autosave(); }
+    else if(n==='dgWhere'){ settings.dgWhere=v; autosave(); }
     else if(n==='propLayer'){ const o=findSel(); if(o && sel.type==='prop'){ pushUndo(); o.layer=+v; afterChange(); } }
     else if(n==='texScale'){ pushUndo(); map.texScale[TERRAIN[cur.terrain].key]=+v; rebuildTerrain(); afterChange(); }
     renderPanel(); draw(); return; }
@@ -1772,6 +2494,25 @@ panel.addEventListener('click',e=>{
   else if(act==='sample'){ confirmRow('sample'); }
   else if(act==='confirmNew'||act==='confirmSample'){ pushUndo(); if(act==='confirmNew'){ map=blankMap(map.w,map.h,0); } else map=sampleMap(); sel=null; rebuildTerrain(); fit(); afterChange(true); toast(act==='confirmNew'?'Started a blank map — Ctrl+Z brings the old one back':'Loaded the example map'); }
   else if(act==='cancel'){ renderPanel(); }
+  else if(act==='dgGen'||act==='dgNew'){
+    const typed=($('dgSeed')||{}).value; let seed=(act==='dgGen'&&typed&&typed.trim()) || Math.random().toString(36).slice(2,8);
+    settings.dgSeed=seed; pushUndo();
+    const gm=buildDungeon({ seed, type:settings.dgType, size:settings.dgSize, state:settings.dgState, enc:settings.dgEnc, cr:settings.dgCR, roomFloor:settings.dgRoomFloor, corrFloor:settings.dgCorrFloor });
+    if(settings.dgWhere==='above'||settings.dgWhere==='below'){ const i=mergeGenerated(gm,settings.dgWhere); map.levels[map.level].data=levelSnapshot(); const d=map.levels[i].data; for(const k of LEVEL_KEYS) map[k]=d[k]; map.levels[i].data=null; map.level=i; }
+    else map=gm;
+    sel=null; settings.showLabels=true; rebuildTerrain(); fit(); afterChange(true);
+    toast(`Masmorra gerada: ${map.dungeon.rooms.length} câmaras · semente ${seed}`); }
+  else if(act==='dgExport'){ offer(fileBase()+'-chave.md',dungeonKeyText(),()=>toast('Salvar arquivos não está disponível aqui — use Copiar chave')); }
+  else if(act==='dgCopy'){ const t=dungeonKeyText(); try{ navigator.clipboard.writeText(t).then(()=>toast('Chave copiada'),()=>toast('Não foi possível copiar aqui')); }catch(e){ toast('Não foi possível copiar aqui'); } }
+  else if(act==='goStair'){ const p=map.props.find(q=>q.id===b.dataset.id); if(p) goStairs(p); }
+  else if(act==='takeStairs'&&o){ const s=stairUnder(o); if(s) takeStairs(o,s); }
+  else if(act==='floorAddAbove'||act==='floorAddBelow'){ pushUndo(); const i=addLevel(act==='floorAddAbove'?'above':'below'); switchLevel(i); afterChange(true); toast(`Added ${map.levels[map.level].name} — it starts as solid rock; carve rooms with the Room tool`); }
+  else if(act==='floorGo'){ switchLevel(+b.dataset.i); }
+  else if(act==='floorUp'||act==='floorDown'){ pushUndo(); moveLevel(+b.dataset.i,act==='floorUp'?1:-1); afterChange(true); }
+  else if(act==='floorDup'){ pushUndo(); const src=levelSnapshot(); const copy=JSON.parse(JSON.stringify(src)); copy.props.forEach(p=>{ p.id=newId(); delete p.link; }); copy.tokens=[];
+    const i=addLevel('above',copy,map.levels[map.level].name+' (copy)'); switchLevel(i); afterChange(true); toast('Duplicated the floor — tokens and stair links were left out'); }
+  else if(act==='floorDel'){ const i=+b.dataset.i; b.closest('.btnrow').innerHTML=`<span class="hint" style="margin:0;width:100%">Delete “${esc(map.levels[i].name)}” and everything on it? You can undo this.</span><button class="btn danger" data-act="confirmFloorDel" data-i="${i}">Delete floor</button><button class="btn" data-act="cancel">Cancel</button>`; }
+  else if(act==='confirmFloorDel'){ pushUndo(); deleteLevel(+b.dataset.i); rebuildTerrain(); afterChange(true); }
   else if(act==='saveLocal'){ saveLocal(false); }
   else if(act==='saveCopy'){ saveLocal(true); }
   else if(act==='openLocal'){ openLocal(b.dataset.id); }
@@ -1820,6 +2561,17 @@ panel.addEventListener('change',e=>{ const id=e.target.id, v=e.target.value;
   if(id==='propCat'){ settings.propCat=v; settings.propQ=''; autosave(); renderPanel(); }
   if(id==='doorCat'){ settings.doorCat=v; autosave(); renderPanel(); }
   if(id==='fileName'){ pushUndo(); map.name=v.trim()||'Untitled map'; afterChange(true); }
+  if(id==='dgType'||id==='dgRoomFloor'||id==='dgCorrFloor'||id==='dgSeed'){ settings[id]=v.trim?v.trim():v; autosave(); }
+  if(id==='dgState'){ settings.dgState=e.target.checked; autosave(); }
+  if(id==='dgEnc'){ settings.dgEnc=e.target.checked; autosave(); }
+  if(id==='dgCR'){ settings.dgCR=v; autosave(); }
+  if(id==='stairCat'){ settings.stairCat=v; autosave(); renderPanel(); }
+  if(id==='stairTo'){ settings.stairTo=v; autosave(); }
+  if(id==='stairPair'){ settings.stairPair=e.target.checked; autosave(); }
+  if(id==='optGhost'){ settings.ghostBelow=e.target.checked; autosave(); draw(); }
+  if(e.target.dataset.lname!==undefined){ const i=+e.target.dataset.lname; pushUndo(); map.levels[i].name=v.trim()||`Floor ${i+1}`; afterChange(true); }
+  if(id==='optLabels'){ settings.showLabels=e.target.checked; autosave(); draw(); }
+  if(id==='optExportLabels'){ settings.exportLabels=e.target.checked; autosave(); }
   if(id==='doorFrame'){ settings.doorFrame=v; doorStyleFor(v,true); autosave(); }
   if(id==='curRot'){ cur.rot=normDeg(+v||0); draw(); }
   if(id==='curScale'){ cur.scale=clamp((+v||100)/100,.1,10); draw(); }
@@ -1828,6 +2580,9 @@ panel.addEventListener('change',e=>{ const id=e.target.id, v=e.target.value;
   if(id==='optSnap'){ settings.propSnap=e.target.checked; autosave(); }
   if(id==='edRot'||id==='edScale'){ const o=findSel(); if(o && sel.type==='prop'){ pushUndo(); if(id==='edRot') o.rot=normDeg(+v||0); else o.scale=clamp((+v||100)/100,.1,10); afterChange(true); } }
   if(id==='edRotR'||id==='edScaleR'){ afterChange(true); } });
+$('floors').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.floor!==undefined) switchLevel(+b.dataset.floor);
+  else if(b.dataset.act==='floorAddAbove'){ pushUndo(); const i=addLevel('above'); switchLevel(i); afterChange(true); toast(`Added ${map.levels[map.level].name} — it starts as solid rock; carve rooms with the Room tool`); } });
 $('doorDirIn').addEventListener('change',e=>{ const l=filesFromInput(e.target); e.target.value=''; if(l.length) importDoors(l); });
 $('propDirIn').addEventListener('change',e=>{ const l=filesFromInput(e.target); e.target.value=''; if(l.length) importProps(l); });
 $('wallDirIn').addEventListener('change',e=>{ const l=filesFromInput(e.target); e.target.value=''; if(l.length) importWalls(l); });
@@ -1847,6 +2602,9 @@ window.addEventListener('drop',e=>{ if(!hasFiles(e)) return; e.preventDefault();
   const into = tool==='wall' ? importWalls : tool==='door' ? importDoors : tool==='prop' ? importProps : importFiles;
   (entries.length ? entriesToFiles(entries) : Promise.resolve(files.map(f=>({file:f,path:f.name})))).then(l=>into(l)); });
 function confirmRow(kind){ $('newRow').innerHTML=`<span class="hint" style="margin:0;width:100%">${kind==='new'?'Clear everything and start over?':'Replace this map with the example?'} You can undo this.</span><button class="btn danger" data-act="${kind==='new'?'confirmNew':'confirmSample'}">${kind==='new'?'Clear map':'Load example'}</button><button class="btn" data-act="cancel">Cancel</button>`; }
+panel.addEventListener('click',e=>{ const kr=e.target.closest('[data-room]'); if(!kr || !map.dungeon) return;
+  const r=map.dungeon.rooms.find(x=>x.n===+kr.dataset.room); if(!r) return;
+  view.s=Math.max(view.s,28); view.ox=cw/2-r.x*view.s; view.oy=ch/2-r.y*view.s; draw(); openRoomPop(r,cw/2,ch/2); });
 panel.addEventListener('click',e=>{ const it=e.target.closest('[data-tok]'); if(!it||e.target.closest('button')) return; const t=map.tokens.find(o=>o.id===it.dataset.tok); if(!t) return;
   if(tool!=='select') setTool('select'); sel={type:'token',id:t.id}; const n=sizeOf(t).n; view.ox=cw/2-(t.x+n/2)*view.s; view.oy=ch/2-(t.y+n/2)*view.s; renderPanel(); draw(); });
 panel.addEventListener('input',e=>{ const id=e.target.id;
@@ -1880,7 +2638,8 @@ $('mapTabBtn').onclick=()=>setTool('file');
 function exportPNG(){
   const s=settings.exportPx||100, c=document.createElement('canvas'); c.width=map.w*s; c.height=map.h*s; const x=c.getContext('2d');
   drawScene(x,s,{export:true});
-  c.toBlob(blob=>{ offer(fileBase()+'.png',blob,()=>showImage(c.toDataURL('image/png'))); },'image/png');
+  const floor = map.levels.length>1 ? '-'+map.levels[map.level].name.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase() : '';
+  c.toBlob(blob=>{ offer(fileBase()+floor+'.png',blob,()=>showImage(c.toDataURL('image/png'))); },'image/png');
 };
 // the file carries the map plus the display settings that affect how it looks
 const FILE_SETTINGS=['grid','names','diag','fogView','exportPx'];
@@ -1900,11 +2659,14 @@ function boot(){
   let loaded=false;
   try{ const s=localStorage.getItem('flagstone.map'); if(s){ loadMapObj(JSON.parse(s)); loaded=true; } const st=localStorage.getItem('flagstone.settings'); if(st) Object.assign(settings,JSON.parse(st)); }catch(e){}
   if(!loaded) map=sampleMap();
-  buildRail(); rebuildTerrain(); loadTextures(); setTool('select'); updateDims(); updateUndo(); libInit();
+  buildRail(); rebuildTerrain(); loadTextures(); setTool('select'); updateDims(); updateUndo(); updateFloors(); libInit();
   new ResizeObserver(resize).observe(stage); resize();
   if(document.fonts) document.fonts.ready.then(draw);
   getDownloads();
 }
 boot();
+// test hook for local development only (never present on the published page's host)
+if(location.hostname==='localhost'||location.hostname==='127.0.0.1')
+  window.__fs={ get map(){ return map; }, set map(m){ map=m; }, settings, cur, view, draw, rebuildTerrain, afterChange, curDoorData, curWallIdx, doorKey, TI, fit, setTool, buildDungeon };
 })();
 </script>

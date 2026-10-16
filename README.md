@@ -15,6 +15,10 @@ A browser-based battle map maker for tabletop RPGs. Everything lives in one file
 - **Maps tab**: new map, save in the browser (with previews), open, delete, save/open `.json` files, export PNG.
 - Undo/redo, zoom/pan, touch pinch.
 
+## Light Screen and shared tables
+
+[`dmscreen.html`](dmscreen.html) is **Light Screen**, a bilingual (PT/EN) DM screen with auto-rolling tables. Both pages load [`lightscreen-core.js`](lightscreen-core.js), which holds the dice roller, the treasure tables and the dungeon-encounter tables. Flagstone's dungeon generator uses it to roll each chamber's contents (monster, hazard, obstacle, trap, trick, treasure) and marks them on the map; those marks only show in the GM view. Keep the three files in the same folder.
+
 ## Your own asset libraries
 
 Floors, walls, doors and props can be imported from folders on your computer (each subfolder becomes a category). They're stored in the browser's IndexedDB, so they stay in that browser only. The importers understand the common `Name_2x1.png` convention, 200 px per square:
