@@ -439,7 +439,7 @@ const DENC = {
   ["88-90","Grita alto quando tocado","Wails loudly when touched"],["91-93","Fala (normalmente, sem sentido, em poesia e rimas, cantando, conjurando ou gritando)","Talks (normal speech, nonsense, poetry and rhymes, singing, spellcasting, or screaming)"],
   ["94-97","Teletransporta os personagens para outro lugar","Teleports the characters to another place"],["98-00","Troca a mente de dois ou mais personagens","Swaps two or more characters' minds"]])),
 };
-// Map markers per kind of content (Flagstone draws these in GM view only).
+// Map markers per kind of content (MonTT Maker draws these in GM view only).
 const CHAMBER_CODES = {m:"M", h:"P", o:"O", a:"A", q:"?", t:"$"};
 
 // A chamber's contents: the chamber roll plus its follow-up rolls and treasure for a challenge band.

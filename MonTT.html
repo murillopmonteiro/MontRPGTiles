@@ -1,5 +1,6 @@
 <meta charset="utf-8">
-<title>Flagstone</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MonTT Maker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -14,7 +15,7 @@
   --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
 }
 html,body{height:100%}
-body{background:var(--ground);color:var(--text);font-family:var(--body);font-size:15px;overflow:hidden}
+body{margin:0;background:var(--ground);color:var(--text);font-family:var(--body);font-size:15px;overflow:hidden}
 *{box-sizing:border-box}
 button,input,select{font:inherit;color:inherit}
 .app{height:100%;display:grid;grid-template-columns:60px minmax(0,1fr) 292px;grid-template-rows:auto minmax(0,1fr)}
@@ -106,8 +107,8 @@ button,input,select{font:inherit;color:inherit}
 .hint code{font-family:var(--mono);font-size:11px;word-break:break-all}
 .search{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 9px;color:var(--text);font-size:14.5px;width:100%}
 .search:focus{outline:none;border-color:var(--accent)}
-.bar{height:8px;border-radius:4px;background:var(--panel3);overflow:hidden}
-.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.panel .bar{height:8px;border-radius:4px;background:var(--panel3);overflow:hidden}
+.panel .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
 .dropzone{position:fixed;inset:12px;border:2px dashed var(--accent);border-radius:14px;background:rgba(20,18,23,.82);display:grid;place-items:center;z-index:40;pointer-events:none}
 .dropzone[hidden]{display:none}
 .dropzone div{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:16px}
@@ -165,9 +166,9 @@ button,input,select{font:inherit;color:inherit}
 
 <div class="app">
   <header class="bar">
-    <div class="brand" aria-label="Flagstone">
+    <div class="brand" aria-label="MonTT Maker">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
-      Flagstone
+      MonTT Maker
     </div>
     <input id="mapName" class="mapname" aria-label="Map name" spellcheck="false">
     <span class="dims" id="dims"></span>
@@ -2648,7 +2649,7 @@ function saveToFile(){ const o=JSON.parse(serialize()); o.settings=Object.fromEn
 $('fileIn').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f) openMapFile(f); };
 async function openMapFile(f){
   try{ const o=JSON.parse(await f.text()); const snap=serialize(); loadMapObj(o); if(o.settings) for(const k of FILE_SETTINGS) if(k in o.settings) settings[k]=o.settings[k]; undoStack.push(snap); redoStack.length=0; sel=null; rebuildTerrain(); fit(); afterChange(true); toast('Opened '+map.name); }
-  catch(err){ toast('That file isn’t a Flagstone map (.json)'); } };
+  catch(err){ toast('That file isn’t a MonTT Maker map (.json)'); } };
 function showImage(url){ const m=document.createElement('div'); m.className='modal';
   m.innerHTML=`<div class="card"><div class="row" style="align-items:center"><strong style="font-family:var(--display);font-size:18px">Your map image</strong><button class="btn" style="flex:none">Close</button></div><p class="hint" style="margin:0">Right-click (or long-press) the image and choose “Save image”.</p><img alt="Exported battle map" src="${url}"></div>`;
   m.addEventListener('click',e=>{ if(e.target===m||e.target.closest('button')) m.remove(); }); document.body.appendChild(m); }

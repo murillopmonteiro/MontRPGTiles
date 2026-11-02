@@ -215,8 +215,9 @@ aside h3{margin:0;padding:16px 16px 8px;font-family:var(--display);color:var(--m
 </div>
 
 <script src="lightscreen-core.js"></script>
+<script src="encounters-data.js"></script>
 <script>
-// Shared with Flagstone: dice, the table roller, treasure and dungeon-encounter tables.
+// Shared with MonTT Maker: dice, the table roller, treasure and dungeon-encounter tables.
 const {R, S, list, rnd, range, rollExpr, subOf, subDie, TREASURE, COINS, CRS, avgOf, fmt, DENC} = LS;
 /* ─── CONTENT ──────────────────────────────────────────────
    Each screen = a tab. Each panel = a card.
@@ -1120,10 +1121,28 @@ const GEM_NOTE = {pt:"Se uma pilha de tesouro incluir gemas, role na tabela do v
 const ART_NOTE = {pt:"Se uma pilha de tesouro incluir objetos de arte, role na tabela do valor indicado uma vez para cada objeto. Pode haver mais de um de uma mesma obra.",
   en:"If a hoard includes art objects, roll on the table for their value once per object. There can be more than one of the same piece."};
 
-const TABLES = Object.assign(LS.TABLES, ADV, NPC, ENV, TOWN, EVT);
+const TABLES = Object.assign(LS.TABLES, ADV, NPC, ENV, TOWN, EVT, WILD_ENC.TABLES);
+// Random encounters by environment (encounters-data.js): one sub-tab and one generator per environment.
+const ENC_SHORT = {arctic:["Ártico","Arctic"], coast:["Costa","Coast"], desert:["Deserto","Desert"], forest:["Floresta","Forest"], grass:["Planície","Grassland"],
+  hill:["Colina","Hill"], mountain:["Montanha","Mountain"], swamp:["Pântano","Swamp"], under:["Subterrâneo","Underdark"], water:["Subaquático","Underwater"], urban:["Urbano","Urban"]};
+const encTables = env => Object.values(WILD_ENC.TABLES).filter(t => t.env === env);
+const ENC_RULES = [
+ rule("Encontros Aleatórios","Random Encounters",
+  `<p>Há uma tabela por ambiente (ártico, costa, deserto, floresta, planície, colina, montanha, pântano, subterrâneo, subaquático e urbano), separada por estágio de jogo: níveis 1–4, 5–10, 11–16 e 17–20. Dá para usar como estão, mas vale personalizá-las para reforçar os temas da sua campanha.</p><p>Os nomes de criaturas se referem a blocos de estatísticas do <i>Manual dos Monstros</i>.</p>`,
+  `<p>There's a table for each environment (arctic, coast, desert, forest, grassland, hill, mountain, swamp, Underdark, underwater, and urban), split by tier of play: levels 1–4, 5–10, 11–16, and 17–20. You can use them as they are, but customizing them reinforces your campaign's themes.</p><p>Creature names refer to stat blocks in the <i>Monster Manual</i>.</p>`),
+ rule("Fugir, Lutar ou…?","Flee, Fight, or…?",
+  `<ul><li>Cada resultado é um desafio ou um desafio em potencial. Seguindo os dados à risca, um grupo grande de monstros pode ser difícil ou perigoso demais: os personagens podem fugir, evitar contato ou só se aproximar depois de ver os monstros à distância.</li><li>Você pode ajustar os números. E nem todo encontro com monstros precisa virar combate: pode ser prelúdio de uma batalha, uma conversa ou outra interação, dependendo do que os personagens tentarem ou do que você decidir.</li><li>As tabelas também têm encontros de natureza menos monstruosa, que pedem para ser detalhados e ligados à história da sua campanha.</li></ul>`,
+  `<ul><li>Each result is a challenge or a potential one. Following the dice strictly, a large group of monsters can be too hard or dangerous: the characters might flee, avoid contact, or only approach after spotting the monsters from afar.</li><li>You can adjust the numbers. Not every monster encounter has to become combat: it can lead to a battle, a conversation, or another interaction, depending on what the characters try or what you decide.</li><li>The tables also include less monstrous encounters, which beg to be fleshed out and tied to your campaign's story.</li></ul>`),
+ rule("Personalidade e Relações dos Monstros","Monster Personality and Relationships",
+  `<p>Para dar personalidade a um monstro, role nas tabelas abaixo ou anote algo a partir da descrição do <i>Manual dos Monstros</i>. Em combate, isso informa como você o interpreta e o que ele faz. Para simplificar, aplique o mesmo traço a um grupo inteiro: um bando de bandidos pode ser corajoso, e outra gangue, pronta para fugir ao primeiro sinal de perigo.</p><p>Rivalidades, ódios e apegos entre os monstros também orientam o combate: a morte de um grande líder pode lançar os seguidores num frenesi, um monstro pode fugir se o parceiro morrer, e um subordinado maltratado pode se render e trair o mestre em troca da vida.</p>`,
+  `<p>To give a monster personality, roll on the tables below or jot something down from its <i>Monster Manual</i> description. In combat, this shapes how you play it and what it does. To keep it simple, give a whole group the same trait: one bandit gang might be brave, while another is ready to flee at the first sign of danger.</p><p>Rivalries, hatreds, and attachments among monsters also guide combat: a great leader's death can drive followers into a frenzy, a monster might flee if its mate dies, and a mistreated underling might surrender and betray its master in exchange for its life.</p>`),
+];
 const tableCard = t => ({title:t.title, blocks:[...(t.note ? [{html:{pt:`<p>${t.note.pt}</p>`, en:`<p>${t.note.en}</p>`}}] : []), {table:t}]});
 // Generators. parts: [tableId, label?]; "?" = the table picked in the select.
 const GENS = {
+ ...Object.fromEntries(WILD_ENC.ENVS.map(([env]) => ["enc_"+env, {title:{pt:`Gerar encontro: ${ENC_SHORT[env][0]}`, en:`Generate encounter: ${ENC_SHORT[env][1]}`},
+   choose:{label:{pt:"Níveis",en:"Levels"}, options:encTables(env).map(t => t.id)},
+   parts:[["?"],["monsterPersonality",{pt:"Personalidade (se for monstro)",en:"Personality (if monsters)"}],["monsterRelation",{pt:"Relação (se for monstro)",en:"Relationship (if monsters)"}]]}])),
  adv:{title:{pt:"Gerar aventura (baseada em local)",en:"Generate adventure (location-based)"},
   choose:{label:{pt:"Tipo de objetivo",en:"Goal type"}, options:["dungeon","wild","other"]},
   parts:[["?",{pt:"Objetivo",en:"Goal"}],["villain",{pt:"Vilão",en:"Villain"}],["ally",{pt:"Aliado",en:"Ally"}],["patron",{pt:"Patrono",en:"Patron"}],
@@ -1215,6 +1234,10 @@ const SCREENS = [
     `<p>Arapucas são mais estranhas e menos mortais que armadilhas: efeitos deixados pelos criadores da masmorra ou energia mágica que se manifesta no lugar. Role o <b>objeto</b>, depois o <b>efeito</b>. Algumas são permanentes; outras são temporárias ou podem ser anuladas com <i>dissipar magia</i>. Você decide.</p>`,
     `<p>Tricks are stranger and less deadly than traps: effects left by the dungeon's creators or magical energy manifesting there. Roll the <b>object</b>, then the <b>effect</b>. Some are permanent; others are temporary or can be ended with <i>dispel magic</i>. You decide.</p>`),
    tableCard(DENC.trickObject), tableCard(DENC.trickEffect)]},
+ ]},
+ {name:{pt:"Encontros",en:"Encounters"}, subs:[
+  ...WILD_ENC.ENVS.map(([env]) => ({name:{pt:ENC_SHORT[env][0], en:ENC_SHORT[env][1]}, panels:() => [genPanel("enc_"+env), ...encTables(env).map(tableCard)]})),
+  {name:{pt:"Regras",en:"Rules"}, panels:() => [...ENC_RULES, tableCard(WILD_ENC.TABLES.monsterPersonality), tableCard(WILD_ENC.TABLES.monsterRelation)]},
  ]},
  {name:{pt:"Tesouros",en:"Treasure"}, subs:[
   {name:{pt:"Gerador",en:"Generator"}, panels:() => [treasurePanel()]},
