@@ -2658,7 +2658,7 @@ async function sendToTable(){
     const {url}=await mesaPost('/upload',blob,'image/webp');
     const lv=map.levels[map.level], page=levelPage();
     const name=map.levels.length>1 ? map.name+' · '+lv.name : map.name;
-    await mesaOp({op:'add',type:'page',id:page,props:{name,w:map.w,h:map.h,img:url,fog:map.fog.slice()}});
+    await mesaOp({op:'add',type:'page',id:page,props:{name,w:map.w,h:map.h,img:url,fog:map.fog.slice(),diag:settings.diag}});
     await mesaOp({op:'add',type:'campaign',id:'mesa',props:{page}});
     await Promise.all(toks.map(t=>{ const z=sizeOf(t);
       return mesaOp({op:'add',type:'token',id:'k-'+t.id,keep:true,props:{page,x:t.x,y:t.y,n:z.n,r:z.r,name:t.name,kind:t.kind,color:t.color,owner:[]}}); }));

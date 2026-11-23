@@ -138,11 +138,16 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 - **Ainda falta:** testar com um amigo de verdade pelo túnel `cloudflared`.
 - `ponytail:` o segredo vai na URL. Basta para amigos, mas quem vê o link do mestre vira mestre: não compartilhe a tela com ele aberto.
 
-### Fase 2: chat, dados e iniciativa
-- Painel de chat na `mesa.html`: `/r 2d6+3`, `/gr` (só o mestre vê), `/w nome` (sussurro), `/em` (ação). Mensagens como objetos `msg`, e quem entra recebe só as últimas 100.
-- **Dados rolados no servidor**, como o Roll20 (que assina cada rolagem): um parser pequeno em Python (`NdM`, `+/-`, `kh`/`kl`, vantagem), assim ninguém forja resultado. Os resultados aparecem com cada dado visível.
-- Iniciativa: `campaign.turnorder`, com botão "próximo" (só o mestre), contador de rodada e o token da vez destacado no mapa.
-- Canal passageiro `broadcast` (não é salvo): ping no mapa (segurar o clique) e régua compartilhada.
+### Fase 2: chat, dados e iniciativa ✅ feita
+- **Painel ao lado do mapa:** iniciativa em cima, chat embaixo. No celular, o painel desce para baixo do mapa.
+- **Comandos:** `/r 1d20+5 ataque` (o que vier depois da conta vira rótulo), `/gr` (rolagem secreta: só quem rolou e o mestre veem), `/w Nome texto` (sussurro; `/w "Nome Composto"` também funciona), `/em sorri` (ação). Sintaxe dos dados: `NdM`, `+`/`−`, `kh`/`kl` (`2d20kh1` = vantagem). Botões rápidos de d4 a d100, vantagem e desvantagem. ↑/↓ repete mensagens.
+- **Dados rolados no servidor** (`random.SystemRandom`), como o Roll20: o navegador só manda o texto e recebe o resultado com cada dado. Os dados descartados aparecem riscados, e no d20 o 20 natural aparece em verde e o 1 em vermelho.
+- **Privacidade:** mensagens com `to` só chegam a quem está na lista. O mestre não lê sussurros entre jogadores (como no Roll20).
+- **Iniciativa:** botão direito no token → "Rolar iniciativa" (1d20 + modificador, no servidor; o jogador só para os próprios tokens). A lista fica ordenada; o mestre tem ◀ ▶, "Limpar" e × por linha; o token da vez brilha no mapa. Quem entra no meio da rodada não rouba a vez de quem está jogando.
+- **Canal passageiro** (`/fx`, não é salvo): duplo clique faz um ping na cor do jogador; Shift + arrastar mostra uma régua para todos, com a distância em pés pela regra de diagonal do MonTT (que agora vai junto com o mapa).
+- **Chat limitado:** o servidor guarda as últimas 300 mensagens e quem entra recebe as últimas 100.
+- **Testado no navegador:** fala, rolagem, vantagem, sussurro ao mestre, ação, `/r abc` com erro; a Ana não vê o `/gr` do mestre nem os controles de turno; a iniciativa de goblin e ogro com ▶ passando a vez; a Ana recusada em token que não é dela e aceita depois de ganhar o Brannoc; ping e régua chegando à outra tela. O autoteste cobre dados, chat, sussurros, iniciativa e efeitos.
+- **Corrigido no teste:** o campo do chat só limpava depois da resposta do servidor (quem digitava rápido grudava mensagens); a vez pulava quando alguém entrava na iniciativa; recusas de upload derrubavam a conexão no Windows.
 
 ### Fase 3: luz dinâmica e névoa automática
 - O MonTT envia também as paredes (`hw`/`vw`) e as portas, com estado aberta/fechada.
@@ -182,4 +187,4 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 | `lightscreen-core.js` | rolador de dados e tabelas (o chat vai reaproveitar a sintaxe) |
 | `campanha.json`, `uploads/` | gerados pelo servidor, fora do git |
 
-Próximo passo: **Fase 2** (chat, dados e iniciativa).
+Próximo passo: **Fase 3** (luz dinâmica e efeitos de magia).

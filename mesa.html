@@ -7,39 +7,75 @@
 <style>
   :root { --bg:#16141a; --panel:#211e26; --line:#3a3442; --ink:#ece5d8; --dim:#a39a8c; --gold:#d4a24c; }
   * { box-sizing:border-box; }
-  body { margin:0; height:100vh; display:flex; flex-direction:column; background:var(--bg); color:var(--ink); font:14px/1.4 system-ui, sans-serif; }
-  header { display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:8px 12px; background:var(--panel); border-bottom:1px solid var(--line); }
+  body { margin:0; height:100vh; display:grid; grid-template:auto 1fr / 1fr 320px; background:var(--bg); color:var(--ink); font:14px/1.4 system-ui, sans-serif; }
+  header { grid-column:1 / -1; display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:8px 12px; background:var(--panel); border-bottom:1px solid var(--line); }
   header strong { font-size:16px; }
   #papel { font-size:11px; padding:2px 8px; border-radius:99px; background:#3a3442; color:var(--dim); }
   #papel.gm { background:#4a3416; color:#f4d58a; }
   #online { display:flex; gap:4px; margin-right:auto; flex-wrap:wrap; }
   .chip { font-size:12px; padding:2px 8px; border-radius:99px; border:1px solid var(--line); color:var(--dim); }
-  .chip.on { color:var(--ink); border-color:#4c8a5a; }
-  .chip.on::before { content:'● '; color:#7fd18f; }
-  button, select { background:#2c2833; color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 10px; font:inherit; cursor:pointer; }
+  .chip.on { color:var(--ink); }
+  .chip.on::before { content:'● '; color:var(--c, #7fd18f); }
+  button, select, input { background:#2c2833; color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 10px; font:inherit; }
+  button, select { cursor:pointer; }
   button:hover, select:hover { border-color:var(--gold); }
+  input:focus { outline:none; border-color:var(--gold); }
   #status { font-size:12px; color:var(--dim); }
   #status.off { color:#e0735a; }
-  main { flex:1; overflow:auto; position:relative; }
+  main { overflow:auto; position:relative; }
   #board { position:relative; margin:24px; background-color:#2a2620; box-shadow:0 4px 24px #0008; touch-action:none; }
   #board.grid { background-image:linear-gradient(#0004 1px,transparent 1px),linear-gradient(90deg,#0004 1px,transparent 1px); }
-  #fog { position:absolute; inset:0; pointer-events:none; z-index:5; }
+  #fog, #fx { position:absolute; inset:0; pointer-events:none; }
+  #fog { z-index:5; } #fx { z-index:8; }
   .tok { position:absolute; border-radius:50%; display:grid; place-items:center; font-weight:700; user-select:none;
          border:3px solid #0009; box-shadow:0 2px 6px #000a; transition:left .12s linear, top .12s linear; }
   .tok.mexe { cursor:grab; }
   .tok.drag { cursor:grabbing; transition:none; z-index:10; outline:2px dashed #f4d58a; outline-offset:3px; }
   .tok.meu { box-shadow:0 0 0 2px #f4d58a, 0 2px 6px #000a; z-index:6; }   /* o meu token aparece mesmo na névoa */
-  #board.zoomando .tok { transition:none; }
+  .tok.davez { box-shadow:0 0 0 3px #fff, 0 0 18px 6px #f4d58acc; z-index:7; }
   .tok.escondido { opacity:.45; border-style:dashed; }
   .tok.hero { border-color:#e8c46a; } .tok.foe { border-color:#c94a3a; } .tok.ally { border-color:#5fa8e0; }
   .tok span { position:absolute; top:100%; margin-top:3px; white-space:nowrap; font-size:11px; font-weight:600; background:#141217d0; padding:1px 6px; border-radius:4px; }
+  #board.zoomando .tok { transition:none; }
   #vazio[hidden] { display:none; }
   #vazio { position:absolute; inset:0; display:grid; place-items:center; color:var(--dim); pointer-events:none; text-align:center; }
+  #dica { position:sticky; left:24px; bottom:8px; font-size:12px; color:var(--dim); padding:0 24px 8px; }
+
+  /* painel lateral: iniciativa em cima, chat embaixo */
+  aside { display:flex; flex-direction:column; min-height:0; border-left:1px solid var(--line); background:var(--panel); }
+  aside h3 { margin:0; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); display:flex; align-items:center; gap:6px; }
+  #ini { padding:10px 12px; border-bottom:1px solid var(--line); }
+  #ini ol { list-style:none; margin:8px 0 0; padding:0; max-height:30vh; overflow:auto; }
+  #ini li { display:flex; gap:8px; align-items:center; padding:4px 6px; border-radius:6px; }
+  #ini li.davez { background:#4a3416; }
+  #ini li b { width:28px; text-align:right; font-variant-numeric:tabular-nums; }
+  #ini li span { flex:1; }
+  #ini li button { padding:0 6px; font-size:12px; }
+  #ini .vazio { color:var(--dim); font-size:12px; margin-top:6px; }
+  #ini .ctrl { margin-left:auto; display:flex; gap:4px; } #ini .ctrl button { padding:2px 8px; }
+  #msgs { flex:1; overflow:auto; padding:10px 12px; display:flex; flex-direction:column; gap:8px; min-height:0; }
+  .msg { font-size:13px; overflow-wrap:anywhere; }
+  .msg .who { font-weight:700; color:var(--c, var(--ink)); margin-right:6px; }
+  .msg.emote { font-style:italic; color:#d8cfe8; }
+  .msg.priv { border-left:3px solid #8e6fc4; padding-left:8px; }
+  .msg .nota { font-size:11px; color:#b9a3e0; display:block; }
+  .roll { margin-top:4px; background:#2c2833; border:1px solid var(--line); border-radius:8px; padding:6px 10px; }
+  .roll .total { font-size:22px; font-weight:800; margin-right:8px; }
+  .roll .expr { color:var(--dim); font-size:12px; }
+  .roll .det { font-size:12px; color:var(--dim); margin-top:2px; }
+  .roll .d { color:var(--ink); } .roll .x { text-decoration:line-through; opacity:.5; }
+  .roll .crit { color:#7fd18f; font-weight:700; } .roll .falha { color:#e0735a; font-weight:700; }
+  #dados { display:flex; gap:4px; flex-wrap:wrap; padding:6px 12px 0; }
+  #dados button { padding:2px 8px; font-size:12px; }
+  form { display:flex; gap:6px; padding:8px 12px 12px; }
+  form input { flex:1; min-width:0; }
+  #erro { font-size:12px; color:#e0735a; padding:0 12px; min-height:0; }
   #menu { position:fixed; z-index:50; min-width:200px; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px; box-shadow:0 8px 24px #000a; display:flex; flex-direction:column; gap:6px; }
   #menu[hidden] { display:none; }
   #menu h4 { margin:0; font-size:13px; } #menu small { color:var(--dim); }
   #menu label { display:flex; gap:6px; align-items:center; font-size:13px; }
-  .gmonly { display:none; } body.gm .gmonly { display:revert; }
+  .gmonly { display:none !important; } body.gm .gmonly { display:revert !important; }
+  @media (max-width: 760px) { body { grid-template:auto 1fr 45vh / 1fr; } aside { border-left:0; border-top:1px solid var(--line); } }
 </style>
 </head>
 <body>
@@ -54,13 +90,25 @@
   <span id="status" class="off">conectando…</span>
 </header>
 <main>
-  <div id="board" class="grid"><canvas id="fog"></canvas></div>
+  <div id="board" class="grid"><canvas id="fog"></canvas><canvas id="fx"></canvas></div>
   <div id="vazio">Nenhum mapa ainda.<br>O mestre envia um mapa pelo MonTT Maker (botão “Enviar à mesa”).</div>
+  <div id="dica">Duplo clique: ping · Shift + arrastar: régua · Botão direito no token: menu</div>
 </main>
+<aside>
+  <section id="ini">
+    <h3>Iniciativa <span id="rodada"></span>
+      <span class="ctrl gmonly"><button id="iniVolta" title="Turno anterior">◀</button><button id="iniVai" title="Próximo turno">▶</button><button id="iniLimpa" title="Limpar a iniciativa">Limpar</button></span></h3>
+    <ol id="iniLista"></ol>
+  </section>
+  <div id="msgs" aria-live="polite"></div>
+  <div id="dados"></div>
+  <div id="erro"></div>
+  <form id="chat"><input id="texto" autocomplete="off" placeholder="Mensagem, ou /r 1d20+5 ataque" maxlength="500"><button>Enviar</button></form>
+</aside>
 <div id="menu" hidden></div>
 <script>
 const $ = id => document.getElementById(id);
-const board = $('board'), fog = $('fog');
+const board = $('board'), fog = $('fog'), fxc = $('fx');
 const params = new URLSearchParams(location.search);
 if (!params.get('gm') && !params.get('p')) {           // link sem nome: pergunta uma vez
   const nome = (prompt('Seu nome na mesa:') || '').trim();
@@ -81,12 +129,13 @@ function conectar() {
   es.onopen = () => { $('status').className = ''; $('status').textContent = 'conectado'; };
   es.onerror = () => { $('status').className = 'off'; $('status').textContent = 'reconectando…'; };
 }
+const postar = (url, corpo) => fetch(url + Q, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(corpo) });
 function enviar(op) {
-  return fetch('/op' + Q, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(op) })
-    .then(r => { if (!r.ok) { r.json().then(e => console.warn('op recusada:', e.erro)); conectar(); } });  // recusou: volta ao estado do servidor
+  return postar('/op', op).then(r => { if (!r.ok) { r.json().then(e => console.warn('op recusada:', e.erro)); conectar(); } });  // recusou: volta ao estado do servidor
 }
 function aplicar(m) {
-  if (m.op === 'snapshot') { objs = m.objs; eu = m.eu; document.body.classList.toggle('gm', souGM()); }
+  if (m.op === 'fx') return receberFx(m);
+  if (m.op === 'snapshot') { objs = m.objs; eu = m.eu; document.body.classList.toggle('gm', souGM()); $('msgs').innerHTML = ''; }
   else if (m.op === 'add') objs[m.id] = { ...m.props, type:m.type };
   else if (m.op === 'change' && objs[m.id]) {
     if (arrastando && arrastando.id === m.id) return;   // não brigar com o meu próprio arraste
@@ -99,13 +148,17 @@ conectar();
 
 /* ---- desenho ---- */
 const doTipo = t => Object.entries(objs).filter(([, o]) => o.type === t);
+const mesa = () => objs.mesa || {};
 function paginaAtual() {
-  const id = objs.mesa && objs.mesa.page;
+  const id = mesa().page;
   return id && objs[id] ? { id, ...objs[id] } : { id:'', w:20, h:15 };
 }
 function iniciais(n) { return (n || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase(); }
 function claro(hex) { const v = parseInt((hex || '#888').slice(1), 16); return ((v>>16)*.299 + (v>>8&255)*.587 + (v&255)*.114) > 160; }
 const meu = t => souGM() || (t.owner || []).includes(eu.nome);
+const corDe = nome => (objs['pl-' + nome] || {}).color || 'var(--ink)';
+function el(tag, cls, texto) { const e = document.createElement(tag); if (cls) e.className = cls; if (texto != null) e.textContent = texto; return e; }
+const daVez = () => { const o = mesa().turnorder || []; return o.length ? o[(mesa().turn || 0) % o.length].id : null; };
 
 function render() {
   const pg = paginaAtual(), s = px();
@@ -122,44 +175,51 @@ function render() {
   // quem está na mesa
   $('online').innerHTML = '';
   for (const [, p] of doTipo('player').sort((a, b) => b[1].gm - a[1].gm)) {
-    const c = document.createElement('span'); c.className = 'chip' + (p.online ? ' on' : '');
-    c.textContent = p.gm ? 'Mestre' : p.name; $('online').appendChild(c);
+    const c = el('span', 'chip' + (p.online ? ' on' : ''), p.gm ? 'Mestre' : p.name);
+    c.style.setProperty('--c', p.color || '#7fd18f'); $('online').appendChild(c);
   }
   // seletor de mapa (mestre)
   const sel = $('pagina'), pags = doTipo('page');
   sel.hidden = pags.length < 2;
-  sel.innerHTML = pags.map(([id, p]) => `<option value="${id}">${p.name || id}</option>`).join('');
+  sel.innerHTML = ''; for (const [id, p] of pags) sel.appendChild(Object.assign(el('option', '', p.name || id), { value:id }));
   sel.value = pg.id;
 
-  const vivos = new Set();
+  const vez = daVez(), vivos = new Set();
   for (const [id, t] of doTipo('token')) {
     if ((t.page || '') !== pg.id) continue;
     vivos.add(id);
-    let el = board.querySelector(`[data-id="${CSS.escape(id)}"]`);
-    if (!el) { el = document.createElement('div'); el.dataset.id = id; el.innerHTML = '<b></b><span></span>'; board.appendChild(el); }
+    let e = board.querySelector(`[data-id="${CSS.escape(id)}"]`);
+    if (!e) { e = el('div'); e.dataset.id = id; e.append(el('b'), el('span')); board.appendChild(e); }
     const n = t.n || 1, r = (t.r || .42) * 2 * s;          // r = raio em quadrados, como no MonTT
-    el.className = `tok ${t.kind || 'foe'}` + (meu(t) ? ' mexe' : '') + (!souGM() && meu(t) ? ' meu' : '') + (t.layer === 'gm' ? ' escondido' : '');
-    if (arrastando && arrastando.id === id) el.classList.add('drag');
-    el.style.width = el.style.height = r + 'px';
-    el.style.left = ((t.x + n / 2) * s - r / 2) + 'px';
-    el.style.top  = ((t.y + n / 2) * s - r / 2) + 'px';
-    el.style.background = t.color || '#888';
-    el.style.color = claro(t.color) ? '#1d1a17' : '#fbf6ec';
-    el.style.fontSize = Math.max(9, r * .36) + 'px';
-    el.title = t.layer === 'gm' ? 'Escondido dos jogadores' : '';
-    el.firstChild.textContent = iniciais(t.name);
-    el.lastChild.textContent = t.name || '';
+    e.className = `tok ${t.kind || 'foe'}` + (meu(t) ? ' mexe' : '') + (!souGM() && meu(t) ? ' meu' : '')
+                + (t.layer === 'gm' ? ' escondido' : '') + (id === vez ? ' davez' : '');
+    if (arrastando && arrastando.id === id) e.classList.add('drag');
+    e.style.width = e.style.height = r + 'px';
+    e.style.left = ((t.x + n / 2) * s - r / 2) + 'px';
+    e.style.top  = ((t.y + n / 2) * s - r / 2) + 'px';
+    e.style.background = t.color || '#888';
+    e.style.color = claro(t.color) ? '#1d1a17' : '#fbf6ec';
+    e.style.fontSize = Math.max(9, r * .36) + 'px';
+    e.title = t.layer === 'gm' ? 'Escondido dos jogadores' : '';
+    e.firstChild.textContent = iniciais(t.name);
+    e.lastChild.textContent = t.name || '';
   }
-  for (const el of board.querySelectorAll('.tok')) if (!vivos.has(el.dataset.id)) el.remove();
+  for (const e of board.querySelectorAll('.tok')) if (!vivos.has(e.dataset.id)) e.remove();
   desenharNevoa(pg, s);
+  renderIniciativa();
+  renderChat();
+  desenharFx();
 }
 
 // névoa por quadrado, vinda do MonTT: opaca para jogadores, translúcida para o mestre
-function desenharNevoa(pg, s) {
+function ajustarCanvas(c, pg, s) {
   const dpr = devicePixelRatio || 1;
-  fog.width = pg.w * s * dpr; fog.height = pg.h * s * dpr;
-  fog.style.width = pg.w * s + 'px'; fog.style.height = pg.h * s + 'px';
-  const c = fog.getContext('2d'); c.scale(dpr, dpr);
+  c.width = pg.w * s * dpr; c.height = pg.h * s * dpr;
+  c.style.width = pg.w * s + 'px'; c.style.height = pg.h * s + 'px';
+  const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); return g;
+}
+function desenharNevoa(pg, s) {
+  const c = ajustarCanvas(fog, pg, s);
   if (!pg.fog) return;
   c.fillStyle = souGM() ? 'rgba(12,10,16,.5)' : '#0d0b10';
   c.beginPath();
@@ -168,58 +228,223 @@ function desenharNevoa(pg, s) {
   c.fill();
 }
 
-/* ---- arrastar tokens (só os meus; o mestre arrasta todos) ---- */
-let ultimoEnvio = 0;
+/* ---- iniciativa ---- */
+function renderIniciativa() {
+  const m = mesa(), ordem = m.turnorder || [], lista = $('iniLista');
+  $('rodada').textContent = ordem.length ? `· rodada ${m.round || 1}` : '';
+  lista.innerHTML = '';
+  if (!ordem.length) { lista.appendChild(el('li', 'vazio', 'Botão direito num token → Rolar iniciativa')); return; }
+  ordem.forEach((e, i) => {
+    const li = el('li', i === (m.turn || 0) % ordem.length ? 'davez' : '');
+    li.append(el('b', '', e.pr), el('span', '', e.name));
+    if (souGM()) {
+      const x = el('button', '', '×'); x.title = 'Tirar da iniciativa';
+      x.onclick = () => mudarOrdem(ordem.filter((_, j) => j !== i), Math.min(m.turn || 0, Math.max(0, ordem.length - 2)), m.round);
+      li.appendChild(x);
+    }
+    lista.appendChild(li);
+  });
+}
+const mudarOrdem = (turnorder, turn, round) => enviar({ op:'change', id:'mesa', props:{ turnorder, turn, round: round || 1 } });
+function passarTurno(d) {
+  const m = mesa(), n = (m.turnorder || []).length; if (!n) return;
+  let t = (m.turn || 0) + d, r = m.round || 1;
+  if (t >= n) { t = 0; r++; } if (t < 0) { t = n - 1; r = Math.max(1, r - 1); }
+  mudarOrdem(m.turnorder, t, r);
+}
+$('iniVai').onclick = () => passarTurno(1);
+$('iniVolta').onclick = () => passarTurno(-1);
+$('iniLimpa').onclick = () => confirm('Limpar a iniciativa?') && mudarOrdem([], 0, 1);
+
+/* ---- chat ---- */
+const vistos = new Set();
+function renderChat() {
+  const caixa = $('msgs'), noFim = caixa.scrollHeight - caixa.scrollTop - caixa.clientHeight < 40;
+  const msgs = doTipo('msg').sort((a, b) => a[0] < b[0] ? -1 : 1);
+  let novas = 0;
+  for (const [id, m] of msgs) {
+    if (vistos.has(id) && caixa.querySelector(`[data-id="${id}"]`)) continue;
+    vistos.add(id); novas++;
+    caixa.appendChild(desenharMsg(id, m));
+  }
+  while (caixa.children.length > 200) caixa.firstChild.remove();
+  if (novas && noFim) caixa.scrollTop = caixa.scrollHeight;
+}
+function desenharMsg(id, m) {
+  const d = el('div', 'msg ' + m.kind + (m.to ? ' priv' : '')); d.dataset.id = id;
+  const quem = el('span', 'who', m.who === 'Mestre' ? 'Mestre' : m.who); quem.style.setProperty('--c', corDe(m.who));
+  if (m.to) {
+    const outros = m.to.filter(n => n !== m.who);
+    d.appendChild(el('span', 'nota', m.kind === 'roll' ? 'rolagem secreta (só o mestre vê)' : `sussurro para ${outros.join(', ')}`));
+  }
+  if (m.kind === 'emote') { d.append(el('span', '', `${m.who} ${m.text}`)); return d; }
+  d.append(quem);
+  if (m.text) d.append(el('span', '', m.text));
+  if (m.roll) d.appendChild(cartaoRolagem(m.roll));
+  return d;
+}
+function cartaoRolagem(r) {
+  const c = el('div', 'roll');
+  c.append(el('span', 'total', r.total), el('span', 'expr', r.expr));
+  const det = el('div', 'det');
+  r.partes.forEach((p, i) => {
+    if (i || p.s < 0) det.append(p.s < 0 ? ' − ' : ' + ');
+    if (!p.rolls) { det.append(String(p.v)); return; }
+    det.append(p.dado + ' [');
+    p.rolls.forEach((v, j) => {
+      const faces = +p.dado.split('d')[1].replace(/k.*/, '');
+      const cls = !p.keep[j] ? 'x' : faces === 20 && v === 20 ? 'crit' : faces === 20 && v === 1 ? 'falha' : 'd';
+      if (j) det.append(', ');
+      det.append(el('span', cls, v));
+    });
+    det.append(']');
+  });
+  c.appendChild(det);
+  return c;
+}
+let ultimas = [], iUltima = 0;
+$('chat').onsubmit = async ev => {
+  ev.preventDefault();
+  const t = $('texto').value.trim(); if (!t) return;
+  $('texto').value = '';                     // limpa já: quem digita rápido não gruda na mensagem anterior
+  ultimas.push(t); iUltima = ultimas.length;
+  const r = await postar('/chat', { text:t });
+  if (r.ok) $('erro').textContent = '';
+  else { $('erro').textContent = (await r.json()).erro; if (!$('texto').value) $('texto').value = t; }
+};
+$('texto').addEventListener('keydown', e => {   // ↑/↓ repete mensagens anteriores
+  if (e.key === 'ArrowUp' && iUltima > 0) { $('texto').value = ultimas[--iUltima]; e.preventDefault(); }
+  if (e.key === 'ArrowDown' && iUltima < ultimas.length) { $('texto').value = ultimas[++iUltima] || ''; e.preventDefault(); }
+});
+for (const f of [4, 6, 8, 10, 12, 20, 100]) {
+  const b = el('button', '', 'd' + f); b.type = 'button'; b.title = 'Rolar 1d' + f;
+  b.onclick = () => postar('/chat', { text:'/r 1d' + f }); $('dados').appendChild(b);
+}
+const vant = el('button', '', 'vantagem'); vant.type = 'button'; vant.onclick = () => postar('/chat', { text:'/r 2d20kh1 vantagem' });
+const desv = el('button', '', 'desvantagem'); desv.type = 'button'; desv.onclick = () => postar('/chat', { text:'/r 2d20kl1 desvantagem' });
+$('dados').append(vant, desv);
+
+/* ---- ping e régua: efeitos passageiros, não salvos ---- */
+let pings = [], reguas = {};
+function receberFx(m) {
+  if (m.page !== paginaAtual().id) return;
+  if (m.kind === 'ping') pings.push({ ...m, t0:performance.now() });
+  if (m.kind === 'regua') { if (m.fim) delete reguas[m.who]; else reguas[m.who] = m; }
+  desenharFx();
+}
+function distPes(dx, dy) {                    // mesma regra do MonTT (5 ft por quadrado)
+  dx = Math.abs(dx); dy = Math.abs(dy); const d = Math.min(dx, dy), st = Math.max(dx, dy) - d;
+  const regra = paginaAtual().diag || '5';
+  if (regra === '5-10') return (st + d + Math.floor(d / 2)) * 5;
+  if (regra === 'euclid') return Math.round(Math.hypot(dx, dy)) * 5;
+  return Math.max(dx, dy) * 5;
+}
+let animando = false;
+function desenharFx() {
+  const pg = paginaAtual(), s = px(), c = ajustarCanvas(fxc, pg, s), agora = performance.now();
+  pings = pings.filter(p => agora - p.t0 < 1600);
+  for (const p of pings) {
+    const k = (agora - p.t0) / 1600;
+    for (const atraso of [0, .25]) {
+      const kk = Math.max(0, k - atraso); if (!kk) continue;
+      c.strokeStyle = p.color; c.globalAlpha = 1 - kk; c.lineWidth = 3;
+      c.beginPath(); c.arc(p.x * s, p.y * s, s * (.2 + kk * 1.4), 0, 7); c.stroke();
+    }
+    c.globalAlpha = 1;
+  }
+  for (const r of Object.values(reguas)) {
+    const a = [Math.floor(r.x) + .5, Math.floor(r.y) + .5], b = [Math.floor(r.x2) + .5, Math.floor(r.y2) + .5];
+    c.strokeStyle = r.color; c.lineWidth = 3; c.setLineDash([8, 6]);
+    c.beginPath(); c.moveTo(a[0] * s, a[1] * s); c.lineTo(b[0] * s, b[1] * s); c.stroke(); c.setLineDash([]);
+    const txt = `${distPes(b[0] - a[0], b[1] - a[1])} ft`;
+    c.font = '700 14px system-ui'; const w = c.measureText(txt).width + 14;
+    c.fillStyle = '#141217e0'; c.beginPath(); c.roundRect(b[0] * s + 10, b[1] * s - 12, w, 24, 6); c.fill();
+    c.fillStyle = r.color; c.fillText(txt, b[0] * s + 17, b[1] * s + 5);
+  }
+  if (pings.length && !animando) { animando = true; requestAnimationFrame(() => { animando = false; desenharFx(); }); }
+}
+function quadrado(e) { const b = board.getBoundingClientRect(), s = px(); return { x:(e.clientX - b.left) / s, y:(e.clientY - b.top) / s }; }
+board.addEventListener('dblclick', e => {
+  if (e.target.closest('.tok') || !paginaAtual().id) return;
+  const p = quadrado(e); postar('/fx', { kind:'ping', page:paginaAtual().id, x:p.x, y:p.y });
+});
+
+/* ---- arrastar tokens (só os meus; o mestre arrasta todos) e régua (Shift) ---- */
+let ultimoEnvio = 0, regua = null;
 board.addEventListener('pointerdown', e => {
-  const el = e.target.closest('.tok'); if (!el || e.button !== 0) return;
-  const t = objs[el.dataset.id]; if (!meu(t)) return;
-  const b = board.getBoundingClientRect(), s = px();
-  arrastando = { id:el.dataset.id, el, dx:(e.clientX - b.left) / s - t.x, dy:(e.clientY - b.top) / s - t.y };
-  el.classList.add('drag'); el.setPointerCapture(e.pointerId);
+  if (e.button !== 0) return;
+  if (e.shiftKey && paginaAtual().id) {
+    const p = quadrado(e); regua = { x:p.x, y:p.y };
+    board.setPointerCapture(e.pointerId); e.preventDefault(); return;
+  }
+  const tk = e.target.closest('.tok'); if (!tk) return;
+  const t = objs[tk.dataset.id]; if (!meu(t)) return;
+  const p = quadrado(e);
+  arrastando = { id:tk.dataset.id, el:tk, dx:p.x - t.x, dy:p.y - t.y };
+  tk.classList.add('drag'); tk.setPointerCapture(e.pointerId);
 });
 board.addEventListener('pointermove', e => {
+  const agora = performance.now(), p = quadrado(e);
+  if (regua) {
+    const m = { kind:'regua', page:paginaAtual().id, x:regua.x, y:regua.y, x2:p.x, y2:p.y };
+    reguas[eu.nome] = { ...m, who:eu.nome, color:corDe(eu.nome) }; desenharFx();
+    if (agora - ultimoEnvio > 100) { ultimoEnvio = agora; postar('/fx', m); }
+    return;
+  }
   if (!arrastando) return;
-  const t = objs[arrastando.id], b = board.getBoundingClientRect(), s = px();
-  t.x = (e.clientX - b.left) / s - arrastando.dx;
-  t.y = (e.clientY - b.top) / s - arrastando.dy;
+  const t = objs[arrastando.id];
+  t.x = p.x - arrastando.dx; t.y = p.y - arrastando.dy;
   render();
-  const agora = performance.now();
   if (agora - ultimoEnvio > 100) { ultimoEnvio = agora; enviar({ op:'change', id:arrastando.id, props:{ x:t.x, y:t.y } }); }
 });
 function soltar() {
+  if (regua) { regua = null; delete reguas[eu.nome]; desenharFx(); postar('/fx', { kind:'regua', page:paginaAtual().id, x:0, y:0, fim:true }); return; }
   if (!arrastando) return;
-  const { id, el } = arrastando, t = objs[id], pg = paginaAtual(), n = t.n || 1;
+  const { id, el:tk } = arrastando, t = objs[id], pg = paginaAtual(), n = t.n || 1;
   t.x = Math.max(0, Math.min(pg.w - n, Math.round(t.x)));   // encaixa na grade
   t.y = Math.max(0, Math.min(pg.h - n, Math.round(t.y)));
-  el.classList.remove('drag'); arrastando = null;
+  tk.classList.remove('drag'); arrastando = null;
   enviar({ op:'change', id, props:{ x:t.x, y:t.y } });
   render();
 }
 board.addEventListener('pointerup', soltar);
 board.addEventListener('pointercancel', soltar);
 
-/* ---- menu do mestre (botão direito no token) ---- */
+/* ---- menu do token (botão direito): iniciativa para quem controla, o resto só o mestre ---- */
 const menu = $('menu');
 board.addEventListener('contextmenu', e => {
-  const el = e.target.closest('.tok'); if (!el || !souGM()) return;
+  const tk = e.target.closest('.tok'); if (!tk) return;
+  const id = tk.dataset.id, t = objs[id]; if (!meu(t)) return;
   e.preventDefault();
-  const id = el.dataset.id, t = objs[id], donos = t.owner || [];
-  const jogadores = doTipo('player').filter(([, p]) => !p.gm).map(([, p]) => p.name);
-  const esc = s => s.replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
-  menu.innerHTML = `<h4>${esc(t.name || 'Token')}</h4><small>Quem pode mover:</small>` +
-    (jogadores.length ? jogadores.map(n => `<label><input type="checkbox" value="${esc(n)}" ${donos.includes(n) ? 'checked' : ''}> ${esc(n)}</label>`).join('')
-                      : '<small>Nenhum jogador entrou ainda.</small>') +
-    `<button data-a="vis">${t.layer === 'gm' ? 'Mostrar aos jogadores' : 'Esconder dos jogadores'}</button>
-     <button data-a="del">Apagar token</button>`;
+  menu.innerHTML = '';
+  menu.appendChild(el('h4', '', t.name || 'Token'));
+  const ini = el('button', '', 'Rolar iniciativa'); ini.dataset.a = 'ini'; menu.appendChild(ini);
+  if (souGM()) {
+    menu.appendChild(el('small', '', 'Quem pode mover:'));
+    const jogadores = doTipo('player').filter(([, p]) => !p.gm).map(([, p]) => p.name);
+    if (!jogadores.length) menu.appendChild(el('small', '', 'Nenhum jogador entrou ainda.'));
+    for (const n of jogadores) {
+      const l = el('label'), cb = Object.assign(el('input'), { type:'checkbox', value:n, checked:(t.owner || []).includes(n) });
+      l.append(cb, ' ' + n); menu.appendChild(l);
+    }
+    const vis = el('button', '', t.layer === 'gm' ? 'Mostrar aos jogadores' : 'Esconder dos jogadores'); vis.dataset.a = 'vis';
+    const del = el('button', '', 'Apagar token'); del.dataset.a = 'del';
+    menu.append(vis, del);
+  }
   menu.style.left = Math.min(e.clientX, innerWidth - 220) + 'px';
-  menu.style.top = Math.min(e.clientY, innerHeight - 260) + 'px';
+  menu.style.top = Math.min(e.clientY, innerHeight - 280) + 'px';
   menu.hidden = false;
   menu.onchange = () => enviar({ op:'change', id, props:{ owner:[...menu.querySelectorAll('input:checked')].map(i => i.value) } });
-  menu.onclick = ev => {
+  menu.onclick = async ev => {
     const a = ev.target.dataset.a; if (!a) return;
+    menu.hidden = true;
     if (a === 'vis') enviar({ op:'change', id, props:{ layer: t.layer === 'gm' ? 'objects' : 'gm' } });
     if (a === 'del' && confirm('Apagar este token?')) enviar({ op:'destroy', id });
-    menu.hidden = true;
+    if (a === 'ini') {
+      const mod = prompt(`Modificador de iniciativa de ${t.name || 'token'} (ex.: +2):`, '+0'); if (mod == null) return;
+      const r = await postar('/chat', { text:'/init ' + mod.trim(), token:id });
+      if (!r.ok) $('erro').textContent = (await r.json()).erro;
+    }
   };
 });
 addEventListener('pointerdown', e => { if (!menu.contains(e.target)) menu.hidden = true; });
