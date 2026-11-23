@@ -198,13 +198,23 @@ const LUZES = { nenhuma:null, vela:[5, 5], tocha:[20, 20], lanterna:[30, 30], lu
 const NOMES_LUZ = { nenhuma:'Nenhuma', vela:'Vela (5/5)', tocha:'Tocha (20/20)', lanterna:'Lanterna (30/30)', luz:'Magia Luz (20/20)' };
 
 /* ---- rede: o mesmo modelo de ops do Roll20 (add/change/destroy) ---- */
-let es;
-function conectar() {
-  es && es.close();
-  es = new EventSource('/stream' + Q);                  // reconecta sozinho e recebe um snapshot novo
-  es.onmessage = e => aplicar(JSON.parse(e.data));
-  es.onopen = () => { $('status').className = ''; $('status').textContent = 'conectado'; };
-  es.onerror = () => { $('status').className = 'off'; $('status').textContent = 'reconectando…'; };
+// long polling: cada /poll espera até ter novidade (SSE não passa pelo túnel rápido da Cloudflare)
+let geracao = 0;
+async function conectar() {                             // chamar de novo = recomeçar do snapshot
+  const g = ++geracao; let sessao = '';
+  while (g === geracao) {
+    try {
+      const r = await fetch('/poll' + Q + (sessao ? '&c=' + sessao : ''), { cache:'no-store' });
+      if (g !== geracao) return;
+      if (!r.ok) throw new Error(r.status);
+      const d = await r.json(); sessao = d.c;
+      $('status').className = ''; $('status').textContent = 'conectado';
+      for (const m of d.msgs) aplicar(m);
+    } catch {
+      $('status').className = 'off'; $('status').textContent = 'reconectando…';
+      await new Promise(ok => setTimeout(ok, 2000));
+    }
+  }
 }
 const postar = (url, corpo) => fetch(url + Q, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(corpo) });
 function enviar(op) {

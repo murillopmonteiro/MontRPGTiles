@@ -82,12 +82,12 @@ O `MonTT.html` já tem grade, chão, **paredes como arestas da grade** (`hw`/`vw
  │ estado local = cópia     │ ────────────► │ valida permissão             │
  │ render (drawScene)       │               │ aplica no estado             │
  │ reage a add/change/destroy│ ◄──────────── │ envia a todos (filtrado)     │
- └──────────────────────────┘  SSE /stream  │ salva campanha.json          │
+ └──────────────────────────┘   GET /poll   │ salva campanha.json          │
                                             └──────────────────────────────┘
 ```
 
-- **Servidor: um arquivo `mesa.py` com `http.server` + `ThreadingHTTPServer`, sem dependências.** Envia com **Server-Sent Events** (`EventSource`, nativo no navegador) e recebe por `fetch` POST. Não precisa de WebSocket: na mesa, as mudanças são poucas por segundo. Você já roda `py -m http.server`, então é o mesmo jeito de usar.
-  - `ponytail:` SSE + POST, com uma thread por conexão. Aguenta umas dezenas de pessoas. Se um dia tiver um grupo grande, troca por WebSocket (`websockets` ou Node `ws`).
+- **Servidor: um arquivo `mesa.py` com `http.server` + `ThreadingHTTPServer`, sem dependências.** Envia por **long polling** (`GET /poll` fica esperando até ter novidade, até 20 s) e recebe por `fetch` POST. Começou com Server-Sent Events, mas o túnel rápido da Cloudflare segura o stream inteiro, e o long polling passa por qualquer túnel ou proxy. Não precisa de WebSocket: na mesa, as mudanças são poucas por segundo. Você já roda `py -m http.server`, então é o mesmo jeito de usar.
+  - `ponytail:` long polling + POST, com uma thread por requisição. Uma aba fechada sai da mesa depois de 45 s sem perguntar. Aguenta umas dezenas de pessoas. Se um dia tiver um grupo grande, troca por WebSocket (`websockets` ou Node `ws`).
 - **Mensagem única, igual aos eventos do Roll20:** `{op: "add"|"change"|"destroy", type, id, props}`. O servidor coloca um número de sequência, aplica, retransmite e grava. Quem entra recebe a "foto" do estado inteiro e depois só as mudanças.
 - **Conflito:** a última escrita vence, propriedade por propriedade. Com 5 pessoas isso basta.
 - **Persistência:** `campanha.json` gravado alguns segundos depois de cada mudança, mais uma cópia de backup por sessão.
@@ -121,7 +121,7 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 ## 3. Fases (cada uma termina com algo jogável)
 
 ### Fase 0: prova de conceito + envio do MonTT ✅ feita (commit `21964b5`)
-- `mesa.py`: `GET /stream` (SSE), `POST /op` (add/change/destroy), `POST /upload` (PNG/JPG/WebP, nome gerado pelo servidor), serve os arquivos da pasta sem expor `.git` nem `campanha.json`. Grava `campanha.json` a cada 2 s, com troca atômica.
+- `mesa.py`: `GET /stream` (SSE; hoje `GET /poll`), `POST /op` (add/change/destroy), `POST /upload` (PNG/JPG/WebP, nome gerado pelo servidor), serve os arquivos da pasta sem expor `.git` nem `campanha.json`. Grava `campanha.json` a cada 2 s, com troca atômica.
 - `mesa.html`: mostra o mapa atual, com tokens arrastáveis que se encaixam na grade, zoom, criação de token e duplo clique para apagar.
 - MonTT ganhou **Enviar à mesa**: o andar atual vai como imagem na visão de jogador (névoa opaca, sem marcas de mestre, sem tokens) e cada token vira uma peça. Reenviar troca só a imagem (`keep`), e os tokens ficam onde estavam.
 - **Testado:** envio do mapa de exemplo, arraste sincronizado entre duas abas, reenvio sem perder posições, recarregar a página mantém o estado, autoteste `py mesa.py --teste`.
@@ -135,7 +135,7 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 - **Mesa do mestre:** botão direito no token abre o menu (quem pode mover, esconder/mostrar, apagar). Seletor do mapa dos jogadores, "+ Token", tokens escondidos aparecem translúcidos.
 - **Névoa ao vivo:** a imagem vai sem névoa e a névoa vai como array. Pintar ou limpar névoa no MonTT chega à mesa na hora: opaca para os jogadores, translúcida para o mestre. O token do próprio jogador fica visível mesmo na névoa.
 - **Testado no navegador:** o MonTT do mestre enviou o mapa; o mestre deu o Brannoc à Ana e escondeu o Goblin 2; a Ana viu 8 tokens, só conseguiu mover o Brannoc, e o mestre recebeu o movimento; a tentativa dela de mover a Ilse levou `403`; "Fog whole map" e "Clear all fog" no MonTT chegaram à mesa. O autoteste cobre permissões, filtro e presença.
-- **Ainda falta:** testar com um amigo de verdade pelo túnel `cloudflared`.
+- **Túnel testado:** o `cloudflared` rápido não deixa passar SSE (os cabeçalhos chegam, os dados nunca), então a mesa passou a usar long polling. Pelo endereço `trycloudflare.com`, um jogador de fora entrou, rolou dados (a rolagem volta em ~95 ms), viu o mestre mexer um token em ~40 ms e arrastou o próprio token. Falta só uma sessão com amigos de verdade.
 - `ponytail:` o segredo vai na URL. Basta para amigos, mas quem vê o link do mestre vira mestre: não compartilhe a tela com ele aberto.
 
 ### Fase 2: chat, dados e iniciativa ✅ feita

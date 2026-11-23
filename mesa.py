@@ -6,7 +6,9 @@
 
 Modelo (igual ao Roll20): o estado é um dicionário de objetos {id: {type, ...}}.
 O cliente envia POST /op {op: add|change|destroy, type, id, props} e recebe tudo
-por GET /stream (Server-Sent Events): primeiro um snapshot, depois cada op.
+por long polling em GET /poll: a 1ª resposta traz um snapshot e o id da sessão (c);
+as seguintes esperam até haver ops e devolvem todas de uma vez. (SSE seria mais
+simples, mas o túnel rápido da Cloudflare segura o stream inteiro.)
 
 Papéis: quem tem ?gm=<segredo> é o mestre e pode tudo. Quem tem ?p=<nome> é
 jogador: só move tokens cujo `owner` tem o nome dele, e nunca recebe objetos
@@ -35,7 +37,9 @@ CORES = ['#e0735a', '#5fa8e0', '#7fd18f', '#c98ae8', '#e8c46a', '#5fd1c4', '#f08
 
 trava = threading.Lock()   # ponytail: uma trava global; com 6 pessoas não faz diferença
 estado = {'seq': 0, 'objs': {}, 'gm': ''}
-clientes = {}              # fila da conexão SSE -> (papel, nome)
+clientes = {}              # fila de cada sessão -> (papel, nome)
+sessoes = {}               # id da sessão -> [fila, (papel, nome), último contato]
+ESPERA, VALIDADE = 20, 45  # segundos que um /poll espera; sessão sem contato some (aba fechada)
 conexoes = Counter()       # nome -> conexões abertas (a mesma pessoa em 2 abas)
 sujo = False
 dado = random.SystemRandom()
@@ -59,6 +63,7 @@ def gravar_periodicamente():
     global sujo
     while True:
         time.sleep(2)
+        limpar_sessoes()
         with trava:
             if not sujo:
                 continue
@@ -410,45 +415,45 @@ class Mesa(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         caminho = urlsplit(self.path).path
-        if caminho == '/stream':
-            return self.stream()
+        if caminho == '/poll':
+            return self.poll()
         partes = caminho.split('/')
         # não servir .git, campanha.json nem arquivos ocultos pelo túnel
         if any(p.startswith('.') for p in partes) or partes[-1].startswith('campanha'):
             return self.send_error(404)
         super().do_GET()
 
-    def stream(self):
+    def poll(self):
         quem = self.quem()
         if not quem:
             return self.responder(403, {'erro': 'link sem ?p=<nome> ou segredo do mestre errado'})
-        papel, nome = quem
-        q = queue.Queue()
+        sid = (parse_qs(urlsplit(self.path).query).get('c') or [''])[0]
         with trava:
-            linha = json.dumps({'op': 'snapshot', 'seq': estado['seq'], 'objs': snapshot(quem),
-                                'eu': {'papel': papel, 'nome': nome}}, ensure_ascii=False)
-            clientes[q] = quem
+            s = sessoes.get(sid)
+            if s and s[1] == quem:
+                s[2] = time.time()
+            else:   # sessão nova (ou o servidor reiniciou): começa com um snapshot
+                fila, sid = queue.Queue(), secrets.token_urlsafe(9)
+                snap = {'op': 'snapshot', 'seq': estado['seq'], 'objs': snapshot(quem),
+                        'eu': {'papel': quem[0], 'nome': quem[1]}}
+                clientes[fila] = quem
+                sessoes[sid] = [fila, quem, time.time()]
+                s = None
+        if not s:
+            presenca(quem[1], quem[0], +1)
+            return self.responder(200, {'c': sid, 'msgs': [snap]})
+        msgs = []
         try:
-            self.send_response(200)
-            self.send_header('Content-Type', 'text/event-stream; charset=utf-8')
-            self.send_header('Cache-Control', 'no-cache')
-            self.end_headers()
-            self.wfile.write(f'data: {linha}\n\n'.encode())
-            self.wfile.flush()
-            presenca(nome, papel, +1)
+            msgs.append(s[0].get(timeout=ESPERA))
             while True:
-                try:
-                    msg = q.get(timeout=15)
-                    self.wfile.write(f'data: {json.dumps(msg, ensure_ascii=False)}\n\n'.encode())
-                except queue.Empty:
-                    self.wfile.write(b': ping\n\n')   # mantém o túnel/proxy aberto
-                self.wfile.flush()
-        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                msgs.append(s[0].get_nowait())
+        except queue.Empty:
             pass
-        finally:
-            with trava:
-                clientes.pop(q, None)
-            presenca(nome, papel, -1)
+        s[2] = time.time()
+        try:
+            self.responder(200, {'c': sid, 'msgs': msgs})
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass   # ponytail: o que estava nessa resposta se perde; a próxima op corrige
 
     def do_POST(self):
         n = int(self.headers.get('Content-Length') or 0)
@@ -505,6 +510,19 @@ class Mesa(SimpleHTTPRequestHandler):
         self.wfile.write(corpo)
 
 
+def limpar_sessoes():
+    """Quem parou de perguntar (aba fechada, sem internet) sai da mesa."""
+    agora, saiu = time.time(), []
+    with trava:
+        for sid, (fila, quem, visto) in list(sessoes.items()):
+            if agora - visto > VALIDADE:
+                del sessoes[sid]
+                clientes.pop(fila, None)
+                saiu.append(quem)
+    for papel, nome in saiu:
+        presenca(nome, papel, -1)
+
+
 def servidor(host, porta):
     srv = ThreadingHTTPServer((host, porta), Mesa)
     srv.daemon_threads = True
@@ -541,21 +559,29 @@ def teste():
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     GM, ANA, BIA = '?gm=s3gr3d0', '?p=Ana', '?p=Bia'
 
-    def conectar(q):
-        s = http.client.HTTPConnection('127.0.0.1', porta, timeout=5)
-        s.request('GET', '/stream' + q)
-        return s.getresponse()
+    class conectar:   # um navegador fazendo long polling
+        def __init__(self, q):
+            self.q, self.c, self.fila = q, '', []
+            st, d = req('GET', '/poll' + q)
+            self.status = st
+            if st == 200:
+                d = json.loads(d); self.c = d['c']; self.fila = d['msgs']
+
+        def proximo(self):
+            while not self.fila:
+                st, d = req('GET', f'/poll{self.q}&c={self.c}')
+                assert st == 200, st
+                self.fila = json.loads(d)['msgs']
+            return self.fila.pop(0)
 
     def evento(r):   # próximo evento, pulando os de presença
         while True:
-            l = r.fp.readline().decode()
-            if l.startswith('data: '):
-                e = json.loads(l[6:])
-                if not (e.get('id') or '').startswith('pl-'):
-                    return e
+            e = r.proximo()
+            if not (e.get('id') or '').startswith('pl-'):
+                return e
 
     def req(metodo, caminho, corpo=b'', tipo='application/json'):
-        c = http.client.HTTPConnection('127.0.0.1', porta, timeout=5)
+        c = http.client.HTTPConnection('127.0.0.1', porta, timeout=ESPERA + 5)
         c.request(metodo, caminho, corpo, {'Content-Type': tipo})
         r = c.getresponse()
         dados = r.read(); c.close()
@@ -699,6 +725,12 @@ def teste():
     assert post({'op': 'change', 'id': 'h1', 'props': {'ver': 'Ana'}}) == 400
 
     assert estado['objs']['pl-Ana']['online'] is True
+    # sessão que parou de perguntar sai da mesa; link de outra pessoa não reaproveita a sessão
+    assert req('GET', f'/poll{BIA}&c={ana.c}')[0] == 200 and len(sessoes) == 5
+    for s in sessoes.values():
+        s[2] -= VALIDADE + 1
+    limpar_sessoes()
+    assert not sessoes and estado['objs']['pl-Ana']['online'] is False
     srv.shutdown()
     print('ok: autoteste passou')
 
