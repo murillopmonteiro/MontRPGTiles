@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Meu mapa</title>
+</head>
+<body>
+  <canvas id="tela" width="400" height="300" style="border:1px solid black"></canvas>
+
+  <script>
+    const canvas = document.getElementById("tela");
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "crimson";
+    ctx.fillRect(200-30, 150-20, 60, 40);
+  </script>
+</body>
+</html>
