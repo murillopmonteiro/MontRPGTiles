@@ -24,7 +24,9 @@
   label.inline { display:flex; gap:4px; align-items:center; font-size:12px; color:var(--dim); }
   #status { font-size:12px; color:var(--dim); }
   #status.off { color:#e0735a; }
-  main { overflow:auto; position:relative; }
+  main { overflow:auto; position:relative; cursor:grab; }
+  main.puxando, main.puxando * { cursor:grabbing !important; user-select:none; }
+  #zoomVal { min-width:58px; font-variant-numeric:tabular-nums; }
   #board { position:relative; margin:24px; background-color:#2a2620; box-shadow:0 4px 24px #0008; touch-action:none; }
   #board.grid { background-image:linear-gradient(#0004 1px,transparent 1px),linear-gradient(90deg,#0004 1px,transparent 1px); }
   #board.mira { cursor:crosshair; }
@@ -33,7 +35,7 @@
   #areas { z-index:1; } #escuro { z-index:4; } #fog { z-index:5; } #fx { z-index:8; }
   .tok { position:absolute; z-index:2; border-radius:50%; display:grid; place-items:center; font-weight:700; user-select:none;
          border:3px solid #0009; box-shadow:0 2px 6px #000a; transition:left .12s linear, top .12s linear; }
-  .tok.mexe { cursor:grab; }
+  .tok { cursor:default; } .tok.mexe { cursor:grab; }
   .tok.davez { box-shadow:0 0 0 3px #fff, 0 0 18px 6px #f4d58acc; z-index:3; }
   .tok.meu { box-shadow:0 0 0 2px #f4d58a, 0 2px 6px #000a; z-index:6; }   /* o meu token aparece mesmo na névoa */
   .tok.meu.davez { box-shadow:0 0 0 3px #fff, 0 0 18px 6px #f4d58acc; }
@@ -135,13 +137,14 @@
   <button id="addTok" class="gmonly" title="Cria um token no canto do mapa">+ Token</button>
   <button id="btnMagia" title="Áreas, efeitos e luzes de magia">✨ Magia</button>
   <button id="zoomOut" aria-label="Diminuir zoom">−</button>
+  <button id="zoomVal" title="Ctrl + roda do mouse dá zoom onde está o cursor · clique para voltar a 100%">100%</button>
   <button id="zoomIn" aria-label="Aumentar zoom">+</button>
   <span id="status" class="off">conectando…</span>
 </header>
 <main>
   <div id="board" class="grid"><canvas id="areas"></canvas><canvas id="escuro"></canvas><canvas id="fog"></canvas><canvas id="fx"></canvas></div>
   <div id="vazio">Nenhum mapa ainda.<br>O mestre envia um mapa pelo MonTT Maker (botão “Enviar à mesa”).</div>
-  <div id="dica">Duplo clique: ping · Shift + arrastar: régua · Botão direito: menu do token ou da área</div>
+  <div id="dica">Arrastar o fundo: mover o mapa · Ctrl + roda: zoom · Duplo clique: ping · Shift + arrastar: régua · Botão direito: menu do token ou da área</div>
 </main>
 <aside>
   <section id="ini">
@@ -1112,13 +1115,48 @@ function mudarPV(tid) {
 }
 addEventListener('keydown', e => { if (e.key === 'Escape' && janela && !mira) fecharJanela(); });
 
-function mudarZoom(f) {   // sem animação: senão os tokens deslizam até a nova escala
-  zoom = Math.min(3, Math.max(.3, zoom * f));
-  board.classList.add('zoomando'); render();
-  clearTimeout(mudarZoom.t); mudarZoom.t = setTimeout(() => board.classList.remove('zoomando'), 50);
+/* ---- zoom contínuo (Ctrl + roda, ou pinça no touchpad) e mãozinha para arrastar o mapa ---- */
+const palco = document.querySelector('main');
+function mudarZoom(f, cx, cy) {   // (cx, cy): ponto da tela que fica parado; sem ele, o centro do mapa visível
+  const r = palco.getBoundingClientRect(), b = board.getBoundingClientRect(), s = px();
+  cx ??= r.left + r.width / 2; cy ??= r.top + r.height / 2;
+  const novo = Math.min(4, Math.max(.2, zoom * f)); if (novo === zoom) return;
+  zoom = novo;
+  board.classList.add('zoomando'); render();   // sem animação: senão os tokens deslizam até a nova escala
+  palco.scrollLeft += (cx - b.left) / s * (px() - s);
+  palco.scrollTop  += (cy - b.top) / s * (px() - s);
+  $('zoomVal').textContent = Math.round(zoom * 100) + '%';
+  clearTimeout(mudarZoom.t); mudarZoom.t = setTimeout(() => board.classList.remove('zoomando'), 80);
 }
-$('zoomIn').onclick  = () => mudarZoom(1.25);
-$('zoomOut').onclick = () => mudarZoom(1 / 1.25);
+let zoomPendente = null;                       // junta os eventos da roda num quadro só
+palco.addEventListener('wheel', e => {
+  if (!e.ctrlKey) return;                      // roda sozinha continua rolando o mapa
+  e.preventDefault();                          // não deixa o navegador dar zoom na página inteira
+  const f = Math.exp(-e.deltaY * (e.deltaMode ? 33 : 1) * .0015);
+  if (zoomPendente) { zoomPendente.f *= f; zoomPendente.x = e.clientX; zoomPendente.y = e.clientY; return; }
+  zoomPendente = { f, x:e.clientX, y:e.clientY };
+  requestAnimationFrame(() => { const z = zoomPendente; zoomPendente = null; mudarZoom(z.f, z.x, z.y); });
+}, { passive:false });
+$('zoomIn').onclick  = () => mudarZoom(1.2);
+$('zoomOut').onclick = () => mudarZoom(1 / 1.2);
+$('zoomVal').onclick = () => mudarZoom(1 / zoom);
+
+let pan = null;                                // arrastar o fundo (ou com o botão do meio em qualquer lugar)
+palco.addEventListener('pointerdown', e => {
+  if (pan || mira || regua || arrastando || !(e.button === 0 || e.button === 1)) return;
+  if (e.button === 0 && e.target.closest('.tok, .porta')) return;
+  pan = { x:e.clientX, y:e.clientY, sl:palco.scrollLeft, st:palco.scrollTop };
+  palco.setPointerCapture(e.pointerId); palco.classList.add('puxando');
+});
+palco.addEventListener('pointermove', e => {
+  if (!pan) return;
+  palco.scrollLeft = pan.sl - (e.clientX - pan.x);
+  palco.scrollTop  = pan.st - (e.clientY - pan.y);
+});
+const largar = () => { pan = null; palco.classList.remove('puxando'); };
+palco.addEventListener('pointerup', largar);
+palco.addEventListener('pointercancel', largar);
+palco.addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });   // sem a rolagem automática do botão do meio
 render();
 </script>
 </body>
