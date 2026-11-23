@@ -127,13 +127,16 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 - **Testado:** envio do mapa de exemplo, arraste sincronizado entre duas abas, reenvio sem perder posições, recarregar a página mantém o estado, autoteste `py mesa.py --teste`.
 - **Falta testar:** outro PC (`--lan`) e o túnel `cloudflared`.
 
-### Fase 1: mestre e jogadores
-- Links com papel: o do mestre leva `?gm=<segredo>` (o segredo é gerado na primeira execução e mostrado no terminal), o dos jogadores leva `?p=<nome>`.
-- O servidor recusa ops de jogador em tokens sem o nome dele em `owner`, e em `page`/`campaign`.
-- O mestre vê tudo na `mesa.html` e ganha controles: escolher o mapa dos jogadores (`campaign.page`), dar dono a um token, esconder um token (`layer:'gm'`, que o servidor não envia aos jogadores).
-- `player.online`: marcado quando a conexão SSE abre e desmarcado quando cai, com uma lista de quem está na mesa.
-- Névoa ao vivo: em vez de reenviar a imagem, o MonTT manda só o array `fog` e a `mesa.html` desenha a névoa por cima. Assim o mestre revela salas na hora.
-- **Pronto quando:** cada jogador só consegue mover o próprio token, o mestre esconde e revela coisas sem reenviar o mapa, e testamos com um amigo pelo túnel.
+### Fase 1: mestre e jogadores ✅ feita
+- **Links:** o `py mesa.py` gera um segredo na primeira vez (fica no `campanha.json`) e mostra os links: mestre na mesa (`mesa.html?gm=…`), mestre no MonTT (`MonTT.html?gm=…`) e jogadores (`mesa.html?p=Nome`). Se o link vier sem nome, a mesa pergunta.
+- **No servidor:** o jogador só manda `change` de `x`/`y` em tokens cujo `owner` tem o nome dele. Criar, apagar, enviar imagem ou mudar mapa e névoa é só do mestre. O resto volta `403`.
+- **Filtro por pessoa:** tokens com `layer:'gm'` e campos `gm*` nunca chegam aos jogadores. Esconder um token manda `destroy` só para eles, e mostrar de novo manda `add`.
+- **Presença:** cada pessoa aparece online na primeira conexão e offline quando fecha a última aba (como o `onDisconnect` do Roll20).
+- **Mesa do mestre:** botão direito no token abre o menu (quem pode mover, esconder/mostrar, apagar). Seletor do mapa dos jogadores, "+ Token", tokens escondidos aparecem translúcidos.
+- **Névoa ao vivo:** a imagem vai sem névoa e a névoa vai como array. Pintar ou limpar névoa no MonTT chega à mesa na hora: opaca para os jogadores, translúcida para o mestre. O token do próprio jogador fica visível mesmo na névoa.
+- **Testado no navegador:** o MonTT do mestre enviou o mapa; o mestre deu o Brannoc à Ana e escondeu o Goblin 2; a Ana viu 8 tokens, só conseguiu mover o Brannoc, e o mestre recebeu o movimento; a tentativa dela de mover a Ilse levou `403`; "Fog whole map" e "Clear all fog" no MonTT chegaram à mesa. O autoteste cobre permissões, filtro e presença.
+- **Ainda falta:** testar com um amigo de verdade pelo túnel `cloudflared`.
+- `ponytail:` o segredo vai na URL. Basta para amigos, mas quem vê o link do mestre vira mestre: não compartilhe a tela com ele aberto.
 
 ### Fase 2: chat, dados e iniciativa
 - Painel de chat na `mesa.html`: `/r 2d6+3`, `/gr` (só o mestre vê), `/w nome` (sussurro), `/em` (ação). Mensagens como objetos `msg`, e quem entra recebe só as últimas 100.
@@ -179,4 +182,4 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 | `lightscreen-core.js` | rolador de dados e tabelas (o chat vai reaproveitar a sintaxe) |
 | `campanha.json`, `uploads/` | gerados pelo servidor, fora do git |
 
-Próximo passo: **Fase 1** (mestre e jogadores).
+Próximo passo: **Fase 2** (chat, dados e iniciativa).

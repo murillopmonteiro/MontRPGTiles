@@ -42,7 +42,7 @@ then visit <http://localhost:8765/MonTT.html>.
 
 ## Mesa online (em construção)
 
-`py mesa.py` sobe a mesa em <http://localhost:8765/mesa.html> (`--lan` para aceitar outros PCs, `--teste` para o autoteste). Abra o MonTT por esse mesmo servidor (<http://localhost:8765/MonTT.html>) e clique em **Enviar à mesa**: o andar atual vai como imagem (visão de jogador) e os tokens viram peças móveis, sincronizadas entre todos. O estado fica em `campanha.json` e as imagens em `uploads/`. O plano completo está em [`PLANO-VTT.md`](PLANO-VTT.md).
+`py mesa.py` sobe a mesa e mostra três links: o do mestre na mesa, o do mestre no MonTT e o dos jogadores (`mesa.html?p=SeuNome`). `--lan` aceita outros PCs da rede e `--teste` roda o autoteste. No MonTT aberto pelo link do mestre, **Enviar à mesa** manda o andar atual: a imagem vai na visão de jogador, os tokens viram peças, e a névoa que você pinta depois chega na hora. Na mesa, o mestre clica com o botão direito num token para escolher quem pode movê-lo ou para escondê-lo. O estado fica em `campanha.json` (que também guarda o segredo do mestre) e as imagens em `uploads/`. O plano completo está em [`PLANO-VTT.md`](PLANO-VTT.md).
 
 ## About `assets/`
 

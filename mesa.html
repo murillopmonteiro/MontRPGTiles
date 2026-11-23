@@ -8,50 +8,85 @@
   :root { --bg:#16141a; --panel:#211e26; --line:#3a3442; --ink:#ece5d8; --dim:#a39a8c; --gold:#d4a24c; }
   * { box-sizing:border-box; }
   body { margin:0; height:100vh; display:flex; flex-direction:column; background:var(--bg); color:var(--ink); font:14px/1.4 system-ui, sans-serif; }
-  header { display:flex; gap:8px; align-items:center; padding:8px 12px; background:var(--panel); border-bottom:1px solid var(--line); }
-  header strong { font-size:16px; margin-right:auto; }
-  button { background:#2c2833; color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 10px; font:inherit; cursor:pointer; }
-  button:hover { border-color:var(--gold); }
-  #status { font-size:12px; color:var(--dim); min-width:90px; }
-  #status.on::before { content:'● '; color:#7fd18f; } #status.off::before { content:'● '; color:#e0735a; }
+  header { display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:8px 12px; background:var(--panel); border-bottom:1px solid var(--line); }
+  header strong { font-size:16px; }
+  #papel { font-size:11px; padding:2px 8px; border-radius:99px; background:#3a3442; color:var(--dim); }
+  #papel.gm { background:#4a3416; color:#f4d58a; }
+  #online { display:flex; gap:4px; margin-right:auto; flex-wrap:wrap; }
+  .chip { font-size:12px; padding:2px 8px; border-radius:99px; border:1px solid var(--line); color:var(--dim); }
+  .chip.on { color:var(--ink); border-color:#4c8a5a; }
+  .chip.on::before { content:'● '; color:#7fd18f; }
+  button, select { background:#2c2833; color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 10px; font:inherit; cursor:pointer; }
+  button:hover, select:hover { border-color:var(--gold); }
+  #status { font-size:12px; color:var(--dim); }
+  #status.off { color:#e0735a; }
   main { flex:1; overflow:auto; position:relative; }
-  #board { position:relative; margin:24px; background-color:#2a2620; background-size:100% 100%; box-shadow:0 4px 24px #0008; touch-action:none; }
+  #board { position:relative; margin:24px; background-color:#2a2620; box-shadow:0 4px 24px #0008; touch-action:none; }
   #board.grid { background-image:linear-gradient(#0004 1px,transparent 1px),linear-gradient(90deg,#0004 1px,transparent 1px); }
-  .tok { position:absolute; border-radius:50%; display:grid; place-items:center; font-weight:700; cursor:grab; user-select:none;
+  #fog { position:absolute; inset:0; pointer-events:none; z-index:5; }
+  .tok { position:absolute; border-radius:50%; display:grid; place-items:center; font-weight:700; user-select:none;
          border:3px solid #0009; box-shadow:0 2px 6px #000a; transition:left .12s linear, top .12s linear; }
+  .tok.mexe { cursor:grab; }
   .tok.drag { cursor:grabbing; transition:none; z-index:10; outline:2px dashed #f4d58a; outline-offset:3px; }
+  .tok.meu { box-shadow:0 0 0 2px #f4d58a, 0 2px 6px #000a; z-index:6; }   /* o meu token aparece mesmo na névoa */
+  #board.zoomando .tok { transition:none; }
+  .tok.escondido { opacity:.45; border-style:dashed; }
   .tok.hero { border-color:#e8c46a; } .tok.foe { border-color:#c94a3a; } .tok.ally { border-color:#5fa8e0; }
   .tok span { position:absolute; top:100%; margin-top:3px; white-space:nowrap; font-size:11px; font-weight:600; background:#141217d0; padding:1px 6px; border-radius:4px; }
   #vazio[hidden] { display:none; }
   #vazio { position:absolute; inset:0; display:grid; place-items:center; color:var(--dim); pointer-events:none; text-align:center; }
+  #menu { position:fixed; z-index:50; min-width:200px; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px; box-shadow:0 8px 24px #000a; display:flex; flex-direction:column; gap:6px; }
+  #menu[hidden] { display:none; }
+  #menu h4 { margin:0; font-size:13px; } #menu small { color:var(--dim); }
+  #menu label { display:flex; gap:6px; align-items:center; font-size:13px; }
+  .gmonly { display:none; } body.gm .gmonly { display:revert; }
 </style>
 </head>
 <body>
 <header>
   <strong id="titulo">Mesa</strong>
-  <button id="addTok" title="Cria um token no canto do mapa">+ Token</button>
+  <span id="papel">…</span>
+  <div id="online"></div>
+  <select id="pagina" class="gmonly" title="Mapa que os jogadores estão vendo"></select>
+  <button id="addTok" class="gmonly" title="Cria um token no canto do mapa">+ Token</button>
   <button id="zoomOut" aria-label="Diminuir zoom">−</button>
   <button id="zoomIn" aria-label="Aumentar zoom">+</button>
   <span id="status" class="off">conectando…</span>
 </header>
 <main>
-  <div id="board" class="grid"></div>
-  <div id="vazio">Nenhum mapa ainda.<br>No MonTT Maker (aberto por aqui: <a href="MonTT.html" style="color:var(--gold);pointer-events:auto">MonTT.html</a>), clique em “Enviar à mesa”.</div>
+  <div id="board" class="grid"><canvas id="fog"></canvas></div>
+  <div id="vazio">Nenhum mapa ainda.<br>O mestre envia um mapa pelo MonTT Maker (botão “Enviar à mesa”).</div>
 </main>
+<div id="menu" hidden></div>
 <script>
 const $ = id => document.getElementById(id);
-const board = $('board');
-let objs = {}, zoom = 1, arrastando = null;
-const BASE = 56;                       // pixels por quadrado com zoom 100%
+const board = $('board'), fog = $('fog');
+const params = new URLSearchParams(location.search);
+if (!params.get('gm') && !params.get('p')) {           // link sem nome: pergunta uma vez
+  const nome = (prompt('Seu nome na mesa:') || '').trim();
+  if (nome) { params.set('p', nome); location.search = params; }
+}
+const Q = location.search;                              // ?gm=… ou ?p=… vai em toda requisição
+let objs = {}, eu = { papel:'', nome:'' }, zoom = 1, arrastando = null;
+const BASE = 56;                                        // pixels por quadrado com zoom 100%
 const px = () => BASE * zoom;
+const souGM = () => eu.papel === 'gm';
 
 /* ---- rede: o mesmo modelo de ops do Roll20 (add/change/destroy) ---- */
+let es;
+function conectar() {
+  es && es.close();
+  es = new EventSource('/stream' + Q);                  // reconecta sozinho e recebe um snapshot novo
+  es.onmessage = e => aplicar(JSON.parse(e.data));
+  es.onopen = () => { $('status').className = ''; $('status').textContent = 'conectado'; };
+  es.onerror = () => { $('status').className = 'off'; $('status').textContent = 'reconectando…'; };
+}
 function enviar(op) {
-  return fetch('/op', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(op) })
-    .then(r => r.ok || r.json().then(e => console.warn('op recusada', e)));
+  return fetch('/op' + Q, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(op) })
+    .then(r => { if (!r.ok) { r.json().then(e => console.warn('op recusada:', e.erro)); conectar(); } });  // recusou: volta ao estado do servidor
 }
 function aplicar(m) {
-  if (m.op === 'snapshot') objs = m.objs;
+  if (m.op === 'snapshot') { objs = m.objs; eu = m.eu; document.body.classList.toggle('gm', souGM()); }
   else if (m.op === 'add') objs[m.id] = { ...m.props, type:m.type };
   else if (m.op === 'change' && objs[m.id]) {
     if (arrastando && arrastando.id === m.id) return;   // não brigar com o meu próprio arraste
@@ -60,54 +95,85 @@ function aplicar(m) {
   else if (m.op === 'destroy') delete objs[m.id];
   render();
 }
-const es = new EventSource('/stream');   // reconecta sozinho e recebe um snapshot novo
-es.onmessage = e => aplicar(JSON.parse(e.data));
-es.onopen = () => { $('status').className = 'on'; $('status').textContent = 'conectado'; };
-es.onerror = () => { $('status').className = 'off'; $('status').textContent = 'reconectando…'; };
+conectar();
 
 /* ---- desenho ---- */
+const doTipo = t => Object.entries(objs).filter(([, o]) => o.type === t);
 function paginaAtual() {
   const id = objs.mesa && objs.mesa.page;
   return id && objs[id] ? { id, ...objs[id] } : { id:'', w:20, h:15 };
 }
 function iniciais(n) { return (n || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase(); }
 function claro(hex) { const v = parseInt((hex || '#888').slice(1), 16); return ((v>>16)*.299 + (v>>8&255)*.587 + (v&255)*.114) > 160; }
+const meu = t => souGM() || (t.owner || []).includes(eu.nome);
 
 function render() {
   const pg = paginaAtual(), s = px();
   $('titulo').textContent = pg.name || 'Mesa';
+  $('papel').textContent = souGM() ? 'mestre' : eu.nome;
+  $('papel').className = souGM() ? 'gm' : '';
   $('vazio').hidden = !!pg.id;
   board.style.width = pg.w * s + 'px';
   board.style.height = pg.h * s + 'px';
   board.classList.toggle('grid', !pg.img);
   board.style.backgroundImage = pg.img ? `url("${pg.img}")` : '';
-  if (!pg.img) board.style.backgroundSize = `${s}px ${s}px`; else board.style.backgroundSize = '100% 100%';
+  board.style.backgroundSize = pg.img ? '100% 100%' : `${s}px ${s}px`;
+
+  // quem está na mesa
+  $('online').innerHTML = '';
+  for (const [, p] of doTipo('player').sort((a, b) => b[1].gm - a[1].gm)) {
+    const c = document.createElement('span'); c.className = 'chip' + (p.online ? ' on' : '');
+    c.textContent = p.gm ? 'Mestre' : p.name; $('online').appendChild(c);
+  }
+  // seletor de mapa (mestre)
+  const sel = $('pagina'), pags = doTipo('page');
+  sel.hidden = pags.length < 2;
+  sel.innerHTML = pags.map(([id, p]) => `<option value="${id}">${p.name || id}</option>`).join('');
+  sel.value = pg.id;
 
   const vivos = new Set();
-  for (const [id, t] of Object.entries(objs)) {
-    if (t.type !== 'token' || (t.page || '') !== pg.id) continue;
+  for (const [id, t] of doTipo('token')) {
+    if ((t.page || '') !== pg.id) continue;
     vivos.add(id);
     let el = board.querySelector(`[data-id="${CSS.escape(id)}"]`);
-    if (!el) { el = document.createElement('div'); el.className = 'tok'; el.dataset.id = id; el.innerHTML = '<b></b><span></span>'; board.appendChild(el); }
+    if (!el) { el = document.createElement('div'); el.dataset.id = id; el.innerHTML = '<b></b><span></span>'; board.appendChild(el); }
     const n = t.n || 1, r = (t.r || .42) * 2 * s;          // r = raio em quadrados, como no MonTT
+    el.className = `tok ${t.kind || 'foe'}` + (meu(t) ? ' mexe' : '') + (!souGM() && meu(t) ? ' meu' : '') + (t.layer === 'gm' ? ' escondido' : '');
+    if (arrastando && arrastando.id === id) el.classList.add('drag');
     el.style.width = el.style.height = r + 'px';
     el.style.left = ((t.x + n / 2) * s - r / 2) + 'px';
     el.style.top  = ((t.y + n / 2) * s - r / 2) + 'px';
     el.style.background = t.color || '#888';
     el.style.color = claro(t.color) ? '#1d1a17' : '#fbf6ec';
     el.style.fontSize = Math.max(9, r * .36) + 'px';
-    el.classList.remove('hero', 'foe', 'ally'); el.classList.add(t.kind || 'foe');
+    el.title = t.layer === 'gm' ? 'Escondido dos jogadores' : '';
     el.firstChild.textContent = iniciais(t.name);
     el.lastChild.textContent = t.name || '';
   }
   for (const el of board.querySelectorAll('.tok')) if (!vivos.has(el.dataset.id)) el.remove();
+  desenharNevoa(pg, s);
 }
 
-/* ---- arrastar tokens ---- */
+// névoa por quadrado, vinda do MonTT: opaca para jogadores, translúcida para o mestre
+function desenharNevoa(pg, s) {
+  const dpr = devicePixelRatio || 1;
+  fog.width = pg.w * s * dpr; fog.height = pg.h * s * dpr;
+  fog.style.width = pg.w * s + 'px'; fog.style.height = pg.h * s + 'px';
+  const c = fog.getContext('2d'); c.scale(dpr, dpr);
+  if (!pg.fog) return;
+  c.fillStyle = souGM() ? 'rgba(12,10,16,.5)' : '#0d0b10';
+  c.beginPath();
+  for (let y = 0; y < pg.h; y++) for (let x = 0; x < pg.w; x++)
+    if (pg.fog[y * pg.w + x]) c.rect(x * s - .5, y * s - .5, s + 1, s + 1);
+  c.fill();
+}
+
+/* ---- arrastar tokens (só os meus; o mestre arrasta todos) ---- */
 let ultimoEnvio = 0;
 board.addEventListener('pointerdown', e => {
-  const el = e.target.closest('.tok'); if (!el) return;
-  const t = objs[el.dataset.id], b = board.getBoundingClientRect(), s = px();
+  const el = e.target.closest('.tok'); if (!el || e.button !== 0) return;
+  const t = objs[el.dataset.id]; if (!meu(t)) return;
+  const b = board.getBoundingClientRect(), s = px();
   arrastando = { id:el.dataset.id, el, dx:(e.clientX - b.left) / s - t.x, dy:(e.clientY - b.top) / s - t.y };
   el.classList.add('drag'); el.setPointerCapture(e.pointerId);
 });
@@ -131,19 +197,47 @@ function soltar() {
 }
 board.addEventListener('pointerup', soltar);
 board.addEventListener('pointercancel', soltar);
-board.addEventListener('dblclick', e => {
-  const el = e.target.closest('.tok');
-  if (el && confirm('Apagar este token?')) enviar({ op:'destroy', id:el.dataset.id });
-});
 
+/* ---- menu do mestre (botão direito no token) ---- */
+const menu = $('menu');
+board.addEventListener('contextmenu', e => {
+  const el = e.target.closest('.tok'); if (!el || !souGM()) return;
+  e.preventDefault();
+  const id = el.dataset.id, t = objs[id], donos = t.owner || [];
+  const jogadores = doTipo('player').filter(([, p]) => !p.gm).map(([, p]) => p.name);
+  const esc = s => s.replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+  menu.innerHTML = `<h4>${esc(t.name || 'Token')}</h4><small>Quem pode mover:</small>` +
+    (jogadores.length ? jogadores.map(n => `<label><input type="checkbox" value="${esc(n)}" ${donos.includes(n) ? 'checked' : ''}> ${esc(n)}</label>`).join('')
+                      : '<small>Nenhum jogador entrou ainda.</small>') +
+    `<button data-a="vis">${t.layer === 'gm' ? 'Mostrar aos jogadores' : 'Esconder dos jogadores'}</button>
+     <button data-a="del">Apagar token</button>`;
+  menu.style.left = Math.min(e.clientX, innerWidth - 220) + 'px';
+  menu.style.top = Math.min(e.clientY, innerHeight - 260) + 'px';
+  menu.hidden = false;
+  menu.onchange = () => enviar({ op:'change', id, props:{ owner:[...menu.querySelectorAll('input:checked')].map(i => i.value) } });
+  menu.onclick = ev => {
+    const a = ev.target.dataset.a; if (!a) return;
+    if (a === 'vis') enviar({ op:'change', id, props:{ layer: t.layer === 'gm' ? 'objects' : 'gm' } });
+    if (a === 'del' && confirm('Apagar este token?')) enviar({ op:'destroy', id });
+    menu.hidden = true;
+  };
+});
+addEventListener('pointerdown', e => { if (!menu.contains(e.target)) menu.hidden = true; });
+
+$('pagina').onchange = e => enviar({ op:'change', id:'mesa', props:{ page:e.target.value } });
 $('addTok').onclick = () => {
   const nome = prompt('Nome do token:', 'Herói'); if (!nome) return;
   const cores = ['#c0392b', '#2e86c1', '#27ae60', '#8e44ad', '#d68910', '#16a085'];
   enviar({ op:'add', type:'token', id:'t-' + crypto.randomUUID().slice(0, 12),
-           props:{ page:paginaAtual().id, x:0, y:0, n:1, r:.42, name:nome, kind:'hero', color:cores[Math.random() * cores.length | 0] } });
+           props:{ page:paginaAtual().id, x:0, y:0, n:1, r:.42, name:nome, kind:'hero', owner:[], color:cores[Math.random() * cores.length | 0] } });
 };
-$('zoomIn').onclick  = () => { zoom = Math.min(3, zoom * 1.25); render(); };
-$('zoomOut').onclick = () => { zoom = Math.max(.3, zoom / 1.25); render(); };
+function mudarZoom(f) {   // sem animação: senão os tokens deslizam até a nova escala
+  zoom = Math.min(3, Math.max(.3, zoom * f));
+  board.classList.add('zoomando'); render();
+  clearTimeout(mudarZoom.t); mudarZoom.t = setTimeout(() => board.classList.remove('zoomando'), 50);
+}
+$('zoomIn').onclick  = () => mudarZoom(1.25);
+$('zoomOut').onclick = () => mudarZoom(1 / 1.25);
 render();
 </script>
 </body>
