@@ -2658,19 +2658,22 @@ async function sendToTable(){
     const {url}=await mesaPost('/upload',blob,'image/webp');
     const lv=map.levels[map.level], page=levelPage();
     const name=map.levels.length>1 ? map.name+' · '+lv.name : map.name;
-    await mesaOp({op:'add',type:'page',id:page,props:{name,w:map.w,h:map.h,img:url,fog:map.fog.slice(),diag:settings.diag}});
+    await mesaOp({op:'add',type:'page',id:page,merge:true,props:{name,w:map.w,h:map.h,img:url,diag:settings.diag,...mesaMapa()}});
     await mesaOp({op:'add',type:'campaign',id:'mesa',props:{page}});
     await Promise.all(toks.map(t=>{ const z=sizeOf(t);
       return mesaOp({op:'add',type:'token',id:'k-'+t.id,keep:true,props:{page,x:t.x,y:t.y,n:z.n,r:z.r,name:t.name,kind:t.kind,color:t.color,owner:[]}}); }));
-    mesaPage=page; mesaFog=map.fog.join('');
+    mesaPage=page; mesaFog=JSON.stringify(mesaMapa());
     toast('Mapa enviado. A névoa agora segue sozinha para a mesa');
   }catch(err){ toast(String(err.message)==='403' ? 'O link do mestre não confere: use o que o py mesa.py mostra' : 'Não deu: o py mesa.py está rodando?'); }
 }
-// depois do primeiro envio, cada mudança de névoa neste andar vai para a mesa
+// o que a mesa precisa do mapa além da imagem: névoa, paredes e portas (luz dinâmica)
+function mesaMapa(){ return {fog:map.fog.slice(), hw:map.hw.slice(), vw:map.vw.slice()}; }
+// depois do primeiro envio, cada mudança de névoa, parede ou porta neste andar vai para a mesa
+// ponytail: a imagem não muda sozinha; parede nova aparece no mapa da mesa só ao reenviar
 function syncFog(){
   if(!mesaPage || levelPage()!==mesaPage) return;
-  const f=map.fog.join(''); if(f===mesaFog) return;
-  mesaFog=f; mesaOp({op:'change',id:mesaPage,props:{fog:map.fog.slice()}}).catch(()=>toast('A mesa não recebeu a névoa'));
+  const m=mesaMapa(), f=JSON.stringify(m); if(f===mesaFog) return;
+  mesaFog=f; mesaOp({op:'change',id:mesaPage,props:m}).catch(()=>toast('A mesa não recebeu a mudança'));
 }
 $('mapTabBtn').onclick=()=>setTool('file');
 function exportPNG(){

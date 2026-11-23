@@ -149,20 +149,24 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 - **Testado no navegador:** fala, rolagem, vantagem, sussurro ao mestre, ação, `/r abc` com erro; a Ana não vê o `/gr` do mestre nem os controles de turno; a iniciativa de goblin e ogro com ▶ passando a vez; a Ana recusada em token que não é dela e aceita depois de ganhar o Brannoc; ping e régua chegando à outra tela. O autoteste cobre dados, chat, sussurros, iniciativa e efeitos.
 - **Corrigido no teste:** o campo do chat só limpava depois da resposta do servidor (quem digitava rápido grudava mensagens); a vez pulava quando alguém entrava na iniciativa; recusas de upload derrubavam a conexão no Windows.
 
-### Fase 3: luz dinâmica e névoa automática
-- O MonTT envia também as paredes (`hw`/`vw`) e as portas, com estado aberta/fechada.
-- **Área visível** de cada token com visão: lançar raios até as pontas dos segmentos de parede dentro do raio e montar o polígono ("visibility polygon"). As paredes do MonTT ficam nas linhas da grade, então são poucos segmentos e o cálculo é rápido.
-- O jogador vê: a união das áreas dos tokens dele ∩ as áreas iluminadas (ou tudo, se a luz global estiver ligada).
-- **Explorer Mode:** um canvas fora da tela acumula o que o jogador já viu e mostra em cinza. É salvo por página e por jogador.
-- O mestre abre e fecha portas na mesa, e a visão se atualiza para todos.
-- Bloquear movimento: o token não atravessa parede (verificado no servidor ao soltar).
-- **Efeitos de magia** (no Roll20 isso são os `custfx` e os modelos de área):
-  - **Áreas** que ficam no mapa até alguém apagar: esfera/cilindro (raio), cone, cubo e linha, com tamanho em pés (cone de 4,5 m, bola de fogo de 6 m de raio). São objetos `aoe {page, shape, x, y, angle, size, color, owner}`, arrastáveis e giráveis, e mostram quais quadrados e tokens foram atingidos (regra do 5e: o quadrado conta se a área cobrir metade dele ou mais).
-  - **Animações rápidas** que passam pelo canal `broadcast` e não são salvas: explosão (bola de fogo), raio de A até B (raio de fogo, relâmpago), brilho de cura num token, nuvem e névoa (nuvem fétida, escuridão).
-  - Feitas em canvas com partículas simples. Um "efeito" é uma receita de cor, forma e duração, sem biblioteca.
-  - **Magias que mexem na luz:** *Luz*, *Escuridão* e *Luzes Dançantes* viram fontes (ou "anti-fontes") de luz presas a um token ou a um ponto, e entram no mesmo cálculo de visão.
-  - Atalho no chat: `/fx bola-de-fogo` aplica no ponto clicado, e mais tarde (Fase 4) o botão do ataque da ficha dispara o efeito junto com a rolagem.
-- `ponytail:` o cálculo é no navegador, então o jogador recebe a imagem do mapa inteiro e, abrindo o DevTools, vê tudo. Com amigos isso tudo bem. Impedir exigiria recortar a imagem por jogador no servidor.
+### Fase 3: luz dinâmica e efeitos de magia ✅ feita
+- **Paredes e portas do MonTT** vão com o mapa (`hw`/`vw`) e seguem ao vivo, como a névoa. Reenviar o mapa usa `merge`, então as portas abertas e a configuração de luz continuam.
+- **Geometria em `mesa-luz.js`** (testável com `node mesa-luz.js`): paredes seguidas viram um segmento só; a visão é o polígono de raios até as pontas das paredes; `cruzaParede` para o movimento; as quatro áreas do 5e (o quadrado conta se o centro estiver dentro).
+- **Luz dinâmica por mapa** (o mestre escolhe no topo: desligada, dia, noite):
+  - O jogador enxerga pelos próprios tokens (o mestre pode desligar "Enxerga" num token). De dia, tudo que está à vista; de noite, só o que alguma luz alcança, ou o raio de visão no escuro do token, que conta como penumbra.
+  - Cada luz ilumina só o que ela própria "vê": a luz de uma tocha não atravessa parede.
+  - Luz forte e penumbra (`luz: [forte, penumbra]` em ft): vela 5/5, tocha 20/20, lanterna 30/30, magia Luz 20/20. O dono do token escolhe a luz que carrega; a visão no escuro é o mestre quem dá.
+  - Tokens dos outros só aparecem onde o jogador enxerga agora.
+  - **Explorer Mode** (liga e desliga por mapa): o que o jogador já viu fica escurecido em vez de preto. A memória fica no navegador de cada um (`localStorage`).
+  - O mestre vê tudo, ou escolhe **"Ver como: jogador"** para conferir o que cada um vê.
+- **Portas:** com a luz ligada, o mestre vê marcadores nas portas (vermelho fechada, verde aberta) e abre ou fecha com um clique. Portas duplas abrem juntas.
+- **Movimento:** com a luz ligada, o jogador não atravessa parede nem porta fechada (o token volta e aparece um aviso). `ponytail:` conferido só no navegador; durante o arraste, as posições intermediárias passam pela parede para os outros.
+- **Magia** (botão ✨ Magia ou `/fx` no chat; todos podem, e apagam só as próprias):
+  - **Áreas** que ficam no mapa: esfera, cone, cubo e linha, com tamanho em ft. Arrastar dá a direção (o cubo encaixa de 90 em 90°). Mostra os quadrados atingidos, destaca os tokens atingidos e diz quantos foram. O botão direito na área apaga.
+  - **Animações** para todos (não ficam salvas): bola de fogo, raio de fogo (de A até B), relâmpago (de A até B), cura, nuvem, gelo.
+  - **Luzes de magia:** Luz (20/20 no ponto), Luzes dançantes (penumbra de 10 ft), Escuridão (bolha de 15 ft que apaga luz e visão no escuro).
+- **Testado no navegador:** à noite, a tocha do Brannoc iluminou até a parede do castelo e os goblins lá dentro ficaram escondidos; o mestre abriu a porta e, com o Brannoc na frente dela, a luz entrou e a Ana viu os dois goblins; o cone de 15 ft da Ana marcou 2 atingidos; bola de fogo e relâmpago apareceram nas duas telas; a Escuridão escondeu os goblins mesmo com a tocha, e a Ana a apagou pelo botão direito; com a porta fechada, a Ana não conseguiu passar; o "Ver como: Ana" do mestre bateu com a tela dela; no modo dia, o lado de fora ficou todo visível. O autoteste do servidor cobre as permissões novas; o `node mesa-luz.js` cobre a geometria.
+- **Ainda não:** luz presa a um token que se move (a magia Luz fica no ponto onde foi lançada); barreiras transparentes ou de mão única; a imagem do mapa continua inteira no navegador do jogador (quem abrir o DevTools vê tudo).
 
 ### Fase 4: fichas e diário
 - `character` com ficha HTML simples (D&D 5e: atributos, CA, PV, perícias, ataques). Os campos são `attrs`, e o botão de rolar manda `/r 1d20+@{des}` com a substituição feita a partir da ficha.
@@ -183,8 +187,9 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 |---|---|
 | `mesa.py` | servidor: SSE + ops + upload + gravação; `py mesa.py --teste` roda o autoteste |
 | `mesa.html` | a mesa (o que os jogadores abrem) |
+| `mesa-luz.js` | geometria da visão, do movimento e das áreas de magia; `node mesa-luz.js` testa |
 | `MonTT.html` | o editor de mapas; função `sendToTable` = botão "Enviar à mesa" |
 | `lightscreen-core.js` | rolador de dados e tabelas (o chat vai reaproveitar a sintaxe) |
 | `campanha.json`, `uploads/` | gerados pelo servidor, fora do git |
 
-Próximo passo: **Fase 3** (luz dinâmica e efeitos de magia).
+Próximo passo: **Fase 4** (fichas e diário).

@@ -137,17 +137,36 @@ def para(papel, props):
     return props if papel == 'gm' else {k: v for k, v in props.items() if not k.startswith('gm')}
 
 
+DO_JOGADOR = {'aoe', 'luz'}   # áreas e luzes de magia que o próprio jogador cria e apaga
+
+
+def luz_valida(v):
+    return v is None or (isinstance(v, list) and len(v) == 2
+                         and all(isinstance(n, (int, float)) and 0 <= n <= 300 for n in v))
+
+
 def permitir(msg, quem, obj):
     """Regras do jogador. O mestre pode tudo."""
     papel, nome = quem
     if papel == 'gm':
         return
-    props = msg.get('props') or {}
-    if (msg['op'] != 'change' or not obj or obj.get('type') != 'token'
-            or nome not in (obj.get('owner') or [])):
+    op, props = msg['op'], msg.get('props') or {}
+    meu = obj is not None and nome in (obj.get('owner') or [])
+    if op == 'add' and msg.get('type') in DO_JOGADOR and obj is None:
+        if props.get('owner') != [nome]:
+            raise Proibido('a área ou luz tem que ser sua')
+        return
+    if obj and obj.get('type') in DO_JOGADOR and meu and op in ('change', 'destroy'):
+        if op == 'change' and ({'owner', 'type'} & set(props)):
+            raise Proibido('não dá para mudar o dono')
+        return
+    if op != 'change' or not obj or obj.get('type') != 'token' or not meu:
         raise Proibido('jogador só move os próprios tokens')
-    if not props or set(props) - {'x', 'y'} or not all(isinstance(v, (int, float)) for v in props.values()):
-        raise Proibido('jogador só muda x e y')
+    # no próprio token: posição e a luz que carrega (tocha, lanterna)
+    if not props or set(props) - {'x', 'y', 'luz'}:
+        raise Proibido('jogador só muda posição e luz do token')
+    if not all(isinstance(props[k], (int, float)) for k in ('x', 'y') if k in props) or not luz_valida(props.get('luz')):
+        raise Proibido('valores inválidos')
 
 
 def aplicar(msg, quem=MESTRE):
@@ -167,7 +186,8 @@ def aplicar(msg, quem=MESTRE):
                 raise ValueError('add precisa de type')
             if msg.get('keep') and antes:   # reenviar o mapa não reposiciona tokens já na mesa
                 return estado['seq']
-            objs[oid] = {**props, 'type': msg['type']}
+            # merge: reenviar o mapa troca imagem e paredes, mas mantém portas abertas e luz
+            objs[oid] = {**(antes if msg.get('merge') and antes else {}), **props, 'type': msg['type']}
         elif antes is None:
             raise ValueError('objeto não existe')
         elif msg['op'] == 'change':
@@ -293,16 +313,23 @@ def iniciativa(quem, tid, mod):
                   **({'to': [MESTRE[1]]} if t.get('layer') == 'gm' else {})})
 
 
+MAGIAS = {'fogo', 'raio', 'relampago', 'cura', 'nuvem', 'gelo', 'brilho'}
+
+
 def efeito(quem, corpo):
-    """Ping e régua: vão para todos na hora e não são salvos (o 'broadcast' do Roll20)."""
+    """Ping, régua e animações de magia: vão para todos na hora e não são salvos (o 'broadcast' do Roll20)."""
     kind = corpo.get('kind')
     nums = {k: corpo[k] for k in ('x', 'y', 'x2', 'y2') if isinstance(corpo.get(k), (int, float))}
-    if kind not in ('ping', 'regua') or 'x' not in nums or not isinstance(corpo.get('page'), str):
+    if kind not in ('ping', 'regua', 'magia') or 'x' not in nums or not isinstance(corpo.get('page'), str):
         raise ValueError('efeito inválido')
+    if kind == 'magia' and corpo.get('efeito') not in MAGIAS:
+        raise ValueError('efeito de magia desconhecido')
     with trava:
         cor = (estado['objs'].get('pl-' + quem[1]) or {}).get('color', '#fff')
         out = {'op': 'fx', 'kind': kind, 'page': corpo['page'], 'who': quem[1], 'color': cor,
                'fim': bool(corpo.get('fim')), **nums}
+        if kind == 'magia':
+            out['efeito'] = corpo['efeito']
         for q in clientes:
             q.put(out)
 
@@ -552,6 +579,25 @@ def teste():
     assert req('POST', '/fx' + ANA, json.dumps({'kind': 'ping', 'page': 'p', 'x': 2, 'y': 3}))[0] == 200
     assert req('POST', '/fx' + ANA, json.dumps({'kind': 'hack', 'page': 'p', 'x': 2}))[0] == 400
     assert estado['seq'] == seq
+
+    # Fase 3: luz no próprio token, áreas e luzes de magia do jogador, merge do mapa
+    assert post({'op': 'change', 'id': 't1', 'props': {'luz': [20, 20]}}, ANA) == 200
+    assert post({'op': 'change', 'id': 't1', 'props': {'luz': [20, 9999]}}, ANA) == 403
+    assert post({'op': 'change', 'id': 't1', 'props': {'dv': 120}}, ANA) == 403, 'visão no escuro é do mestre'
+    area = {'shape': 'cone', 'x': 1, 'y': 1, 'angle': 0, 'size': 15, 'owner': ['Ana']}
+    assert post({'op': 'add', 'type': 'aoe', 'id': 'a1', 'props': area}, ANA) == 200
+    assert post({'op': 'add', 'type': 'aoe', 'id': 'a2', 'props': {**area, 'owner': ['Bia']}}, ANA) == 403
+    assert post({'op': 'change', 'id': 'a1', 'props': {'angle': 1}}, BIA) == 403, 'área dos outros'
+    assert post({'op': 'change', 'id': 'a1', 'props': {'owner': ['Bia']}}, ANA) == 403
+    assert post({'op': 'add', 'type': 'aoe', 'id': 'a1', 'props': area}, ANA) == 403, 'add por cima de existente'
+    assert post({'op': 'destroy', 'id': 'a1'}, ANA) == 200
+    assert post({'op': 'add', 'type': 'luz', 'id': 'l1', 'props': {'x': 2, 'y': 2, 'luz': [20, 20], 'owner': ['Ana']}}, ANA) == 200
+    assert post({'op': 'add', 'type': 'token', 'id': 't8', 'props': {'owner': ['Ana']}}, ANA) == 403
+    assert post({'op': 'add', 'type': 'page', 'id': 'pg', 'props': {'w': 3, 'portas': {'h:0:0': True}}}) == 200
+    assert post({'op': 'add', 'type': 'page', 'id': 'pg', 'props': {'w': 4}, 'merge': True}) == 200
+    assert estado['objs']['pg'] == {'w': 4, 'portas': {'h:0:0': True}, 'type': 'page'}
+    fx = lambda c: req('POST', '/fx' + ANA, json.dumps({'kind': 'magia', 'page': 'p', 'x': 1, 'y': 1, **c}))[0]
+    assert fx({'efeito': 'fogo'}) == 200 and fx({'efeito': 'meteoro'}) == 400
 
     # keep, upload e arquivos protegidos
     assert post({'op': 'add', 'type': 'token', 'id': 't1', 'props': {'x': 0}, 'keep': True}) == 200
