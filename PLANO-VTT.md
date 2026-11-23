@@ -168,12 +168,18 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 - **Testado no navegador:** à noite, a tocha do Brannoc iluminou até a parede do castelo e os goblins lá dentro ficaram escondidos; o mestre abriu a porta e, com o Brannoc na frente dela, a luz entrou e a Ana viu os dois goblins; o cone de 15 ft da Ana marcou 2 atingidos; bola de fogo e relâmpago apareceram nas duas telas; a Escuridão escondeu os goblins mesmo com a tocha, e a Ana a apagou pelo botão direito; com a porta fechada, a Ana não conseguiu passar; o "Ver como: Ana" do mestre bateu com a tela dela; no modo dia, o lado de fora ficou todo visível. O autoteste do servidor cobre as permissões novas; o `node mesa-luz.js` cobre a geometria.
 - **Ainda não:** luz presa a um token que se move (a magia Luz fica no ponto onde foi lançada); barreiras transparentes ou de mão única; a imagem do mapa continua inteira no navegador do jogador (quem abrir o DevTools vê tudo).
 
-### Fase 4: fichas e diário
-- `character` com ficha HTML simples (D&D 5e: atributos, CA, PV, perícias, ataques). Os campos são `attrs`, e o botão de rolar manda `/r 1d20+@{des}` com a substituição feita a partir da ficha.
-- Como no Roll20: um resumo leve (nome, PV, CA) vai sempre para todos, e a ficha completa só quando alguém abre.
-- Barra do token ligada a um atributo: mudou o PV na ficha, mudou a barra, e vice-versa.
-- Arrastar a ficha para o mapa cria um token já ligado.
-- Handouts: texto e imagem, com "mostrar para todos" ou para alguns.
+### Fase 4: fichas e diário ✅ feita
+- **Diário** ao lado do chat: fichas e handouts que você pode ver. "+ Ficha" para todos (o jogador vira dono da ficha que cria), "+ Texto" só para o mestre.
+- **Ficha 5e** (`character` com `attrs`): classe, nível, raça, CA, PV, deslocamento, os seis atributos, resistências e as 18 perícias com proficiência, ataques (acerto e dano) e um campo para magias, equipamento e notas. Modificador e bônus de proficiência são calculados (o bônus sai do nível).
+  - Cada campo salva sozinho ao sair dele. O cliente manda só o campo que mudou e o servidor junta com o resto (`attrs` faz merge), então o mestre mexendo no PV e o jogador escrevendo notas não se atropelam.
+  - Botões de rolar em tudo: Teste, Resist., perícias, Iniciativa (entra na ordem de turno se a ficha tem token no mapa), Acerto e Dano.
+- **`@{atributo}` no chat**, trocado pelo servidor: `/r 1d20+@{des_mod}+@{prof}` usa a ficha aberta, e `@{Brannoc|des_mod}` usa a ficha pelo nome (de qualquer ficha que você possa ver). `<atributo>_mod` e `prof` são calculados. A mensagem aparece como "Brannoc (Ana)".
+- **Quem vê** (como o "journal" do Roll20): o mestre vê tudo; o jogador vê o que é dele (`owner`) ou o que foi mostrado (`ver`: nomes ou `*` para todos). O mestre escolhe os donos; o dono pode marcar "Todos veem".
+- **Barra de PV no token:** um token ligado a uma ficha (`ficha: <id>`) mostra o PV dela; mudar pela ficha ou pelo botão direito no token (PV… aceita `12`, `-7`, `+5` ou `12/20`) é a mesma coisa, porque o PV só existe na ficha. Token sem ficha (monstro) guarda o próprio PV e a barra só o mestre vê.
+- **Arrastar a ficha do diário para o mapa** (mestre) cria um token já ligado, com os mesmos donos.
+- **Handouts:** título, imagem (o mesmo upload do mapa), texto e notas do mestre (`gmnota`, nunca chegam aos jogadores). O mestre marca para quem mostrar, e o handout abre sozinho na tela de quem passou a vê-lo.
+- **Testado no navegador:** o mestre criou a ficha do Brannoc digitando Destreza 16 e nível 5, marcou Furtividade e rolou: `1d20+3+3` como "Brannoc (Mestre)"; deu a ficha à Ana e a arrastou para o mapa (token ligado, dono Ana); a Ana tirou 7 PV pelo menu do token e a barra caiu para 30% (amarela) nas duas telas; ela rolou `/r 1d20+@{des_mod} ataque furtivo` no chat com a ficha aberta; o mestre criou a "Carta do barão" com uma nota secreta, mostrou só para a Ana e a carta abriu sozinha na tela dela, sem a nota; o PV de um goblin sem ficha ficou sem barra para a Ana. O autoteste cobre permissões, merge, `@{}` (com sinal negativo) e handouts.
+- `ponytail:` a ficha inteira vai para quem pode vê-la (o Roll20 manda um resumo e carrega o resto ao abrir; com 6 pessoas não pesa). Mudar os donos da ficha não muda os donos dos tokens já no mapa (use o menu do token). O PV de monstro não aparece na tela do jogador, mas chega no navegador dele (DevTools), como a imagem do mapa.
 
 ### Fora do plano (de propósito)
 - **Áudio, música e vídeo:** usar o Discord.
@@ -192,4 +198,4 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 | `lightscreen-core.js` | rolador de dados e tabelas (o chat vai reaproveitar a sintaxe) |
 | `campanha.json`, `uploads/` | gerados pelo servidor, fora do git |
 
-Próximo passo: **Fase 4** (fichas e diário).
+As fases 0 a 4 estão feitas. Próximo passo: jogar uma sessão de verdade pelo túnel e corrigir o que aparecer.

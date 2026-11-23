@@ -15,6 +15,8 @@ com layer 'gm' nem campos que começam com 'gm' (notas do mestre).
 Chat (POST /chat): o servidor rola os dados, como o Roll20, então ninguém forja
 resultado. Mensagens com `to` (sussurros, /gr) só chegam a quem está na lista.
 Efeitos passageiros (POST /fx: ping, régua) vão para todos e não são salvos.
+Fichas (character) e handouts só chegam ao jogador dono ou a quem está em `ver`;
+@{atributo} no chat é trocado pelo número da ficha aqui no servidor.
 """
 import json, os, queue, random, re, secrets, sys, threading, time, uuid
 from collections import Counter
@@ -128,8 +130,14 @@ def visivel(obj, quem):
     papel, nome = quem
     if obj is None or (papel != 'gm' and obj.get('layer') == 'gm'):
         return False
-    to = obj.get('to') if obj.get('type') == 'msg' else None
-    return not to or nome in to or nome == obj.get('who')
+    if obj.get('type') == 'msg':
+        to = obj.get('to')
+        return not to or nome in to or nome == obj.get('who')
+    if obj.get('type') in ('character', 'handout') and papel != 'gm':
+        # fichas e handouts: o jogador vê se é dono ou se o mestre mostrou ('*' = todos)
+        ver = obj.get('ver') if isinstance(obj.get('ver'), list) else []
+        return '*' in ver or nome in ver or nome in (obj.get('owner') or [])
+    return True
 
 
 def para(papel, props):
@@ -137,7 +145,7 @@ def para(papel, props):
     return props if papel == 'gm' else {k: v for k, v in props.items() if not k.startswith('gm')}
 
 
-DO_JOGADOR = {'aoe', 'luz'}   # áreas e luzes de magia que o próprio jogador cria e apaga
+DO_JOGADOR = {'aoe', 'luz', 'character'}   # áreas, luzes de magia e fichas: o próprio jogador cria, muda e apaga
 
 
 def luz_valida(v):
@@ -177,6 +185,8 @@ def aplicar(msg, quem=MESTRE):
     oid, props = msg.get('id'), msg.get('props') or {}
     if not isinstance(oid, str) or not 0 < len(oid) <= 64 or not isinstance(props, dict):
         raise ValueError('id ou props inválidos')
+    if not isinstance(props.get('attrs', {}), dict) or not isinstance(props.get('ver', []), list):
+        raise ValueError('attrs ou ver inválidos')
     with trava:
         objs = estado['objs']
         antes = objs.get(oid)
@@ -192,6 +202,8 @@ def aplicar(msg, quem=MESTRE):
             raise ValueError('objeto não existe')
         elif msg['op'] == 'change':
             props.pop('type', None)
+            if 'attrs' in props and isinstance(antes.get('attrs'), dict):   # cada um manda só o campo da ficha que mudou
+                props['attrs'] = {**antes['attrs'], **props['attrs']}
             objs[oid] = {**antes, **props}
         else:
             del objs[oid]
@@ -239,6 +251,47 @@ def presenca(nome, papel, delta):
         aplicar({'op': 'change', 'id': 'pl-' + nome, 'props': {'online': False}})
 
 
+# ---------------------------------------------------------------- fichas
+
+ATRIBUTOS = ('for', 'des', 'con', 'int', 'sab', 'car')
+REF = re.compile(r'@\{(?:([^|{}]{1,40})\|)?(\w{1,40})\}')   # @{des_mod} ou @{Brannoc|des_mod}
+
+
+def valor(ch, k):
+    """Um número da ficha. <atributo>_mod e prof são calculados como no 5e."""
+    a = ch.get('attrs') or {}
+    try:
+        if k.endswith('_mod') and k[:-4] in ATRIBUTOS:
+            return (int(a.get(k[:-4]) or 10) - 10) // 2
+        if k == 'prof' and 'prof' not in a:
+            return 2 + (max(1, int(a.get('nivel') or 1)) - 1) // 4
+        return int(a[k])
+    except (KeyError, ValueError, TypeError):
+        raise ValueError(f'a ficha de {ch.get("name") or "?"} não tem um número em "{k}"')
+
+
+def substituir(texto, quem, ficha):
+    """Troca @{...} pelos números da ficha. Devolve (texto, ficha usada ou None)."""
+    with trava:
+        objs = estado['objs']
+        fichas = [o for o in objs.values() if o['type'] == 'character' and visivel(o, quem)]
+        padrao = objs.get(ficha) if isinstance(ficha, str) else None
+    if not padrao or padrao['type'] != 'character' or not visivel(padrao, quem):
+        padrao = None
+
+    def troca(m):
+        nome, k = m.groups()
+        ch = next((o for o in fichas if (o.get('name') or '').lower() == nome.strip().lower()), None) if nome else padrao
+        if not ch:
+            raise ValueError(f'ficha "{nome}" não encontrada' if nome else 'abra uma ficha para usar @{...}')
+        return str(valor(ch, k))
+
+    novo = REF.sub(troca, texto)
+    if novo != texto:   # 1d20+@{for_mod} com for 8 vira 1d20+-1: arruma o sinal
+        novo = re.sub(r'([+-])\s*([+-])', lambda m: '-' if m[1] != m[2] else '+', novo)
+    return novo, padrao
+
+
 # ---------------------------------------------------------------- chat
 
 AJUDA = ('Comandos: /r 1d20+5 ataque · /gr 1d20 (só o mestre vê) · /w Nome texto (sussurro) · '
@@ -256,18 +309,20 @@ def chat(quem, corpo):
     texto = str(corpo.get('text') or '').strip()
     if not texto or len(texto) > 500:
         raise ValueError('mensagem vazia ou longa demais')
+    texto, ficha = substituir(texto, quem, corpo.get('ficha'))
+    como = {'como': ficha.get('name') or '?'} if ficha else {}   # "Ana (Brannoc)" no chat
     cmd, _, resto = texto.partition(' ')
     cmd, resto = cmd.lower(), resto.strip()
     if not texto.startswith('/'):
-        return postar(quem, {'kind': 'say', 'text': texto})
+        return postar(quem, {'kind': 'say', 'text': texto, **como})
     if cmd in ('/r', '/roll', '/gr'):
         roll, rotulo = rolar_com_rotulo(resto)
         extra = {'to': sorted({MESTRE[1], quem[1]})} if cmd == '/gr' else {}
-        return postar(quem, {'kind': 'roll', 'roll': roll, 'text': rotulo, **extra})
+        return postar(quem, {'kind': 'roll', 'roll': roll, 'text': rotulo, **extra, **como})
     if cmd == '/em':
         if not resto:
             raise ValueError('/em o quê?')
-        return postar(quem, {'kind': 'emote', 'text': resto})
+        return postar(quem, {'kind': 'emote', 'text': resto, **como})
     if cmd == '/w':
         if resto.startswith('"'):
             alvo, _, msg = resto[1:].partition('"')
@@ -613,6 +668,35 @@ def teste():
     assert req('POST', '/upload' + GM, b'<script>', 'text/html')[0] == 415
     for caminho in ('/.git/config', '/campanha.json'):
         assert req('GET', caminho)[0] == 404, caminho
+
+    # Fase 4: fichas (com merge dos campos), @{atributo} no chat e handouts
+    ultima = lambda: estado['objs'][max(k for k, o in estado['objs'].items() if o['type'] == 'msg')]
+    ANA_, BIA_ = ('player', 'Ana'), ('player', 'Bia')
+    ficha = {'name': 'Brannoc', 'owner': ['Ana'], 'attrs': {'des': 16, 'nivel': 5, 'pv': 30}}
+    assert post({'op': 'add', 'type': 'character', 'id': 'c1', 'props': ficha}) == 200
+    assert 'c1' in snapshot(ANA_) and 'c1' not in snapshot(BIA_)
+    assert post({'op': 'change', 'id': 'c1', 'props': {'attrs': {'pv': 22, 'for': 8}}}, ANA) == 200
+    assert estado['objs']['c1']['attrs'] == {'des': 16, 'nivel': 5, 'pv': 22, 'for': 8}, 'só o campo que mudou'
+    assert post({'op': 'change', 'id': 'c1', 'props': {'attrs': {'pv': 1}}}, BIA) == 403
+    assert post({'op': 'change', 'id': 'c1', 'props': {'attrs': 'x'}}) == 400
+    assert post({'op': 'change', 'id': 'c1', 'props': {'owner': ['Bia']}}, ANA) == 403
+    assert falar('/r 1d20+@{des_mod}+@{prof} furtividade', ANA, ficha='c1')[0] == 200
+    m = ultima(); assert m['roll']['expr'] == '1d20+3+3' and m['como'] == 'Brannoc' and m['text'] == 'furtividade', m
+    assert falar('/r 1d20+@{for_mod}', ANA, ficha='c1')[0] == 200 and ultima()['roll']['expr'] == '1d20-1'
+    assert falar('/r 1d20+@{sorte}', ANA, ficha='c1')[0] == 400
+    assert falar('/r 1d20+@{Brannoc|des_mod}', BIA)[0] == 400, 'a Bia não vê a ficha'
+    assert falar('/r 1d20+@{des_mod}', BIA, ficha='c1')[0] == 400
+    assert post({'op': 'change', 'id': 'c1', 'props': {'ver': ['*']}}, ANA) == 200
+    assert falar('/r 1d20+@{brannoc|des_mod}', BIA)[0] == 200 and ultima()['roll']['expr'] == '1d20+3'
+    assert falar('/init @{des_mod}', ANA, token='t1', ficha='c1')[0] == 200
+    assert post({'op': 'add', 'type': 'character', 'id': 'c2', 'props': {'name': 'Mago', 'owner': ['Bia']}}, BIA) == 200
+    assert post({'op': 'add', 'type': 'character', 'id': 'c3', 'props': {'owner': ['Ana']}}, BIA) == 403
+    assert post({'op': 'add', 'type': 'handout', 'id': 'h1', 'props': {'name': 'Carta', 'text': 'oi', 'gmnota': 'x', 'ver': []}}) == 200
+    assert 'h1' not in snapshot(ANA_)
+    assert post({'op': 'change', 'id': 'h1', 'props': {'ver': ['Ana']}}) == 200
+    h = snapshot(ANA_).get('h1'); assert h and 'gmnota' not in h and 'h1' not in snapshot(BIA_)
+    assert post({'op': 'change', 'id': 'h1', 'props': {'text': 'hack'}}, ANA) == 403
+    assert post({'op': 'change', 'id': 'h1', 'props': {'ver': 'Ana'}}) == 400
 
     assert estado['objs']['pl-Ana']['online'] is True
     srv.shutdown()

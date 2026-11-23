@@ -87,8 +87,38 @@
   #magia { width:300px; }
   #magia .grade { display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; }
   #magia .grade button { padding:4px 6px; font-size:12px; }
+  #diario { padding:8px 12px; border-bottom:1px solid var(--line); }
+  #diario .ctrl { margin-left:auto; display:flex; gap:4px; } #diario .ctrl button { padding:2px 8px; }
+  #diario ul { list-style:none; margin:6px 0 0; padding:0; max-height:20vh; overflow:auto; }
+  #diario li { display:flex; gap:6px; align-items:center; padding:3px 6px; border-radius:6px; cursor:pointer; font-size:13px; }
+  #diario li:hover, #diario li.aberto { background:#2c2833; }
+  #diario li small { margin-left:auto; color:var(--dim); font-size:11px; }
+  #diario li.vazio { cursor:default; color:var(--dim); font-size:12px; }
+  .tok i { position:absolute; left:8%; bottom:-8px; width:84%; height:5px; background:#000b; border-radius:3px; overflow:hidden; }
+  .tok i[hidden] { display:none; } .tok i u { display:block; height:100%; }
+  #janela { position:fixed; z-index:40; top:60px; right:340px; width:min(560px, 94vw); max-height:calc(100vh - 80px); overflow:auto;
+            background:var(--panel); border:1px solid var(--line); border-radius:10px; box-shadow:0 8px 32px #000c; padding:0 14px 14px; }
+  #janela[hidden] { display:none; }
+  #janela .topo { position:sticky; top:0; z-index:1; display:flex; gap:6px; align-items:center; background:var(--panel); padding:12px 0 8px; }
+  #janela .topo .nome { flex:1; font-size:16px; font-weight:700; }
+  #janela h4 { margin:12px 0 4px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
+  #janela .linha { display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
+  #janela label { display:flex; gap:4px; align-items:center; font-size:13px; }
+  #janela label.c { flex-direction:column; align-items:start; gap:2px; font-size:11px; color:var(--dim); }
+  #janela input { padding:4px 6px; } #janela input[type=number] { width:62px; }
+  #janela textarea { width:100%; min-height:90px; background:#2c2833; color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px; font:inherit; resize:vertical; }
+  #janela button.rola { padding:1px 6px; font-size:12px; }
+  #janela .atr { display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; }
+  #janela .atr > div { border:1px solid var(--line); border-radius:8px; padding:6px 2px; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:11px; }
+  #janela .atr input[type=number] { width:52px; text-align:center; }
+  #janela .mod { font-size:18px; font-weight:800; }
+  #janela .pericias { columns:2; font-size:13px; } #janela .pericias span { display:flex; gap:4px; align-items:center; margin-bottom:3px; }
+  #janela .pericias i, #janela .atr i { font-style:normal; color:var(--dim); }
+  #janela .atq { display:grid; grid-template-columns:1fr 110px 110px auto auto auto; gap:4px; margin-bottom:4px; }
+  #janela img { max-width:100%; border-radius:6px; margin-top:6px; }
+  #janela .texto { white-space:pre-wrap; overflow-wrap:anywhere; }
   .gmonly { display:none !important; } body.gm .gmonly { display:revert !important; }
-  @media (max-width: 760px) { body { grid-template:auto 1fr 45vh / 1fr; } aside { border-left:0; border-top:1px solid var(--line); } }
+  @media (max-width: 760px) { body { grid-template:auto 1fr 45vh / 1fr; } aside { border-left:0; border-top:1px solid var(--line); } #janela { right:3vw; } }
 </style>
 </head>
 <body>
@@ -119,12 +149,18 @@
       <span class="ctrl gmonly"><button id="iniVolta" title="Turno anterior">◀</button><button id="iniVai" title="Próximo turno">▶</button><button id="iniLimpa" title="Limpar a iniciativa">Limpar</button></span></h3>
     <ol id="iniLista"></ol>
   </section>
+  <section id="diario">
+    <h3>Diário <span class="ctrl"><button id="novaFicha" title="Cria uma ficha de personagem">+ Ficha</button><button id="novoTexto" class="gmonly" title="Cria um handout: texto e imagem para mostrar aos jogadores">+ Texto</button></span></h3>
+    <ul id="diarioLista"></ul>
+  </section>
   <div id="msgs" aria-live="polite"></div>
   <div id="dados"></div>
   <div id="erro"></div>
   <form id="chat"><input id="texto" autocomplete="off" placeholder="Mensagem, /r 1d20+5 ou /fx fogo" maxlength="500"><button>Enviar</button></form>
 </aside>
 <div id="menu" class="pop" hidden></div>
+<div id="janela" hidden></div>
+<input type="file" id="imgArq" accept="image/png,image/jpeg,image/webp" hidden>
 <div id="magia" class="pop" hidden>
   <h4>Áreas</h4>
   <div class="grade">
@@ -178,7 +214,10 @@ const avisar = t => { $('erro').textContent = t || ''; };
 function aplicar(m) {
   if (m.op === 'fx') return receberFx(m);
   if (m.op === 'snapshot') { objs = m.objs; eu = m.eu; document.body.classList.toggle('gm', souGM()); $('msgs').innerHTML = ''; }
-  else if (m.op === 'add') objs[m.id] = { ...m.props, type:m.type };
+  else if (m.op === 'add') {
+    objs[m.id] = { ...m.props, type:m.type };
+    if ((m.type === 'handout' && !souGM()) || m.id === abrirQuandoChegar) abrir(m.id);   // o mestre mostrou: abre na tela
+  }
   else if (m.op === 'change' && objs[m.id]) {
     if (arrastando && arrastando.id === m.id) return;   // não brigar com o meu próprio arraste
     Object.assign(objs[m.id], m.props);
@@ -199,6 +238,9 @@ function paginaAtual() {
 function iniciais(n) { return (n || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase(); }
 function claro(hex) { const v = parseInt((hex || '#888').slice(1), 16); return ((v>>16)*.299 + (v>>8&255)*.587 + (v&255)*.114) > 160; }
 const meu = t => souGM() || (t.owner || []).includes(eu.nome);
+const fmt = n => (n >= 0 ? '+' : '') + n;
+const modDe = v => Math.floor(((+v || 10) - 10) / 2);                  // as mesmas contas do servidor (valor em mesa.py)
+const profDe = a => a.prof !== undefined && a.prof !== '' ? +a.prof : 2 + Math.floor((Math.max(1, +a.nivel || 1) - 1) / 4);
 const corDe = nome => (objs['pl-' + nome] || {}).color || '#ece5d8';
 function el(tag, cls, texto) { const e = document.createElement(tag); if (cls) e.className = cls; if (texto != null) e.textContent = texto; return e; }
 const daVez = () => { const o = mesa().turnorder || []; return o.length ? o[(mesa().turn || 0) % o.length].id : null; };
@@ -242,7 +284,7 @@ function render() {
   for (const [id, t] of naPagina('token', pg)) {
     vivos.add(id);
     let e = board.querySelector(`[data-id="${CSS.escape(id)}"]`);
-    if (!e) { e = el('div'); e.dataset.id = id; e.append(el('b'), el('span')); board.appendChild(e); }
+    if (!e) { e = el('div'); e.dataset.id = id; e.append(el('b'), el('span'), el('i')); e.lastChild.appendChild(el('u')); board.appendChild(e); }
     const n = t.n || 1, r = (t.r || .42) * 2 * s;          // r = raio em quadrados, como no MonTT
     const proprio = !souGM() && meu(t);
     e.className = `tok ${t.kind || 'foe'}` + (meu(t) ? ' mexe' : '') + (proprio ? ' meu' : '')
@@ -254,9 +296,17 @@ function render() {
     e.style.background = t.color || '#888';
     e.style.color = claro(t.color) ? '#1d1a17' : '#fbf6ec';
     e.style.fontSize = Math.max(9, r * .36) + 'px';
-    e.title = t.layer === 'gm' ? 'Escondido dos jogadores' : '';
     e.firstChild.textContent = iniciais(t.name);
-    e.lastChild.textContent = t.name || '';
+    e.children[1].textContent = t.name || '';
+    // barra de PV: da ficha ligada (se eu vejo a ficha) ou do próprio token; monstro só o mestre vê
+    const f = t.ficha && objs[t.ficha], v = f ? f.attrs || {} : t, pvmax = +v.pvmax || 0;
+    const barra = e.lastChild; barra.hidden = !(pvmax && (souGM() || meu(t) || f));
+    if (!barra.hidden) {
+      const q = Math.max(0, Math.min(1, (+v.pv || 0) / pvmax));
+      barra.firstChild.style.width = q * 100 + '%';
+      barra.firstChild.style.background = q > .5 ? '#5fbf6a' : q > .25 ? '#e8c46a' : '#e0735a';
+    }
+    e.title = [t.layer === 'gm' ? 'Escondido dos jogadores' : '', barra.hidden ? '' : `PV ${v.pv ?? '?'}/${pvmax}`].filter(Boolean).join(' · ');
   }
   for (const e of board.querySelectorAll('.tok')) if (!vivos.has(e.dataset.id)) e.remove();
   desenharNevoa(pg, s);
@@ -264,6 +314,8 @@ function render() {
   desenharAreas(pg, s);
   desenharPortas(pg, s);
   renderIniciativa();
+  renderDiario();
+  if (janela) preencher();
   renderChat();
   desenharFx();
 }
@@ -489,12 +541,12 @@ function renderChat() {
 }
 function desenharMsg(id, m) {
   const d = el('div', 'msg ' + m.kind + (m.to ? ' priv' : '')); d.dataset.id = id;
-  const quem = el('span', 'who', m.who); quem.style.setProperty('--c', corDe(m.who));
+  const quem = el('span', 'who', m.como ? `${m.como} (${m.who})` : m.who); quem.style.setProperty('--c', corDe(m.who));
   if (m.to) {
     const outros = m.to.filter(n => n !== m.who);
     d.appendChild(el('span', 'nota', m.kind === 'roll' ? 'rolagem secreta (só o mestre vê)' : `sussurro para ${outros.join(', ')}`));
   }
-  if (m.kind === 'emote') { d.append(el('span', '', `${m.who} ${m.text}`)); return d; }
+  if (m.kind === 'emote') { d.append(el('span', '', `${m.como || m.who} ${m.text}`)); return d; }
   d.append(quem);
   if (m.text) d.append(el('span', '', m.text));
   if (m.roll) d.appendChild(cartaoRolagem(m.roll));
@@ -526,7 +578,7 @@ $('chat').onsubmit = async ev => {
   $('texto').value = '';                     // limpa já: quem digita rápido não gruda na mensagem anterior
   ultimas.push(t); iUltima = ultimas.length;
   if (/^\/fx\b/i.test(t)) return comandoFx(t.slice(3).trim());
-  const r = await postar('/chat', { text:t });
+  const r = await postar('/chat', { text:t, ficha:/@\{/.test(t) ? fichaAberta() : undefined });   // @{des_mod} usa a ficha aberta
   if (r.ok) avisar('');
   else { avisar((await r.json()).erro); if (!$('texto').value) $('texto').value = t; }
 };
@@ -794,7 +846,13 @@ board.addEventListener('contextmenu', e => {
   const atual = Object.keys(LUZES).find(k => JSON.stringify(LUZES[k]) === JSON.stringify(t.luz || null)) || 'nenhuma';
   const lz = el('label', '', 'Luz que carrega '); lz.appendChild(opcoes(el('select'), Object.entries(NOMES_LUZ), atual)).dataset.campo = 'luz';
   menu.appendChild(lz);
+  const f = t.ficha && objs[t.ficha];
+  if (souGM() || (f && meu(f))) { const b = el('button', '', 'PV…'); b.dataset.a = 'pv'; menu.appendChild(b); }
+  if (f) { const b = el('button', '', 'Abrir ficha'); b.dataset.a = 'ficha'; menu.appendChild(b); }
   if (souGM()) {
+    const fl = el('label', '', 'Ficha ');
+    fl.appendChild(opcoes(el('select'), [['', 'sem ficha'], ...doTipo('character').map(([cid, c]) => [cid, c.name || 'Sem nome'])], t.ficha || '')).dataset.campo = 'ficha';
+    menu.appendChild(fl);
     const dv = el('label', '', 'Visão no escuro ');
     dv.appendChild(opcoes(el('select'), [[0, 'nenhuma'], [30, '30 ft'], [60, '60 ft'], [90, '90 ft'], [120, '120 ft']].map(([v, n]) => [String(v), n]), String(t.dv || 0))).dataset.campo = 'dv';
     const vis = el('label'); const cb = Object.assign(el('input'), { type:'checkbox', checked:t.visao !== false }); cb.dataset.campo = 'visao';
@@ -815,6 +873,7 @@ board.addEventListener('contextmenu', e => {
     const c = ev.target.dataset.campo;
     if (c === 'luz') enviar({ op:'change', id, props:{ luz:LUZES[ev.target.value] } });
     if (c === 'dv') enviar({ op:'change', id, props:{ dv:+ev.target.value } });
+    if (c === 'ficha') enviar({ op:'change', id, props:{ ficha:ev.target.value || null } });
     if (c === 'visao') enviar({ op:'change', id, props:{ visao:ev.target.checked } });
     if (c === 'owner') enviar({ op:'change', id, props:{ owner:[...menu.querySelectorAll('input[data-campo="owner"]:checked')].map(i => i.value) } });
   };
@@ -823,8 +882,11 @@ board.addEventListener('contextmenu', e => {
     menu.hidden = true;
     if (a === 'vis') enviar({ op:'change', id, props:{ layer: t.layer === 'gm' ? 'objects' : 'gm' } });
     if (a === 'del' && confirm('Apagar este token?')) enviar({ op:'destroy', id });
+    if (a === 'ficha') abrir(t.ficha);
+    if (a === 'pv') mudarPV(id);
     if (a === 'ini') {
-      const mod = prompt(`Modificador de iniciativa de ${t.name || 'token'} (ex.: +2):`, '+0'); if (mod == null) return;
+      const padrao = f ? fmt(modDe((f.attrs || {}).des)) : '+0';
+      const mod = prompt(`Modificador de iniciativa de ${t.name || 'token'} (ex.: +2):`, padrao); if (mod == null) return;
       const r = await postar('/chat', { text:'/init ' + mod.trim(), token:id });
       if (!r.ok) avisar((await r.json()).erro);
     }
@@ -860,6 +922,186 @@ $('addTok').onclick = () => {
   enviar({ op:'add', type:'token', id:'t-' + crypto.randomUUID().slice(0, 12),
            props:{ page:paginaAtual().id, x:0, y:0, n:1, r:.42, name:nome, kind:'hero', owner:[], color:cores[Math.random() * cores.length | 0] } });
 };
+/* ---- diário: fichas (5e) e handouts ---- */
+const ATR = [['for', 'Força'], ['des', 'Destreza'], ['con', 'Constituição'], ['int', 'Inteligência'], ['sab', 'Sabedoria'], ['car', 'Carisma']];
+const NOME_ATR = Object.fromEntries(ATR);
+const PERICIAS = { acrobacia:['Acrobacia', 'des'], adestrar:['Adestrar animais', 'sab'], arcanismo:['Arcanismo', 'int'], atletismo:['Atletismo', 'for'],
+  atuacao:['Atuação', 'car'], enganacao:['Enganação', 'car'], furtividade:['Furtividade', 'des'], historia:['História', 'int'],
+  intimidacao:['Intimidação', 'car'], intuicao:['Intuição', 'sab'], investigacao:['Investigação', 'int'], medicina:['Medicina', 'sab'],
+  natureza:['Natureza', 'int'], percepcao:['Percepção', 'sab'], persuasao:['Persuasão', 'car'], prestidigitacao:['Prestidigitação', 'des'],
+  religiao:['Religião', 'int'], sobrevivencia:['Sobrevivência', 'sab'] };
+let janela = null, abrirQuandoChegar = null, assinaturaDiario = '';
+const fichaAberta = () => janela && objs[janela] && objs[janela].type === 'character' ? janela : undefined;
+
+function renderDiario() {
+  const itens = [...doTipo('character'), ...doTipo('handout')].sort((a, b) => (a[1].name || '').localeCompare(b[1].name || ''));
+  const sig = JSON.stringify([janela, souGM(), itens.map(([id, o]) => [id, o.name, o.owner])]);
+  if (sig === assinaturaDiario) return;            // não refaz a lista a cada token que anda (quebraria o arraste)
+  assinaturaDiario = sig;
+  const ul = $('diarioLista'); ul.innerHTML = '';
+  if (!itens.length) ul.appendChild(el('li', 'vazio', souGM() ? 'Crie fichas e textos nos botões acima.' : 'Nada aqui ainda. “+ Ficha” cria a sua.'));
+  for (const [id, o] of itens) {
+    const li = el('li', id === janela ? 'aberto' : '', o.name || 'Sem nome'); li.dataset.id = id;
+    li.appendChild(el('small', '', o.type === 'handout' ? 'texto' : (o.owner || []).join(', ') || 'ficha'));
+    if (souGM() && o.type === 'character') { li.draggable = true; li.title = 'Clique para abrir · arraste para o mapa para criar um token ligado'; }
+    ul.appendChild(li);
+  }
+}
+$('diarioLista').onclick = e => { const li = e.target.closest('li[data-id]'); if (li) abrir(li.dataset.id); };
+$('diarioLista').ondragstart = e => e.dataTransfer.setData('text/plain', 'ficha:' + e.target.dataset.id);
+board.addEventListener('dragover', e => { if (souGM()) e.preventDefault(); });
+board.addEventListener('drop', e => {                // ficha arrastada para o mapa vira um token ligado a ela
+  const d = e.dataTransfer.getData('text/plain'), pg = paginaAtual();
+  if (!d.startsWith('ficha:') || !pg.id) return;
+  e.preventDefault();
+  const cid = d.slice(6), c = objs[cid], p = quadrado(e); if (!c) return;
+  const donos = c.owner || [];
+  enviar({ op:'add', type:'token', id:'t-' + crypto.randomUUID().slice(0, 12), props:{ page:pg.id, n:1, r:.42, name:c.name || '?', ficha:cid,
+    x:Math.max(0, Math.min(pg.w - 1, Math.floor(p.x))), y:Math.max(0, Math.min(pg.h - 1, Math.floor(p.y))),
+    kind:donos.length ? 'hero' : 'foe', owner:donos, color:donos.length ? corDe(donos[0]) : '#8e44ad' } });
+});
+
+function novoObjeto(type, props) {
+  const id = (type === 'handout' ? 'h-' : 'c-') + crypto.randomUUID().slice(0, 12);
+  abrirQuandoChegar = id;
+  enviar({ op:'add', type, id, props });
+}
+$('novaFicha').onclick = () => {
+  const nome = prompt('Nome do personagem:'); if (!nome) return;
+  novoObjeto('character', { name:nome, owner:souGM() ? [] : [eu.nome], ver:[],
+    attrs:{ for:10, des:10, con:10, int:10, sab:10, car:10, nivel:1, ca:10, pv:10, pvmax:10, desloc:30 } });
+};
+$('novoTexto').onclick = () => { const nome = prompt('Título do texto:'); if (nome) novoObjeto('handout', { name:nome, text:'', ver:[] }); };
+
+function abrir(id) {
+  const o = objs[id]; if (!o) return;
+  janela = id; abrirQuandoChegar = null;
+  const j = $('janela'); j.hidden = false; j.className = o.type;
+  const pode = meu(o);
+  const topo = `<div class="topo"><input class="nome" data-k="name" aria-label="Nome">
+    ${pode ? '<button data-acao="del" title="Apagar">Apagar</button>' : ''}<button data-acao="fechar" aria-label="Fechar">×</button></div>`;
+  if (o.type === 'handout') {
+    j.innerHTML = topo + `<img data-img alt="" hidden>` + (souGM()
+      ? `<div class="linha"><button data-acao="img">Imagem…</button><button data-acao="semimg">Tirar imagem</button></div>
+         <h4>Texto (os jogadores leem)</h4><textarea data-k="text"></textarea>
+         <h4>Notas do mestre (só você vê)</h4><textarea data-k="gmnota"></textarea>`
+      : `<p class="texto" data-texto></p>`);
+  } else {
+    const n = (k, t, w) => `<label class="c">${t}<input type="${w ? 'text' : 'number'}" data-k="a.${k}" ${w ? `style="width:${w}px"` : ''}></label>`;
+    j.innerHTML = topo + `<div class="linha">${n('classe', 'Classe', 110)}${n('nivel', 'Nível')}${n('raca', 'Raça', 100)}${n('ca', 'CA')}
+        ${n('pv', 'PV')}${n('pvmax', 'PV máx.')}${n('desloc', 'Desloc.')}
+        <label class="c">Prof.<b data-calc="prof"></b></label><button class="rola" data-rola="ini">Iniciativa <span data-calc="mod:des"></span></button></div>
+      <h4>Atributos <small>(clique em Teste ou Resist.; marque a resistência em que tem proficiência)</small></h4>
+      <div class="atr">${ATR.map(([k, t]) => `<div><b>${t}</b><input type="number" data-k="a.${k}" min="1" max="30"><span class="mod" data-calc="mod:${k}"></span>
+        <button class="rola" data-rola="atr:${k}">Teste</button>
+        <span><input type="checkbox" data-k="a.res_${k}" title="Proficiente na resistência"><button class="rola" data-rola="res:${k}">Resist.</button> <i data-calc="res:${k}"></i></span></div>`).join('')}</div>
+      <h4>Perícias</h4>
+      <div class="pericias">${Object.entries(PERICIAS).map(([k, [t, at]]) => `<span><input type="checkbox" data-k="a.per_${k}" title="Proficiente">
+        <button class="rola" data-rola="per:${k}">${t}</button> <i data-calc="per:${k}"></i> <i>(${at})</i></span>`).join('')}</div>
+      <h4>Ataques <small>(acerto: +5 ou @{for_mod}+@{prof} · dano: 1d8+@{for_mod})</small></h4>
+      <div data-ataques></div>${pode ? '<button data-acao="+atq">+ Ataque</button>' : ''}
+      <h4>Magias, equipamento e notas</h4><textarea data-k="a.notas"></textarea>`;
+  }
+  if (pode) {   // quem vê: todos, ou (mestre) por jogador; numa ficha o mestre escolhe os donos
+    const d = el('div', 'linha'), caixa = (k, t) => { const l = el('label'), c = el('input'); c.type = 'checkbox'; c.dataset.k = k; l.append(c, ' ' + t); d.appendChild(l); };
+    caixa('ver*', 'Todos veem');
+    if (souGM()) for (const [, p] of doTipo('player')) if (!p.gm) caixa((o.type === 'handout' ? 'ver:' : 'owner:') + p.name, (o.type === 'handout' ? '' : 'Dono: ') + p.name);
+    j.append(el('h4', '', 'Compartilhar'), d);
+  }
+  assinaturaDiario = ''; render();
+}
+function fecharJanela() { janela = null; $('janela').hidden = true; assinaturaDiario = ''; renderDiario(); }
+
+function lerK(o, k) {
+  const a = o.attrs || {};
+  if (k.startsWith('a.')) return a[k.slice(2)];
+  if (k.startsWith('atq.')) { const [, i, c] = k.split('.'); return ((a.ataques || [])[i] || {})[c]; }
+  if (k === 'ver*') return (o.ver || []).includes('*');
+  if (k.startsWith('ver:')) return (o.ver || []).includes(k.slice(4));
+  if (k.startsWith('owner:')) return (o.owner || []).includes(k.slice(6));
+  return o[k];
+}
+function preencher() {
+  const o = objs[janela]; if (!o) return fecharJanela();
+  const j = $('janela'), a = o.attrs || {}, pode = meu(o);
+  const lista = j.querySelector('[data-ataques]'), atqs = a.ataques || [];
+  if (lista && lista.children.length !== atqs.length) {   // linhas de ataque: refaz quando muda a quantidade
+    lista.innerHTML = atqs.map((_, i) => `<div class="atq"><input data-k="atq.${i}.n" placeholder="Arma ou magia"><input data-k="atq.${i}.a" placeholder="acerto">
+      <input data-k="atq.${i}.d" placeholder="dano"><button class="rola" data-rola="acerto:${i}">Acerto</button><button class="rola" data-rola="dano:${i}">Dano</button>
+      ${pode ? `<button class="rola" data-acao="-atq" data-i="${i}" aria-label="Tirar ataque">×</button>` : ''}</div>`).join('');
+  }
+  for (const inp of j.querySelectorAll('[data-k]')) {
+    inp.disabled = !pode || (inp.dataset.k.startsWith('owner:') && !souGM());
+    if (inp === document.activeElement) continue;       // não atropelar quem está digitando
+    const v = lerK(o, inp.dataset.k);
+    if (inp.type === 'checkbox') inp.checked = !!v; else inp.value = v ?? '';
+  }
+  for (const c of j.querySelectorAll('[data-calc]')) {
+    const [tipo, k] = c.dataset.calc.split(':'), prof = profDe(a);
+    c.textContent = tipo === 'prof' ? fmt(prof) : tipo === 'mod' ? fmt(modDe(a[k]))
+      : tipo === 'res' ? fmt(modDe(a[k]) + (a['res_' + k] ? prof : 0)) : fmt(modDe(a[PERICIAS[k][1]]) + (a['per_' + k] ? prof : 0));
+  }
+  const img = j.querySelector('[data-img]'); if (img) { img.hidden = !o.img; if (o.img && img.getAttribute('src') !== o.img) img.src = o.img; }
+  const txt = j.querySelector('[data-texto]'); if (txt) txt.textContent = o.text || '';
+}
+function mudar(props) {                                  // aplica já na tela e manda; o servidor junta os campos da ficha
+  const o = objs[janela];
+  if (props.attrs) o.attrs = { ...o.attrs, ...props.attrs }; else Object.assign(o, props);
+  enviar({ op:'change', id:janela, props });
+}
+$('janela').addEventListener('change', e => {
+  const k = e.target.dataset.k, o = objs[janela]; if (!k || !o) return;
+  const t = e.target, v = t.type === 'checkbox' ? t.checked : t.type === 'number' && t.value !== '' ? +t.value : t.value;
+  if (k.startsWith('a.')) return mudar({ attrs:{ [k.slice(2)]:v } });
+  if (k.startsWith('atq.')) { const [, i, c] = k.split('.'), l = structuredClone((o.attrs || {}).ataques || []); l[i][c] = v; return mudar({ attrs:{ ataques:l } }); }
+  if (k.startsWith('ver')) return mudar({ ver:[...$('janela').querySelectorAll('[data-k^="ver"]:checked')].map(i => i.dataset.k === 'ver*' ? '*' : i.dataset.k.slice(4)) });
+  if (k.startsWith('owner:')) return mudar({ owner:[...$('janela').querySelectorAll('[data-k^="owner:"]:checked')].map(i => i.dataset.k.slice(6)) });
+  mudar({ [k]:v });
+});
+async function falarComFicha(text, token) {
+  const r = await postar('/chat', { text, ficha:janela, token });
+  if (!r.ok) avisar((await r.json()).erro); else avisar('');
+}
+$('janela').addEventListener('click', async e => {
+  const b = e.target.closest('button'), o = objs[janela]; if (!b || !o) return;
+  const a = o.attrs || {}, ac = b.dataset.acao;
+  if (ac === 'fechar') return fecharJanela();
+  if (ac === 'del') { if (confirm(`Apagar “${o.name || 'sem nome'}”? Não dá para desfazer.`)) { enviar({ op:'destroy', id:janela }); fecharJanela(); } return; }
+  if (ac === '+atq') return mudar({ attrs:{ ataques:[...(a.ataques || []), { n:'', a:'', d:'' }] } });
+  if (ac === '-atq') return mudar({ attrs:{ ataques:(a.ataques || []).filter((_, i) => i !== +b.dataset.i) } });
+  if (ac === 'img') return $('imgArq').click();
+  if (ac === 'semimg') return mudar({ img:'' });
+  if (!b.dataset.rola) return;
+  const [tipo, k] = b.dataset.rola.split(':'), prof = c => a[c] ? '+@{prof}' : '';
+  if (tipo === 'ini') {
+    const tk = naPagina('token', paginaAtual()).find(([, t]) => t.ficha === janela);
+    return tk ? falarComFicha('/init @{des_mod}', tk[0]) : falarComFicha('/r 1d20+@{des_mod} iniciativa');
+  }
+  if (tipo === 'atr') return falarComFicha(`/r 1d20+@{${k}_mod} ${NOME_ATR[k]}`);
+  if (tipo === 'res') return falarComFicha(`/r 1d20+@{${k}_mod}${prof('res_' + k)} resistência de ${NOME_ATR[k]}`);
+  if (tipo === 'per') return falarComFicha(`/r 1d20+@{${PERICIAS[k][1]}_mod}${prof('per_' + k)} ${PERICIAS[k][0]}`);
+  const atq = (a.ataques || [])[k] || {}, nome = atq.n || 'ataque', ac2 = String(atq.a || '+0').trim();
+  if (tipo === 'acerto') return falarComFicha(`/r 1d20${/^[+-]/.test(ac2) ? ac2 : '+' + ac2} ${nome}`);
+  if (tipo === 'dano') return atq.d ? falarComFicha(`/r ${atq.d} dano de ${nome}`) : avisar('Escreva o dano do ataque (ex.: 1d8+@{for_mod}).');
+});
+$('imgArq').onchange = async e => {                      // imagem do handout: mesmo upload do mapa
+  const f = e.target.files[0]; e.target.value = ''; if (!f || !janela) return;
+  const r = await fetch('/upload' + Q, { method:'POST', headers:{ 'Content-Type':f.type }, body:f });
+  const d = await r.json(); if (!r.ok) return avisar(d.erro);
+  mudar({ img:d.url });
+};
+function mudarPV(tid) {
+  const t = objs[tid], f = t.ficha && objs[t.ficha], v = f ? f.attrs || {} : t;
+  const r = prompt(`PV de ${t.name || 'token'} (agora ${v.pv ?? '?'}/${v.pvmax ?? '?'}).\nNovo valor, -7 para dano, +5 para cura, ou 12/20 para mudar também o máximo:`);
+  const m = (r || '').trim().match(/^([+-]?)(\d+)(?:\s*\/\s*(\d+))?$/); if (!m) return r && avisar('Use 12, -7, +5 ou 12/20.');
+  const max = m[3] ? +m[3] : +v.pvmax || 0;
+  let pv = m[1] ? (+v.pv || 0) + (m[1] === '-' ? -m[2] : +m[2]) : +m[2];
+  if (m[1] === '+' && max) pv = Math.min(pv, max);
+  const mud = { pv:Math.max(0, pv), ...(m[3] ? { pvmax:max } : {}) };
+  enviar(f ? { op:'change', id:t.ficha, props:{ attrs:mud } } : { op:'change', id:tid, props:mud });
+}
+addEventListener('keydown', e => { if (e.key === 'Escape' && janela && !mira) fecharJanela(); });
+
 function mudarZoom(f) {   // sem animação: senão os tokens deslizam até a nova escala
   zoom = Math.min(3, Math.max(.3, zoom * f));
   board.classList.add('zoomando'); render();
