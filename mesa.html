@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mesa</title>
+<style>
+  :root { --bg:#16141a; --panel:#211e26; --line:#3a3442; --ink:#ece5d8; --dim:#a39a8c; --gold:#d4a24c; }
+  * { box-sizing:border-box; }
+  body { margin:0; height:100vh; display:flex; flex-direction:column; background:var(--bg); color:var(--ink); font:14px/1.4 system-ui, sans-serif; }
+  header { display:flex; gap:8px; align-items:center; padding:8px 12px; background:var(--panel); border-bottom:1px solid var(--line); }
+  header strong { font-size:16px; margin-right:auto; }
+  button { background:#2c2833; color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 10px; font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--gold); }
+  #status { font-size:12px; color:var(--dim); min-width:90px; }
+  #status.on::before { content:'● '; color:#7fd18f; } #status.off::before { content:'● '; color:#e0735a; }
+  main { flex:1; overflow:auto; position:relative; }
+  #board { position:relative; margin:24px; background-color:#2a2620; background-size:100% 100%; box-shadow:0 4px 24px #0008; touch-action:none; }
+  #board.grid { background-image:linear-gradient(#0004 1px,transparent 1px),linear-gradient(90deg,#0004 1px,transparent 1px); }
+  .tok { position:absolute; border-radius:50%; display:grid; place-items:center; font-weight:700; cursor:grab; user-select:none;
+         border:3px solid #0009; box-shadow:0 2px 6px #000a; transition:left .12s linear, top .12s linear; }
+  .tok.drag { cursor:grabbing; transition:none; z-index:10; outline:2px dashed #f4d58a; outline-offset:3px; }
+  .tok.hero { border-color:#e8c46a; } .tok.foe { border-color:#c94a3a; } .tok.ally { border-color:#5fa8e0; }
+  .tok span { position:absolute; top:100%; margin-top:3px; white-space:nowrap; font-size:11px; font-weight:600; background:#141217d0; padding:1px 6px; border-radius:4px; }
+  #vazio[hidden] { display:none; }
+  #vazio { position:absolute; inset:0; display:grid; place-items:center; color:var(--dim); pointer-events:none; text-align:center; }
+</style>
+</head>
+<body>
+<header>
+  <strong id="titulo">Mesa</strong>
+  <button id="addTok" title="Cria um token no canto do mapa">+ Token</button>
+  <button id="zoomOut" aria-label="Diminuir zoom">−</button>
+  <button id="zoomIn" aria-label="Aumentar zoom">+</button>
+  <span id="status" class="off">conectando…</span>
+</header>
+<main>
+  <div id="board" class="grid"></div>
+  <div id="vazio">Nenhum mapa ainda.<br>No MonTT Maker (aberto por aqui: <a href="MonTT.html" style="color:var(--gold);pointer-events:auto">MonTT.html</a>), clique em “Enviar à mesa”.</div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const board = $('board');
+let objs = {}, zoom = 1, arrastando = null;
+const BASE = 56;                       // pixels por quadrado com zoom 100%
+const px = () => BASE * zoom;
+
+/* ---- rede: o mesmo modelo de ops do Roll20 (add/change/destroy) ---- */
+function enviar(op) {
+  return fetch('/op', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(op) })
+    .then(r => r.ok || r.json().then(e => console.warn('op recusada', e)));
+}
+function aplicar(m) {
+  if (m.op === 'snapshot') objs = m.objs;
+  else if (m.op === 'add') objs[m.id] = { ...m.props, type:m.type };
+  else if (m.op === 'change' && objs[m.id]) {
+    if (arrastando && arrastando.id === m.id) return;   // não brigar com o meu próprio arraste
+    Object.assign(objs[m.id], m.props);
+  }
+  else if (m.op === 'destroy') delete objs[m.id];
+  render();
+}
+const es = new EventSource('/stream');   // reconecta sozinho e recebe um snapshot novo
+es.onmessage = e => aplicar(JSON.parse(e.data));
+es.onopen = () => { $('status').className = 'on'; $('status').textContent = 'conectado'; };
+es.onerror = () => { $('status').className = 'off'; $('status').textContent = 'reconectando…'; };
+
+/* ---- desenho ---- */
+function paginaAtual() {
+  const id = objs.mesa && objs.mesa.page;
+  return id && objs[id] ? { id, ...objs[id] } : { id:'', w:20, h:15 };
+}
+function iniciais(n) { return (n || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase(); }
+function claro(hex) { const v = parseInt((hex || '#888').slice(1), 16); return ((v>>16)*.299 + (v>>8&255)*.587 + (v&255)*.114) > 160; }
+
+function render() {
+  const pg = paginaAtual(), s = px();
+  $('titulo').textContent = pg.name || 'Mesa';
+  $('vazio').hidden = !!pg.id;
+  board.style.width = pg.w * s + 'px';
+  board.style.height = pg.h * s + 'px';
+  board.classList.toggle('grid', !pg.img);
+  board.style.backgroundImage = pg.img ? `url("${pg.img}")` : '';
+  if (!pg.img) board.style.backgroundSize = `${s}px ${s}px`; else board.style.backgroundSize = '100% 100%';
+
+  const vivos = new Set();
+  for (const [id, t] of Object.entries(objs)) {
+    if (t.type !== 'token' || (t.page || '') !== pg.id) continue;
+    vivos.add(id);
+    let el = board.querySelector(`[data-id="${CSS.escape(id)}"]`);
+    if (!el) { el = document.createElement('div'); el.className = 'tok'; el.dataset.id = id; el.innerHTML = '<b></b><span></span>'; board.appendChild(el); }
+    const n = t.n || 1, r = (t.r || .42) * 2 * s;          // r = raio em quadrados, como no MonTT
+    el.style.width = el.style.height = r + 'px';
+    el.style.left = ((t.x + n / 2) * s - r / 2) + 'px';
+    el.style.top  = ((t.y + n / 2) * s - r / 2) + 'px';
+    el.style.background = t.color || '#888';
+    el.style.color = claro(t.color) ? '#1d1a17' : '#fbf6ec';
+    el.style.fontSize = Math.max(9, r * .36) + 'px';
+    el.classList.remove('hero', 'foe', 'ally'); el.classList.add(t.kind || 'foe');
+    el.firstChild.textContent = iniciais(t.name);
+    el.lastChild.textContent = t.name || '';
+  }
+  for (const el of board.querySelectorAll('.tok')) if (!vivos.has(el.dataset.id)) el.remove();
+}
+
+/* ---- arrastar tokens ---- */
+let ultimoEnvio = 0;
+board.addEventListener('pointerdown', e => {
+  const el = e.target.closest('.tok'); if (!el) return;
+  const t = objs[el.dataset.id], b = board.getBoundingClientRect(), s = px();
+  arrastando = { id:el.dataset.id, el, dx:(e.clientX - b.left) / s - t.x, dy:(e.clientY - b.top) / s - t.y };
+  el.classList.add('drag'); el.setPointerCapture(e.pointerId);
+});
+board.addEventListener('pointermove', e => {
+  if (!arrastando) return;
+  const t = objs[arrastando.id], b = board.getBoundingClientRect(), s = px();
+  t.x = (e.clientX - b.left) / s - arrastando.dx;
+  t.y = (e.clientY - b.top) / s - arrastando.dy;
+  render();
+  const agora = performance.now();
+  if (agora - ultimoEnvio > 100) { ultimoEnvio = agora; enviar({ op:'change', id:arrastando.id, props:{ x:t.x, y:t.y } }); }
+});
+function soltar() {
+  if (!arrastando) return;
+  const { id, el } = arrastando, t = objs[id], pg = paginaAtual(), n = t.n || 1;
+  t.x = Math.max(0, Math.min(pg.w - n, Math.round(t.x)));   // encaixa na grade
+  t.y = Math.max(0, Math.min(pg.h - n, Math.round(t.y)));
+  el.classList.remove('drag'); arrastando = null;
+  enviar({ op:'change', id, props:{ x:t.x, y:t.y } });
+  render();
+}
+board.addEventListener('pointerup', soltar);
+board.addEventListener('pointercancel', soltar);
+board.addEventListener('dblclick', e => {
+  const el = e.target.closest('.tok');
+  if (el && confirm('Apagar este token?')) enviar({ op:'destroy', id:el.dataset.id });
+});
+
+$('addTok').onclick = () => {
+  const nome = prompt('Nome do token:', 'Herói'); if (!nome) return;
+  const cores = ['#c0392b', '#2e86c1', '#27ae60', '#8e44ad', '#d68910', '#16a085'];
+  enviar({ op:'add', type:'token', id:'t-' + crypto.randomUUID().slice(0, 12),
+           props:{ page:paginaAtual().id, x:0, y:0, n:1, r:.42, name:nome, kind:'hero', color:cores[Math.random() * cores.length | 0] } });
+};
+$('zoomIn').onclick  = () => { zoom = Math.min(3, zoom * 1.25); render(); };
+$('zoomOut').onclick = () => { zoom = Math.max(.3, zoom / 1.25); render(); };
+render();
+</script>
+</body>
+</html>

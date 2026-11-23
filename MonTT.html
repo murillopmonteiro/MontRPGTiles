@@ -186,6 +186,7 @@ button,input,select{font:inherit;color:inherit}
     <div class="grp">
       <button class="btn" id="mapTabBtn" title="New, save and open maps (N)">Maps</button>
       <button class="btn primary" id="exportBtn" title="Export the map as a PNG image">Export PNG</button>
+      <button class="btn" id="mesaBtn" title="Envia este andar para a mesa online (abra o MonTT pelo py mesa.py)">Enviar à mesa</button>
       <input type="file" id="fileIn" accept=".json,application/json" hidden>
       <input type="file" id="dirIn" webkitdirectory directory multiple hidden>
       <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp" multiple hidden>
@@ -2635,6 +2636,29 @@ async function offer(filename,data,fallback){
   catch(err){ const c=err&&err.code; if(c==='declined') toast('Save cancelled'); else if(c==='rate_limited') toast('A save prompt is already open'); else fallback(); }
 }
 $('exportBtn').onclick=()=>exportPNG();
+$('mesaBtn').onclick=()=>sendToTable();
+// Mesa online (mesa.py): a imagem vai na visão de jogador, sem tokens; os tokens viram peças móveis.
+// Reenviar troca só a imagem; tokens que já estão na mesa ficam onde os jogadores deixaram (keep).
+async function sendToTable(){
+  const s=settings.exportPx||100, c=document.createElement('canvas'); c.width=map.w*s; c.height=map.h*s;
+  const toks=map.tokens, fv=settings.fogView;
+  map.tokens=[]; settings.fogView='player';
+  try{ drawScene(c.getContext('2d'),s,{export:true}); } finally { map.tokens=toks; settings.fogView=fv; }
+  const blob=await new Promise(r=>c.toBlob(r,'image/webp',.9));
+  const post=(url,body,type)=>fetch(url,{method:'POST',headers:{'Content-Type':type},body}).then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); });
+  const op=o=>post('/op',JSON.stringify(o),'application/json');
+  try{
+    toast('Enviando para a mesa…');
+    const {url}=await post('/upload',blob,'image/webp');
+    const lv=map.levels[map.level], page='p-'+lv.id;
+    const name=map.levels.length>1 ? map.name+' · '+lv.name : map.name;
+    await op({op:'add',type:'page',id:page,props:{name,w:map.w,h:map.h,img:url}});
+    await op({op:'add',type:'campaign',id:'mesa',props:{page}});
+    await Promise.all(toks.map(t=>{ const z=sizeOf(t);
+      return op({op:'add',type:'token',id:'k-'+t.id,keep:true,props:{page,x:t.x,y:t.y,n:z.n,r:z.r,name:t.name,kind:t.kind,color:t.color}}); }));
+    toast('Mapa enviado para a mesa');
+  }catch(err){ toast('Não deu: abra o MonTT pelo servidor da mesa (py mesa.py)'); }
+}
 $('mapTabBtn').onclick=()=>setTool('file');
 function exportPNG(){
   const s=settings.exportPx||100, c=document.createElement('canvas'); c.width=map.w*s; c.height=map.h*s; const x=c.getContext('2d');

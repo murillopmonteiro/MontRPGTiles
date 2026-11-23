@@ -4,8 +4,24 @@
     {
       "name": "flagstone",
       "runtimeExecutable": "py",
-      "runtimeArgs": ["-m", "http.server", "8766", "--bind", "127.0.0.1", "--directory", "C:/Users/mauri/Claude/Projects/MontRPGTiles"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8766",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "C:/Users/mauri/Claude/Projects/MontRPGTiles"
+      ],
       "port": 8766
+    },
+    {
+      "name": "mesa",
+      "runtimeExecutable": "py",
+      "runtimeArgs": [
+        "C:/Users/mauri/Claude/Projects/MontRPGTiles/mesa.py"
+      ],
+      "port": 8765
     }
   ]
 }

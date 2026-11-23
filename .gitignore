@@ -9,3 +9,6 @@ assets/
 Thumbs.db
 desktop.ini
 .DS_Store
+campanha.json
+campanha.json.tmp
+uploads/

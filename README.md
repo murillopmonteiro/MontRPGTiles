@@ -40,6 +40,10 @@ py -m http.server 8765
 
 then visit <http://localhost:8765/MonTT.html>.
 
+## Mesa online (em construção)
+
+`py mesa.py` sobe a mesa em <http://localhost:8765/mesa.html> (`--lan` para aceitar outros PCs, `--teste` para o autoteste). Abra o MonTT por esse mesmo servidor (<http://localhost:8765/MonTT.html>) e clique em **Enviar à mesa**: o andar atual vai como imagem (visão de jogador) e os tokens viram peças móveis, sincronizadas entre todos. O estado fica em `campanha.json` e as imagens em `uploads/`. O plano completo está em [`PLANO-VTT.md`](PLANO-VTT.md).
+
 ## About `assets/`
 
 The page expects a small set of bundled images in `assets/` (13 brick floors, 6 wall styles, 7 doors, 2 frames). They come from a commercial map-asset pack and **are not included in this repository**. Without them the page still works: those floors show as flat colour and those walls and doors fall back to the drawn style. Put your own copies at the same paths (see the file lists in `MonTT.html`: `TEXTURE_SETS`, `INCLUDED_WALLS`, `DOORSTYLES`) to restore them.
