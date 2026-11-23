@@ -120,38 +120,48 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 
 ## 3. Fases (cada uma termina com algo jogável)
 
-### Fase 0: prova de conceito (1 noite)
-- `mesa.py`: `GET /stream` (SSE), `POST /op`, serve os arquivos estáticos.
-- Uma página com 3 círculos arrastáveis.
-- **Pronto quando:** ao arrastar em uma aba, o token se move na outra (testar também em outro PC pelo túnel).
+### Fase 0: prova de conceito + envio do MonTT ✅ feita (commit `21964b5`)
+- `mesa.py`: `GET /stream` (SSE), `POST /op` (add/change/destroy), `POST /upload` (PNG/JPG/WebP, nome gerado pelo servidor), serve os arquivos da pasta sem expor `.git` nem `campanha.json`. Grava `campanha.json` a cada 2 s, com troca atômica.
+- `mesa.html`: mostra o mapa atual, com tokens arrastáveis que se encaixam na grade, zoom, criação de token e duplo clique para apagar.
+- MonTT ganhou **Enviar à mesa**: o andar atual vai como imagem na visão de jogador (névoa opaca, sem marcas de mestre, sem tokens) e cada token vira uma peça. Reenviar troca só a imagem (`keep`), e os tokens ficam onde estavam.
+- **Testado:** envio do mapa de exemplo, arraste sincronizado entre duas abas, reenvio sem perder posições, recarregar a página mantém o estado, autoteste `py mesa.py --teste`.
+- **Falta testar:** outro PC (`--lan`) e o túnel `cloudflared`.
 
-### Fase 1: MonTT online
-- Adicionar um "modo mesa" ao `MonTT.html`: se a URL tiver `?mesa`, ele conecta, carrega a `page` vinda do servidor e envia `change` ao soltar um token (e, durante o arraste, no máximo a cada ~100 ms).
-- O mestre pode publicar o mapa atual como `page` e escolher o `playerPage`.
-- Mestre e jogador separados pelo link, com o filtro de `gmlayer` no servidor.
-- **Pronto quando:** o mestre monta o mapa, os jogadores veem e movem só os próprios tokens, e a névoa manual do mestre chega para todos.
+### Fase 1: mestre e jogadores
+- Links com papel: o do mestre leva `?gm=<segredo>` (o segredo é gerado na primeira execução e mostrado no terminal), o dos jogadores leva `?p=<nome>`.
+- O servidor recusa ops de jogador em tokens sem o nome dele em `owner`, e em `page`/`campaign`.
+- O mestre vê tudo na `mesa.html` e ganha controles: escolher o mapa dos jogadores (`campaign.page`), dar dono a um token, esconder um token (`layer:'gm'`, que o servidor não envia aos jogadores).
+- `player.online`: marcado quando a conexão SSE abre e desmarcado quando cai, com uma lista de quem está na mesa.
+- Névoa ao vivo: em vez de reenviar a imagem, o MonTT manda só o array `fog` e a `mesa.html` desenha a névoa por cima. Assim o mestre revela salas na hora.
+- **Pronto quando:** cada jogador só consegue mover o próprio token, o mestre esconde e revela coisas sem reenviar o mapa, e testamos com um amigo pelo túnel.
 
 ### Fase 2: chat, dados e iniciativa
-- Painel de chat: `/r 2d6+3`, `/gr` (rolagem que só o mestre vê), `/w nome` (sussurro), `/em` (ação). Usa o `rollExpr` do `lightscreen-core.js`.
-  - `ponytail:` no começo, o dado é rolado no navegador de quem rola (os amigos são de confiança). Se precisar, a rolagem passa para o servidor, com um parser pequeno em Python.
-- Iniciativa: lista no `campaign.turnorder`, com botão "próximo" e o token da vez destacado no mapa.
-- Ping no mapa (segurar o clique) e régua compartilhada (régua aparece para todos).
+- Painel de chat na `mesa.html`: `/r 2d6+3`, `/gr` (só o mestre vê), `/w nome` (sussurro), `/em` (ação). Mensagens como objetos `msg`, e quem entra recebe só as últimas 100.
+- **Dados rolados no servidor**, como o Roll20 (que assina cada rolagem): um parser pequeno em Python (`NdM`, `+/-`, `kh`/`kl`, vantagem), assim ninguém forja resultado. Os resultados aparecem com cada dado visível.
+- Iniciativa: `campaign.turnorder`, com botão "próximo" (só o mestre), contador de rodada e o token da vez destacado no mapa.
+- Canal passageiro `broadcast` (não é salvo): ping no mapa (segurar o clique) e régua compartilhada.
 
 ### Fase 3: luz dinâmica e névoa automática
-- Calcular a **área visível** de cada token com visão: lançar raios até as pontas de cada segmento de parede dentro do raio e montar o polígono (o algoritmo clássico de "visibility polygon"). As paredes do MonTT ficam nas linhas da grade, então são poucos segmentos e o cálculo é rápido.
-- O jogador vê: a união das áreas dos tokens dele ∩ as áreas iluminadas (ou tudo, se `lightglobalillum`).
-- **Explorer Mode:** um canvas fora da tela por jogador acumula o que já foi visto e é desenhado em cinza. É salvo por página e por jogador.
-- `restrictMove`: o token não atravessa uma aresta com parede (verificar ao soltar).
-- Isso é cálculo no navegador. `ponytail:` o jogador recebe o mapa inteiro, então quem abrir o DevTools vê tudo. Com amigos isso tudo bem. Para impedir, o servidor teria de recortar o mapa por jogador, o que é muito mais trabalho.
+- O MonTT envia também as paredes (`hw`/`vw`) e as portas, com estado aberta/fechada.
+- **Área visível** de cada token com visão: lançar raios até as pontas dos segmentos de parede dentro do raio e montar o polígono ("visibility polygon"). As paredes do MonTT ficam nas linhas da grade, então são poucos segmentos e o cálculo é rápido.
+- O jogador vê: a união das áreas dos tokens dele ∩ as áreas iluminadas (ou tudo, se a luz global estiver ligada).
+- **Explorer Mode:** um canvas fora da tela acumula o que o jogador já viu e mostra em cinza. É salvo por página e por jogador.
+- O mestre abre e fecha portas na mesa, e a visão se atualiza para todos.
+- Bloquear movimento: o token não atravessa parede (verificado no servidor ao soltar).
+- **Efeitos de magia** (no Roll20 isso são os `custfx` e os modelos de área):
+  - **Áreas** que ficam no mapa até alguém apagar: esfera/cilindro (raio), cone, cubo e linha, com tamanho em pés (cone de 4,5 m, bola de fogo de 6 m de raio). São objetos `aoe {page, shape, x, y, angle, size, color, owner}`, arrastáveis e giráveis, e mostram quais quadrados e tokens foram atingidos (regra do 5e: o quadrado conta se a área cobrir metade dele ou mais).
+  - **Animações rápidas** que passam pelo canal `broadcast` e não são salvas: explosão (bola de fogo), raio de A até B (raio de fogo, relâmpago), brilho de cura num token, nuvem e névoa (nuvem fétida, escuridão).
+  - Feitas em canvas com partículas simples. Um "efeito" é uma receita de cor, forma e duração, sem biblioteca.
+  - **Magias que mexem na luz:** *Luz*, *Escuridão* e *Luzes Dançantes* viram fontes (ou "anti-fontes") de luz presas a um token ou a um ponto, e entram no mesmo cálculo de visão.
+  - Atalho no chat: `/fx bola-de-fogo` aplica no ponto clicado, e mais tarde (Fase 4) o botão do ataque da ficha dispara o efeito junto com a rolagem.
+- `ponytail:` o cálculo é no navegador, então o jogador recebe a imagem do mapa inteiro e, abrindo o DevTools, vê tudo. Com amigos isso tudo bem. Impedir exigiria recortar a imagem por jogador no servidor.
 
 ### Fase 4: fichas e diário
-- `character` com uma ficha HTML simples (começar por D&D 5e: atributos, CA, PV, perícias, ataques). Os campos são `attrs`, e o botão de rolar envia `/r 1d20+@{des}` com a substituição feita a partir da ficha.
-- A barra do token ligada a um atributo (`bars[i].attr`): mudou o PV na ficha, mudou a barra, e vice-versa.
+- `character` com ficha HTML simples (D&D 5e: atributos, CA, PV, perícias, ataques). Os campos são `attrs`, e o botão de rolar manda `/r 1d20+@{des}` com a substituição feita a partir da ficha.
+- Como no Roll20: um resumo leve (nome, PV, CA) vai sempre para todos, e a ficha completa só quando alguém abre.
+- Barra do token ligada a um atributo: mudou o PV na ficha, mudou a barra, e vice-versa.
 - Arrastar a ficha para o mapa cria um token já ligado.
 - Handouts: texto e imagem, com "mostrar para todos" ou para alguns.
-
-### Fase 5: imagens
-- `POST /upload` grava imagens (tokens, mapas, handouts) em `uploads/`.
 
 ### Fora do plano (de propósito)
 - **Áudio, música e vídeo:** usar o Discord.
@@ -159,13 +169,14 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 
 ---
 
-## 4. Ordem dos arquivos
+## 4. Onde está cada coisa
 
-| Arquivo | O que muda |
+| Arquivo | O que é |
 |---|---|
-| `mesa.py` (novo) | servidor SSE + POST + estado + permissões + gravação, com um autoteste em `__main__` |
-| `MonTT.html` | modo mesa (conexão, envio de ops, papéis, chat, iniciativa, luz) |
-| `lightscreen-core.js` | sem mudança; o chat usa o `rollExpr` |
-| `campanha.json` (gerado) | o estado salvo; entra no `.gitignore` |
+| `mesa.py` | servidor: SSE + ops + upload + gravação; `py mesa.py --teste` roda o autoteste |
+| `mesa.html` | a mesa (o que os jogadores abrem) |
+| `MonTT.html` | o editor de mapas; função `sendToTable` = botão "Enviar à mesa" |
+| `lightscreen-core.js` | rolador de dados e tabelas (o chat vai reaproveitar a sintaxe) |
+| `campanha.json`, `uploads/` | gerados pelo servidor, fora do git |
 
-Primeiro passo concreto: **Fase 0**, um `mesa.py` de ~120 linhas e uma página de teste.
+Próximo passo: **Fase 1** (mestre e jogadores).
