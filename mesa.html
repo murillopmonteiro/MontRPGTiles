@@ -278,7 +278,8 @@ function render() {
   $('online').innerHTML = '';
   const jogadores = doTipo('player').sort((a, b) => b[1].gm - a[1].gm);
   for (const [, p] of jogadores) {
-    const c = el('span', 'chip' + (p.online ? ' on' : ''), p.gm ? 'Mestre' : p.name);
+    if (!p.online) continue;                             // quem saiu some do topo (a ficha e os tokens ficam)
+    const c = el('span', 'chip on', p.gm ? 'Mestre' : p.name);
     c.style.setProperty('--c', p.color || '#7fd18f'); $('online').appendChild(c);
   }
   // controles do mestre
