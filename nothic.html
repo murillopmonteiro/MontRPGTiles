@@ -143,14 +143,18 @@
   #janela .seg button:first-child { border-radius:6px 0 0 6px; } #janela .seg button:last-child { border-radius:0 6px 6px 0; }
   #janela .seg button.on { background:var(--rubro); color:#fff; border-color:var(--rubro); }
   #janela .f-topo { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  #janela .f-id { display:grid; grid-template-columns:86px 1fr auto; gap:12px; align-items:start; }
+  #janela .f-id { display:grid; grid-template-columns:86px minmax(0, 1fr) auto; gap:12px; align-items:center; }
   #janela .avatar { width:86px; height:86px; border-radius:8px; background:#2c2833; display:grid; place-items:center; font-size:30px; font-weight:800; color:var(--dim); position:relative; }
   #janela .avatar b { position:absolute; bottom:-10px; left:50%; transform:translateX(-50%) rotate(45deg); width:26px; height:26px; background:var(--rubro); display:grid; place-items:center; border-radius:4px; }
   #janela .avatar b span { transform:rotate(-45deg); font-size:13px; color:#fff; }
-  #janela .ident { display:flex; flex-direction:column; gap:2px; font-size:12px; min-width:0; }
-  #janela .ident .lin { display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
-  #janela .ident input { padding:1px 4px; font-size:12px; }
-  #janela .ident .g input { width:118px; } #janela .ident input[type=number] { width:44px; }
+  #janela .ident { display:flex; flex-direction:column; gap:3px; font-size:12px; min-width:0; }
+  #janela .ident .lin { display:flex; gap:2px; align-items:center; flex-wrap:wrap; }
+  /* cada campo do tamanho do que está escrito, como o "Feiticeiro 3 – Magia Selvagem" do Roll20 */
+  #janela .ident input { padding:1px 3px; font-size:12px; field-sizing:content; min-width:3ch; max-width:100%; width:auto !important; -moz-appearance:textfield; }
+  #janela .ident input::-webkit-inner-spin-button, #janela .ident input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  #janela .ident input::placeholder { color:#6f6878; font-style:italic; }
+  #janela .ident .lin:first-child input { font-size:14px; font-weight:700; }
+  #janela .ident .sep { color:var(--dim); padding:0 2px; }
   #janela .ident small { color:var(--dim); }
   #janela .id-acoes { display:flex; flex-direction:column; gap:6px; }
   #janela .btn-insp { font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
@@ -1261,9 +1265,9 @@ function htmlFicha(pode) {
     <div class="caixa f-id">
       <div class="avatar"><span data-calc="iniciais"></span><b title="Nível"><span data-calc="nivel"></span></b></div>
       <div class="ident">
-        <div class="lin"><span class="g">${k('classe', 'Classe')}</span>${k('nivel', '1', 'number', 'title="Nível" min="1" max="20"')}<span>–</span><span class="g">${k('subclasse', 'Subclasse')}</span></div>
-        <div class="lin"><span class="g">${k('raca', 'Espécie')}</span><span class="g">${k('antecedente', 'Antecedente')}</span></div>
-        <div class="lin"><small>XP</small>${k('xp', '0', 'number', 'style="width:70px"')}<small>/ <span data-calc="xpprox"></span></small></div>
+        <div class="lin">${k('classe', 'Classe')}${k('nivel', '1', 'number', 'title="Nível" min="1" max="20"')}<span class="sep">–</span>${k('subclasse', 'Subclasse')}</div>
+        <div class="lin">${k('raca', 'Espécie')}<span class="sep">·</span>${k('antecedente', 'Antecedente')}</div>
+        <div class="lin"><small>XP</small>${k('xp', '0', 'number')}<small>/ <span data-calc="xpprox"></span></small></div>
         <div class="lin"><small>Bônus de proficiência</small><b data-calc="prof"></b></div>
       </div>
       <div class="id-acoes"><button class="btn-insp" data-acao="insp">Inspiração</button><button class="btn-ini" data-rola="ini" title="Rolar iniciativa">Iniciativa <span data-calc="ini"></span></button></div>
