@@ -1,6 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MonTT Maker</title>
+<link rel="icon" href="logo.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -23,6 +24,7 @@ button,input,select{font:inherit;color:inherit}
 .bar{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:8px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
 .brand{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:.04em;color:var(--accent);display:flex;align-items:center;gap:8px;white-space:nowrap}
 .brand svg{width:22px;height:22px}
+.brand img{width:28px;height:28px}
 .mapname{background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 8px;font-size:16px;font-weight:500;min-width:0;width:220px}
 .mapname:hover{border-color:var(--line)}
 .mapname:focus{outline:none;border-color:var(--accent);background:var(--panel2)}
@@ -167,7 +169,7 @@ button,input,select{font:inherit;color:inherit}
 <div class="app">
   <header class="bar">
     <div class="brand" aria-label="MonTT Maker">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
+      <img src="logo.svg" alt="">
       MonTT Maker
     </div>
     <input id="mapName" class="mapname" aria-label="Map name" spellcheck="false">
