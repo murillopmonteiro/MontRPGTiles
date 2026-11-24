@@ -188,12 +188,14 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 - O servidor aceita PDF e GIF no upload, além de PNG, JPG e WebP.
 - `ponytail:` sem pastas nem arquivamento de documentos (o Roll20 tem); entra quando a lista ficar grande.
 
-### Ficha completa, no modelo do Roll20
-- Cabeçalho: classe, nível, antecedente, raça, tendência, XP e o seletor de rolagem (normal, com vantagem, com desvantagem), que vale para todos os d20 da ficha.
-- **Principal** em três colunas, como a ficha 5e do Roll20: atributos (clique no nome rola o teste) ao lado de inspiração, bônus de proficiência, resistências e perícias (○ nada, ● proficiente, ◆ especialista); percepção passiva e outras proficiências. No meio: CA, iniciativa, deslocamento, PV (máximo, atual, temporário), dados de vida (rolar gasta um e soma Constituição), testes contra a morte, ataques (🎲 rola acerto e dano juntos, com tipo de dano) e equipamento com moedas. À direita: personalidade, ideais, vínculos, defeitos, características e talentos.
-- **Magias**: habilidade de conjuração, CD e ataque mágico calculados, truques e níveis 1–9 com espaços e usados; "Lançar" gasta um espaço (avisa quando acabou) e rola o dano/cura se tiver. Cada magia abre (▸) para escola, tempo de conjuração, alcance, componentes, duração, concentração, ritual e descrição; fechada, mostra o resumo numa linha, e ao lançar o resumo vai junto para o chat. "Descanso longo" recupera PV, espaços, metade dos dados de vida e limpa os testes contra a morte.
-- **História**: idade, altura, peso, olhos, pele, cabelo, aparência, história, aliados, tesouro e notas.
-- Fichas antigas continuam abrindo (a perícia marcada vira "proficiente", as notas vão para História).
+### Ficha no modelo da ficha 2024 do Roll20
+- Barra no topo: rolagens públicas ou sussurradas (só o mestre vê) e normal, vantagem ou desvantagem para todos os d20 da ficha.
+- Cartão do personagem (classe, nível, subclasse, espécie, antecedente, XP até o próximo nível, proficiência, inspiração, botão de iniciativa) e caixa de PV (atuais, máximo, temporários; dano gasta os temporários primeiro, cura não passa do máximo; descanso curto e longo; dados de vida; testes contra a morte aparecem com 0 PV).
+- Atributos em linha com Mod e Resist. clicáveis e a bolinha de proficiência na resistência; CA e deslocamento ao lado.
+- Coluna da esquerda: perícias (○ nada, ● proficiente, ◉ especialista) e proficiências e idiomas. Coluna da direita: recursos (− / +, recuperam no descanso curto ou longo), defesas, condições e sentidos passivos.
+- Abas no centro: Combate (ataques que rolam acerto e dano juntos; ações, ações bônus, reações e ações livres), Magias (CD e ataque mágico, círculos com espaços em losangos clicáveis, cada magia com escola, tempo, alcance, componentes, duração, acerto/CD, dano, concentração, ritual e descrição), Inventário (moedas, itens com equipado, peso e quantidade, peso total), Características e talentos (de classe, da espécie, talentos e outras, com usos), Notas (organizações, aliados, inimigos) e Sobre (antecedente, características, personalidade, aparência e história).
+- Fichas antigas continuam abrindo; campos que não existem mais na ficha nova (características em texto, aliados e tesouro) aparecem só quando têm algo escrito.
+- **Travamento corrigido:** os botões das linhas usavam a mesma marca das listas, e cada redesenho enchia os botões de linhas, dobrando a página (de 1 mil para 290 mil elementos em seis passos). As listas agora têm marca própria, e a ficha só se redesenha quando ela mesma muda, não a cada token que anda. Testado num Edge invisível: trocar de aba leva poucos milissegundos e 200 eventos da mesa com a ficha aberta não fazem a página crescer.
 
 ### Fora do plano (de propósito)
 - **Áudio, música e vídeo:** usar o Discord.

@@ -128,57 +128,121 @@
   #janela textarea { width:100%; min-height:90px; background:#2c2833; color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px; font:inherit; resize:vertical; }
   #janela button.rola { padding:1px 6px; font-size:12px; }
   #janela select { padding:4px 6px; }
-  #janela.character { width:min(1040px, 94vw); }
-  #janela .cab { display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin-bottom:6px; }
-  #janela .cab .g input { width:118px; }
-  #janela .fabas { display:flex; gap:2px; border-bottom:1px solid var(--line); margin:6px 0 10px; }
-  #janela .fabas button { border:0; border-bottom:2px solid transparent; border-radius:0; background:none; color:var(--dim); padding:6px 14px; }
-  #janela .fabas button.ativa { color:var(--ink); border-bottom-color:var(--gold); }
-  #janela section[hidden] { display:none; }
-  #janela .f3 { display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:12px; align-items:start; }
-  #janela .col { display:flex; flex-direction:column; gap:10px; min-width:0; }
-  #janela .atr-per { display:grid; grid-template-columns:82px 1fr; gap:10px; align-items:start; }
-  #janela .atrs { display:flex; flex-direction:column; gap:8px; }
-  #janela .caixa { border:1px solid var(--line); border-radius:8px; padding:8px; background:#26222c; display:flex; flex-direction:column; gap:4px; min-width:0; }
-  #janela .caixa .tit { text-align:center; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-top:2px; }
-  #janela .atr1 { align-items:center; padding:6px 4px; gap:2px; }
-  #janela .atr1 .rotulo { background:none; border:0; padding:0; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); }
-  #janela .atr1 .rotulo:hover { color:var(--gold); }
-  #janela .atr1 .mod { font-size:24px; font-weight:800; line-height:1.15; }
-  #janela .atr1 input { width:46px; text-align:center; padding:2px; font-size:12px; border-radius:99px; }
-  #janela .linha1 { flex-direction:row; align-items:center; gap:8px; font-size:12px; }
-  #janela .linha1 b { font-size:16px; min-width:30px; text-align:center; }
-  #janela .lista-rol { display:flex; flex-direction:column; gap:2px; font-size:12px; }
-  #janela .lista-rol span { display:flex; align-items:center; gap:5px; }
-  #janela .lista-rol i { font-style:normal; min-width:24px; text-align:right; font-variant-numeric:tabular-nums; }
-  #janela .lista-rol em { font-style:normal; color:var(--dim); font-size:10px; margin-left:auto; }
-  #janela button.link { background:none; border:0; padding:0; color:var(--ink); text-align:left; font-size:12px; }
+  /* ---- ficha (no modelo da ficha 2024 do Roll20) ---- */
+  #janela.character { width:min(1240px, 94vw); --rubro:#9e2a22; --borda:#6b5a3a; }
+  #janela.character .caixa { border:1px solid var(--borda); border-radius:8px; padding:8px 10px; background:#1d1a22; min-width:0; }
+  #janela.character .ctit { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#e8c46a; margin:0 0 6px; display:flex; align-items:center; gap:6px; }
+  #janela.character input:not([type=checkbox]), #janela.character textarea, #janela.character select { background:transparent; border:1px solid transparent; border-radius:4px; color:var(--ink); }
+  #janela.character input:not([type=checkbox]):hover, #janela.character select:hover { border-color:var(--line); }
+  #janela.character input:focus, #janela.character textarea:focus { border-color:var(--gold); background:#2c2833; }
+  #janela.character :disabled { opacity:1; cursor:default; }
+  #janela.character textarea { background:#24202a; border-color:var(--line); min-height:56px; }
+  #janela .barra-rol { display:flex; justify-content:center; gap:14px; margin:0 0 8px; flex-wrap:wrap; }
+  #janela .seg { display:flex; }
+  #janela .seg button { border-radius:0; padding:3px 12px; font-size:11px; text-transform:uppercase; letter-spacing:.06em; background:#24202a; color:var(--dim); }
+  #janela .seg button:first-child { border-radius:6px 0 0 6px; } #janela .seg button:last-child { border-radius:0 6px 6px 0; }
+  #janela .seg button.on { background:var(--rubro); color:#fff; border-color:var(--rubro); }
+  #janela .f-topo { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  #janela .f-id { display:grid; grid-template-columns:86px 1fr auto; gap:12px; align-items:start; }
+  #janela .avatar { width:86px; height:86px; border-radius:8px; background:#2c2833; display:grid; place-items:center; font-size:30px; font-weight:800; color:var(--dim); position:relative; }
+  #janela .avatar b { position:absolute; bottom:-10px; left:50%; transform:translateX(-50%) rotate(45deg); width:26px; height:26px; background:var(--rubro); display:grid; place-items:center; border-radius:4px; }
+  #janela .avatar b span { transform:rotate(-45deg); font-size:13px; color:#fff; }
+  #janela .ident { display:flex; flex-direction:column; gap:2px; font-size:12px; min-width:0; }
+  #janela .ident .lin { display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
+  #janela .ident input { padding:1px 4px; font-size:12px; }
+  #janela .ident .g input { width:118px; } #janela .ident input[type=number] { width:44px; }
+  #janela .ident small { color:var(--dim); }
+  #janela .id-acoes { display:flex; flex-direction:column; gap:6px; }
+  #janela .btn-insp { font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+  #janela .btn-insp.on { background:#4a3416; border-color:var(--gold); color:#f4d58a; }
+  #janela .btn-ini { background:var(--rubro); border-color:var(--rubro); color:#fff; font-weight:800; text-transform:uppercase; letter-spacing:.04em; padding:8px 12px; }
+  #janela .f-pv { display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:center; }
+  #janela .pvnums { display:flex; gap:6px; align-items:end; }
+  #janela .pvnums > div { display:flex; flex-direction:column; align-items:center; font-size:10px; color:var(--dim); gap:2px; }
+  #janela .pvnums input { width:58px !important; font-size:22px; font-weight:800; text-align:center; }
+  #janela .pvnums .barra { height:3px; background:#5fbf6a; border-radius:2px; width:100%; }
+  #janela .pvdelta { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  #janela .pvdelta input { width:58px !important; text-align:center; font-size:16px; border-color:var(--line) !important; }
+  #janela .pvdelta .lin { display:flex; gap:4px; } #janela .pvdelta button, #janela .descansos button { padding:3px 8px; font-size:12px; }
+  #janela .descansos { display:flex; flex-direction:column; gap:4px; }
+  #janela .dvlin { grid-column:1 / -1; display:flex; gap:6px; align-items:center; font-size:12px; color:var(--dim); border-top:1px solid var(--line); padding-top:6px; flex-wrap:wrap; }
+  #janela .dvlin input { width:44px !important; text-align:center; }
+  #janela .morte { grid-column:1 / -1; display:flex; gap:6px; align-items:center; font-size:11px; color:#e0735a; flex-wrap:wrap; }
+  #janela .morte[hidden] { display:none; }
+  #janela .f-meio { display:grid; grid-template-columns:1fr 200px; gap:10px; margin-top:10px; }
+  #janela .atrs6 { display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; }
+  #janela .atr6 { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  #janela .atr6 .top { display:flex; gap:4px; align-items:center; font-size:12px; font-weight:800; }
+  #janela .atr6 .top input { width:40px !important; text-align:center; border-color:var(--line) !important; padding:1px; }
+  #janela .pares { display:flex; gap:6px; }
+  #janela .bx { display:flex; flex-direction:column; align-items:center; font-size:9px; color:var(--dim); gap:2px; text-transform:uppercase; }
+  #janela .bx button { width:40px; height:34px; padding:0; font-size:15px; font-weight:800; background:#2c2833; }
+  #janela .bx button.prof, #janela .val.prof { background:var(--rubro); border-color:var(--rubro); color:#fff; }
+  #janela .ponto { width:12px; height:12px; padding:0; border-radius:50%; border:1px solid var(--dim); background:transparent; }
+  #janela .ponto.on { background:var(--rubro); border-color:#e0735a; }
+  #janela .ponto.dois { background:#e0735a; border-color:#e0735a; box-shadow:0 0 0 2px var(--rubro); }
+  #janela .f-ca { display:flex; flex-direction:column; gap:8px; }
+  #janela .f-ca label { justify-content:space-between; font-size:12px; font-weight:700; }
+  #janela .f-ca input { width:56px !important; text-align:center; font-size:18px; font-weight:800; border-color:var(--line) !important; }
+  #janela .f-corpo { display:grid; grid-template-columns:230px minmax(0, 1fr) 210px; gap:10px; margin-top:10px; align-items:start; }
+  #janela .coluna { display:flex; flex-direction:column; gap:10px; min-width:0; }
+  #janela .pericia { display:grid; grid-template-columns:1fr 30px 34px 14px; gap:4px; align-items:center; font-size:12px; padding:2px 0; }
+  #janela .pericia em { font-style:normal; font-size:9px; color:var(--dim); background:#2c2833; border-radius:3px; text-align:center; padding:1px 0; }
+  #janela .val { font-weight:800; text-align:center; border-radius:4px; padding:2px 0; background:#2c2833; font-size:12px; }
+  #janela button.link { background:none; border:0; padding:0; color:var(--ink); text-align:left; font-size:12px; font-weight:600; }
   #janela button.link:hover { color:var(--gold); text-decoration:underline; }
-  #janela button.ciclo { background:none; border:0; padding:0; width:14px; color:var(--gold); font-size:12px; }
-  #janela .tres { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
-  #janela .duas { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  #janela .grande { align-items:center; }
-  #janela .grande input, #janela .grande b, #janela button.big { font-size:22px; font-weight:800; width:72px; text-align:center; }
-  #janela button.big { width:auto; }
-  #janela .pvatual { font-size:28px; font-weight:800; text-align:center; width:100% !important; }
-  #janela .morte span { display:flex; gap:4px; align-items:center; font-size:12px; }
-  #janela .atq { display:grid; grid-template-columns:22px 1.5fr 62px 1.1fr 1fr 22px; gap:4px; align-items:center; margin-bottom:4px; }
-  #janela .mag { display:grid; grid-template-columns:16px 18px 1fr 96px auto 22px; gap:4px; align-items:center; }
-  #janela .magia { margin-bottom:6px; }
-  #janela .mag .abre { background:none; border:0; padding:0; color:var(--dim); font-size:11px; }
-  #janela .mag-resumo { display:block; font-size:11px; color:var(--dim); padding:1px 0 0 40px; }
-  #janela .mag-det { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:6px; padding:6px 0 4px 20px; }
-  #janela .mag-det label.c input, #janela .mag-det select { width:100%; min-width:0; }
-  #janela .mag-det .bloco, #janela .mag-det .flags { grid-column:1 / -1; }
-  #janela .mag-det .flags { display:flex; gap:10px; align-items:end; font-size:12px; }
-  #janela .atq input:not([type=checkbox]), #janela .mag input:not([type=checkbox]) { min-width:0; width:100%; }
-  #janela .cab-atq small { font-size:10px; color:var(--dim); text-transform:uppercase; }
-  #janela .moedas { display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; } #janela .moedas input { width:100%; }
+  #janela .rot { display:block; font-size:11px; color:#e8c46a; margin:6px 0 2px; }
+  #janela .fabas { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px; }
+  #janela .fabas button { border:1px solid transparent; border-radius:4px; background:none; color:var(--ink); padding:4px 8px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+  #janela .fabas button.ativa { border-color:var(--gold); }
+  #janela section[hidden] { display:none; }
+  #janela .sec { margin-bottom:12px; }
+  #janela .sec-cab { display:flex; align-items:center; gap:8px; background:#141217; padding:4px 8px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#e8c46a; border-radius:4px; }
+  #janela .sec-cab .cols { margin-left:auto; color:var(--dim); font-size:10px; font-weight:600; text-transform:none; letter-spacing:0; }
+  #janela .sec-cab > button { background:none; border:0; color:var(--ink); padding:0 4px; font-size:16px; line-height:1; }
+  #janela .vazio-l { font-size:12px; color:var(--dim); padding:6px 8px; }
+  #janela .item { border-bottom:1px solid #2c2833; padding:5px 2px; }
+  #janela .item .lin { display:grid; gap:6px; align-items:center; }
+  #janela .item input:not([type=checkbox]) { padding:2px 4px; font-size:12px; min-width:0; width:100%; }
+  #janela .item input.nome { font-weight:700; }
+  #janela .item small.sub { display:block; color:var(--dim); font-size:11px; padding-left:4px; }
+  #janela .vermelho { color:#e0735a; font-weight:700; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #janela .acao-l { background:none; border:0; padding:0 2px; color:var(--dim); font-size:12px; }
+  #janela .acao-l:hover { color:var(--ink); }
+  #janela .det, #janela .sobre-car { display:flex; flex-wrap:wrap; gap:6px; }   /* flex, não grid auto-fit: o auto-fit travava o Chrome aqui */
+  #janela .det { padding:6px 0 2px 22px; }
+  #janela .det > *, #janela .sobre-car > * { flex:1 1 140px; min-width:0; }
+  #janela .det label.c input, #janela .det select { width:100%; border-color:var(--line) !important; }
+  #janela .det .bloco, #janela .det .flags, #janela .sobre-car .bloco { flex-basis:100%; } #janela .det .flags { display:flex; gap:12px; font-size:12px; }
+  #janela .desc-curta { font-size:12px; line-height:1.4; color:#cfc6b8; padding:2px 0 0 26px; white-space:pre-wrap; overflow-wrap:anywhere; max-height:4.2em; overflow:hidden; }   /* 3 linhas; line-clamp aqui travava o Chrome */
+  #janela .desc-curta[hidden] { display:none; }
+  #janela .l-atq { grid-template-columns:16px 22px minmax(0, 1.7fr) 64px 56px minmax(0, 1fr) 16px; }
+  #janela .l-mag { grid-template-columns:16px 14px minmax(0, 1.7fr) 64px 60px minmax(0, 1fr) auto 16px; }
+  #janela .l-item { grid-template-columns:16px 16px minmax(0, 1.6fr) minmax(0, 1fr) 54px 92px 16px; }
+  #janela .l-tal { grid-template-columns:16px minmax(0, 1.4fr) minmax(0, 1fr) 82px 16px; }
+  #janela .l-rec { grid-template-columns:24px minmax(0, 1fr) 8px minmax(0, 1fr) 24px 16px; }
+  #janela .l-rec .nome { grid-column:1 / -1; }   /* o nome numa linha, o contador embaixo */
+  #janela .l-nota { grid-template-columns:16px minmax(0, 1fr) 16px; }
+  #janela .usos { display:flex; gap:2px; align-items:center; font-size:11px; color:var(--dim); }
+  #janela .usos input { width:34px !important; text-align:center; }
+  #janela .qtd { display:flex; align-items:center; gap:2px; } #janela .qtd input, #janela .l-rec input[type=number] { text-align:center; }
+  #janela .qtd button, #janela .l-rec button:not(.acao-l) { padding:0 6px; font-size:13px; }
+  #janela .rec-lin { font-size:11px; color:var(--dim); display:flex; gap:4px; align-items:center; padding:2px 0 0; }
+  #janela .espacos { display:flex; gap:4px; align-items:center; margin-left:6px; }
+  #janela .losango { width:12px; height:12px; padding:0; transform:rotate(45deg); border:1px solid #e0735a; background:transparent; border-radius:1px; }
+  #janela .losango.cheio { background:#c94a3a; }
+  #janela .espacos input { width:36px !important; text-align:center; font-size:11px; border-color:var(--line) !important; }
+  #janela .conj-cab { display:flex; justify-content:flex-end; gap:14px; font-size:12px; font-weight:700; color:#e8c46a; margin-bottom:6px; flex-wrap:wrap; align-items:center; }
+  #janela .moedas { display:flex; gap:8px; flex-wrap:wrap; font-size:11px; color:var(--dim); margin-bottom:6px; align-items:end; }
+  #janela .moedas input { width:56px !important; border-color:var(--line) !important; }
+  #janela .f-dir .linhas label { display:flex; justify-content:space-between; font-size:12px; padding:2px 0; }
+  #janela .f-dir label.c { width:100%; } #janela .f-dir label.c input, #janela .f-dir select { width:100%; border-color:var(--line) !important; }
+  #janela .chips { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:4px; font-size:12px; color:var(--dim); }
+  #janela .chip-c { font-size:11px; padding:1px 8px; border-radius:99px; background:var(--rubro); color:#fff; border:0; }
+  #janela .sobre-car { padding-top:6px; }
+  #janela .sobre-car label.c input { width:100%; border-color:var(--line) !important; }
   #janela label.bloco { width:100%; }
-  #janela .niveis { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  #janela .nv-cab { display:flex; gap:8px; align-items:end; } #janela .nv-cab b { margin-right:auto; font-size:13px; }
-  #janela .nv-cab input { width:52px !important; }
-  @media (max-width: 900px) { #janela .f3, #janela .niveis, #janela .duas { grid-template-columns:1fr; } }
+  @media (max-width: 1000px) { #janela .f-topo, #janela .f-meio, #janela .f-corpo { grid-template-columns:1fr; } #janela .atrs6 { grid-template-columns:repeat(3, 1fr); } }
   #janela img { max-width:100%; border-radius:6px; margin-top:6px; }
   #janela .texto { white-space:pre-wrap; overflow-wrap:anywhere; }
   #pergunta { background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:16px; width:min(380px, 90vw); box-shadow:0 8px 32px #000c; }
@@ -277,7 +341,13 @@ function perguntar(texto, padrao = '', soConfirmar = false) {
   const d = $('pergunta'), i = $('pergValor');
   $('pergTexto').textContent = texto; i.hidden = soConfirmar; i.value = padrao; d.returnValue = '';
   d.showModal(); if (!soConfirmar) i.select();
-  return new Promise(ok => { d.onclose = () => ok(d.returnValue === 'ok' ? (soConfirmar || i.value) : (soConfirmar ? false : null)); });
+  return new Promise(ok => {
+    let feito = false;
+    const fim = sim => { if (!feito) { feito = true; ok(sim ? (soConfirmar || i.value) : (soConfirmar ? false : null)); } };
+    d.onsubmit = e => fim(e.submitter ? e.submitter.value === 'ok' : true);   // OK ou Enter; o evento close pode atrasar (ou nem vir)
+    d.oncancel = () => fim(false);                                             // Esc
+    d.onclose = () => fim(d.returnValue === 'ok');
+  });
 }
 const confirmar = texto => perguntar(texto, '', true);
 if (!params.get('gm') && !params.get('p')) {           // link sem nome: pergunta uma vez
@@ -328,6 +398,7 @@ function aplicar(m) {
   }
   else if (m.op === 'destroy') delete objs[m.id];
   render();
+  if (janela && (m.op === 'snapshot' || m.id === janela)) preencher();   // a ficha aberta só se refaz quando ela muda
 }
 conectar();
 
@@ -421,7 +492,6 @@ function render() {
   desenharPortas(pg, s);
   renderIniciativa();
   renderDiario();
-  if (janela) preencher();
   renderChat();
   desenharFx();
 }
@@ -1123,7 +1193,7 @@ $('novoDoc').onclick = async () => { const nome = await perguntar('Título do do
 
 function abrir(id) {
   const o = objs[id]; if (!o) return;
-  if (janela !== id) magiasAbertas.clear();           // os detalhes abertos eram de outra ficha
+  if (janela !== id) abertas.clear();           // os detalhes abertos eram de outra ficha
   janela = id; abrirQuandoChegar = null;
   const j = $('janela'); j.hidden = false; j.className = o.type;
   const pode = meu(o);
@@ -1147,86 +1217,166 @@ function abrir(id) {
     if (souGM()) for (const [, p] of doTipo('player')) if (!p.gm) caixa((o.type === 'handout' ? 'ver:' : 'owner:') + p.name, (o.type === 'handout' ? '' : 'Dono: ') + p.name);
     j.append(el('h4', '', 'Compartilhar'), d);
   }
-  assinaturaDiario = ''; render();
+  assinaturaDiario = ''; render(); preencher();
 }
-/* ---- ficha de D&D 5e no modelo do Roll20: Principal (3 colunas), Magias e História ---- */
-let fichaAba = 'principal';
-const nivelPer = v => v === true ? 1 : +v || 0;                      // perícia: 0 nada, 1 proficiente, 2 especialista
+/* ---- ficha de D&D 5e no modelo da ficha 2024 do Roll20 ---- */
+let fichaAba = 'combate';
+const abertas = new Set();                              // linhas com os detalhes à mostra ("magias:3"); só nesta tela
+const nivelPer = v => v === true ? 1 : +v || 0;         // perícia: 0 nada, 1 proficiente, 2 especialista
 const bonusPer = (a, k) => modDe(a[PERICIAS[k][1]]) + profDe(a) * nivelPer(a['per_' + k]);
 const conjDe = a => ['int', 'sab', 'car'].includes(a.conj) ? a.conj : 'int';
 const d20De = a => ({ vant:'2d20kh1', desv:'2d20kl1' })[a.modo] || '1d20';
-const MOEDAS = [['pc', 'PC'], ['pp', 'PP'], ['pe', 'PE'], ['po', 'PO'], ['pl', 'PL']];
-function htmlFicha(pode) {
-  const inp = (k, t, cls = '', tipo = 'text') => `<label class="c ${cls}">${t}<input type="${tipo}" data-k="a.${k}"></label>`;
-  const num = (k, t) => inp(k, t, '', 'number');
-  const area = (k, t, alto) => `<label class="c bloco">${t}<textarea data-k="a.${k}" style="min-height:${alto}px"></textarea></label>`;
-  const caixa = (dentro, tit, cls = '') => `<div class="caixa ${cls}">${dentro}<small class="tit">${tit}</small></div>`;
-  return `
-  <div class="cab">${inp('classe', 'Classe', 'g')}${num('nivel', 'Nível')}${inp('antecedente', 'Antecedente', 'g')}${inp('raca', 'Raça', 'g')}${inp('tendencia', 'Tendência', 'g')}${num('xp', 'XP')}
-    <label class="c" title="Vale para todos os testes de d20 desta ficha">Rolagens<select data-k="a.modo"><option value="">Normal</option><option value="vant">Com vantagem</option><option value="desv">Com desvantagem</option></select></label></div>
-  <nav class="fabas">${[['principal', 'Principal'], ['magias', 'Magias'], ['historia', 'História']].map(([k, t]) => `<button data-fab="${k}">${t}</button>`).join('')}</nav>
-
-  <section data-fsec="principal"><div class="f3">
-    <div class="col">
-      <div class="atr-per">
-        <div class="atrs">${ATR.map(([k, t]) => `<div class="caixa atr1"><button class="rotulo" data-rola="atr:${k}" title="Teste de ${t}">${t}</button><b class="mod" data-calc="mod:${k}"></b><input type="number" data-k="a.${k}" min="1" max="30" aria-label="${t}"></div>`).join('')}</div>
-        <div class="col">
-          <div class="caixa linha1"><label><input type="checkbox" data-k="a.inspiracao"> Inspiração</label></div>
-          <div class="caixa linha1"><b data-calc="prof"></b> Bônus de proficiência</div>
-          ${caixa(`<div class="lista-rol">${ATR.map(([k, t]) => `<span><input type="checkbox" data-k="a.res_${k}" title="Proficiente nesta resistência"><i data-calc="res:${k}"></i><button class="link" data-rola="res:${k}">${t}</button></span>`).join('')}</div>`, 'Testes de resistência')}
-          ${caixa(`<div class="lista-rol">${Object.entries(PERICIAS).map(([k, [t, at]]) => `<span><button class="ciclo" data-ciclo="per_${k}"></button><i data-calc="per:${k}"></i><button class="link" data-rola="per:${k}">${t}</button><em>${at}</em></span>`).join('')}</div>`, 'Perícias · ○ nada ● proficiente ◆ especialista')}
-        </div>
-      </div>
-      <div class="caixa linha1"><b data-calc="pp"></b> Sabedoria (Percepção) passiva</div>
-      ${area('outras_prof', 'Outras proficiências e idiomas', 90)}
-    </div>
-    <div class="col">
-      <div class="tres">${caixa('<input type="number" data-k="a.ca" aria-label="Classe de armadura">', 'Classe de armadura', 'grande')}
-        ${caixa('<button class="link big" data-rola="ini" data-calc="ini" title="Rolar iniciativa"></button>', 'Iniciativa', 'grande')}
-        ${caixa('<input type="number" data-k="a.desloc" aria-label="Deslocamento">', 'Deslocamento', 'grande')}</div>
-      ${caixa(`<div class="linha">${num('pvmax', 'PV máximos')}${num('pvtemp', 'PV temporários')}</div><input class="pvatual" type="number" data-k="a.pv" aria-label="PV atuais">`, 'Pontos de vida atuais')}
-      <div class="duas">${caixa(`${inp('dv_total', 'Total (ex.: 5d10)')}<div class="linha">${num('dv', 'Restantes')}<button class="rola" data-rola="dv">Rolar</button></div>`, 'Dados de vida')}
-        ${caixa(`<span>Sucessos ${[1, 2, 3].map(i => `<input type="checkbox" data-k="a.morte_s${i}">`).join('')}</span><span>Falhas ${[1, 2, 3].map(i => `<input type="checkbox" data-k="a.morte_f${i}">`).join('')}</span><button class="rola" data-rola="morte">Rolar</button>`, 'Testes contra a morte', 'morte')}</div>
-      ${caixa(`<div class="atq cab-atq"><span></span><small>Nome</small><small>Acerto</small><small>Dano</small><small>Tipo</small><span></span></div><div data-lista="ataques"></div>${pode ? '<button class="rola" data-acao="+atq">+ Ataque</button>' : ''}`, 'Ataques e conjuração · 🎲 rola acerto e dano')}
-      ${caixa(`<div class="moedas">${MOEDAS.map(([k, t]) => `<label class="c">${t}<input type="number" data-k="a.${k}"></label>`).join('')}</div><textarea data-k="a.equipamento" aria-label="Equipamento"></textarea>`, 'Equipamento')}
-    </div>
-    <div class="col">${area('personalidade', 'Traços de personalidade', 70)}${area('ideais', 'Ideais', 55)}${area('vinculos', 'Vínculos', 55)}${area('defeitos', 'Defeitos', 55)}${area('caracteristicas', 'Características e talentos', 240)}</div>
-  </div></section>
-
-  <section data-fsec="magias">
-    <div class="cab"><label class="c">Habilidade de conjuração<select data-k="a.conj"><option value="int">Inteligência</option><option value="sab">Sabedoria</option><option value="car">Carisma</option></select></label>
-      ${caixa('<b data-calc="cd"></b>', 'CD de resistência', 'grande')}
-      ${caixa('<button class="link big" data-rola="atqm" data-calc="atqm" title="Rolar ataque mágico"></button>', 'Ataque mágico', 'grande')}
-      ${pode ? '<button class="rola" data-acao="descanso" title="Recupera PV, espaços de magia e metade dos dados de vida">Descanso longo</button>' : ''}</div>
-    <div class="niveis">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(nv => caixa(`<div class="nv-cab"><b>${nv ? 'Nível ' + nv : 'Truques'}</b>${nv ? `<label class="c">Espaços<input type="number" data-k="a.esp_${nv}"></label><label class="c">Usados<input type="number" data-k="a.gasto_${nv}"></label>` : ''}</div>
-      <div data-lista="magias" data-nv="${nv}"></div>${pode ? `<button class="rola" data-acao="+mag" data-nv="${nv}">+ magia</button>` : ''}`, nv ? '● preparada · Lançar gasta um espaço' : 'Truques não gastam espaço')).join('')}</div>
-  </section>
-
-  <section data-fsec="historia">
-    <div class="cab">${['idade', 'altura', 'peso', 'olhos', 'pele', 'cabelo'].map(k => inp(k, k[0].toUpperCase() + k.slice(1), 'g')).join('')}</div>
-    <div class="duas">${area('aparencia', 'Aparência', 130)}${area('historia', 'História do personagem', 130)}</div>
-    <div class="duas">${area('aliados', 'Aliados e organizações', 100)}${area('tesouro', 'Tesouro', 100)}</div>
-    ${area('notas', 'Notas', 100)}
-  </section>`;
-}
-const linhaAtaque = (i, pode) => `<div class="atq"><button class="rola" data-rola="atq:${i}" title="Rolar acerto e dano">🎲</button><input data-k="atq.${i}.n" placeholder="Arma"><input data-k="atq.${i}.a" placeholder="+5">
-  <input data-k="atq.${i}.d" placeholder="1d8+@{for_mod}"><input data-k="atq.${i}.t" placeholder="cortante">${pode ? `<button class="rola" data-acao="-atq" data-i="${i}" aria-label="Tirar ataque">×</button>` : '<span></span>'}</div>`;
+const ABREV = { for:'FOR', des:'DES', con:'CON', int:'INT', sab:'SAB', car:'CAR' };
+const MOEDAS = [['pc', 'Cobre'], ['pp', 'Prata'], ['pe', 'Electro'], ['po', 'Ouro'], ['pl', 'Platina']];
+const XP_NIVEL = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
+const CONDICOES = ['Agarrado', 'Amedrontado', 'Atordoado', 'Caído', 'Cego', 'Enfeitiçado', 'Envenenado', 'Exaustão', 'Incapacitado', 'Inconsciente', 'Invisível', 'Paralisado', 'Petrificado', 'Restringido', 'Surdo'];
 const ESCOLAS = ['Abjuração', 'Adivinhação', 'Conjuração', 'Encantamento', 'Evocação', 'Ilusão', 'Necromancia', 'Transmutação'];
-const magiasAbertas = new Set();                       // quais magias estão com os detalhes à mostra (só nesta tela)
+const TIPO_ATQ = { '':'Corpo a corpo', dist:'À distância', mag:'Ataque mágico' };
 // "evocação · 1 ação · 45 metros · V, S, M · instantânea · concentração"
 const resumoMagia = m => [m.escola && m.escola.toLowerCase(), m.tempo, m.alcance, m.comp, m.dur, m.conc && 'concentração', m.ritual && 'ritual'].filter(Boolean).join(' · ');
-const linhaMagia = (i, nv, pode) => {
-  const aberta = magiasAbertas.has(i), campo = (c, t, ph) => `<label class="c">${t}<input data-k="mag.${i}.${c}" placeholder="${ph}"></label>`;
-  return `<div class="magia"><div class="mag"><button class="abre" data-acao="vermag" data-i="${i}" title="${aberta ? 'Esconder' : 'Ver'} os detalhes">${aberta ? '▾' : '▸'}</button>
-  ${nv ? `<input type="checkbox" data-k="mag.${i}.prep" title="Preparada">` : '<span></span>'}<input data-k="mag.${i}.n" placeholder="Nome da magia">
-  <input data-k="mag.${i}.d" placeholder="dano/cura: 8d6"><button class="rola" data-rola="mag:${i}">Lançar</button>${pode ? `<button class="rola" data-acao="-mag" data-i="${i}" aria-label="Tirar magia">×</button>` : '<span></span>'}</div>
-  ${aberta ? `<div class="mag-det">
-    <label class="c">Escola<select data-k="mag.${i}.escola"><option value="">—</option>${ESCOLAS.map(e => `<option>${e}</option>`).join('')}</select></label>
-    ${campo('tempo', 'Tempo de conjuração', '1 ação')}${campo('alcance', 'Alcance', '18 metros')}
-    ${campo('comp', 'Componentes', 'V, S, M (pena)')}${campo('dur', 'Duração', 'instantânea')}
-    <div class="flags"><label><input type="checkbox" data-k="mag.${i}.conc"> Concentração</label><label><input type="checkbox" data-k="mag.${i}.ritual"> Ritual</label></div>
-    <label class="c bloco">Descrição<textarea data-k="mag.${i}.desc" style="min-height:80px"></textarea></label></div>`
-  : `<small class="mag-resumo" data-resumo="${i}"></small>`}</div>`;
+// @{des_mod}+@{prof} → "+5" só para mostrar; na hora de rolar quem faz a conta é o servidor
+const valorFicha = (a, k) => k.endsWith('_mod') && ABREV[k.slice(0, -4)] ? modDe(a[k.slice(0, -4)]) : k === 'prof' ? profDe(a) : +a[k] || 0;
+const resolver = (a, x) => String(x ?? '').replace(/@\{(\w+)\}/g, (_, k) => valorFicha(a, k)).replace(/\+\s*-/g, '-').replace(/-\s*-/g, '+');
+function somaFicha(a, x) {
+  const t = resolver(a, x).replace(/\s/g, '');
+  return /^[+-]?\d+([+-]\d+)*$/.test(t) ? fmt(t.match(/[+-]?\d+/g).reduce((s, n) => s + +n, 0)) : t;
+}
+const acertoAtq = (a, atq) => String(atq.a || (atq.cat === 'dist' ? '@{des_mod}+@{prof}' : atq.cat === 'mag' ? `@{${conjDe(a)}_mod}+@{prof}` : '@{for_mod}+@{prof}')).trim();
+const hitMagia = (a, m) => m.hit === 'atq' ? fmt(profDe(a) + modDe(a[conjDe(a)])) : ABREV[m.hit] ? `${ABREV[m.hit]} ${8 + profDe(a) + modDe(a[conjDe(a)])}` : '';
+const dadoVida = a => a.dado_vida || ((/d\d+/i.exec(a.dv_total || '') || [''])[0]).toLowerCase();
+// listas da ficha: em qual campo cada uma separa as seções, e o valor de quem não tem o campo (fichas antigas)
+const FILTRO = { magias:['nv', '0'], talentos:['cat', 'outro'], acoes:['cat', 'acao'], notas_l:['cat', 'org'] };
+
+function htmlFicha(pode) {
+  const k = (c, ph = '', tipo = 'text', extra = '') => `<input type="${tipo}" data-k="a.${c}" placeholder="${ph}" ${extra}>`;
+  const mais = (lista, valor, titulo = 'Adicionar') => pode ? `<button data-acao="+l" data-lista="${lista}" ${valor !== undefined ? `data-valor="${valor}"` : ''} title="${titulo}">+</button>` : '';
+  const cab = (t, lista, valor, cols = '') => `<div class="sec-cab">${t}${cols ? `<span class="cols">${cols}</span>` : '<span class="cols"></span>'}${mais(lista, valor)}</div>`;
+  const lista = (nome, valor, vazio) => `<div data-l="${nome}" ${valor !== undefined ? `data-valor="${valor}"` : ''} data-vazio="${vazio}"></div>`;   // data-l: só o contêiner (os botões usam data-lista)
+  return `
+  <div class="barra-rol">
+    <div class="seg"><button data-pub="">Público</button><button data-pub="1" title="As rolagens desta ficha só aparecem para você e o mestre">Sussurrado</button></div>
+    <div class="seg"><button data-modo="">Normal</button><button data-modo="vant">Vantagem</button><button data-modo="desv">Desvantagem</button></div>
+  </div>
+  <div class="f-topo">
+    <div class="caixa f-id">
+      <div class="avatar"><span data-calc="iniciais"></span><b title="Nível"><span data-calc="nivel"></span></b></div>
+      <div class="ident">
+        <div class="lin"><span class="g">${k('classe', 'Classe')}</span>${k('nivel', '1', 'number', 'title="Nível" min="1" max="20"')}<span>–</span><span class="g">${k('subclasse', 'Subclasse')}</span></div>
+        <div class="lin"><span class="g">${k('raca', 'Espécie')}</span><span class="g">${k('antecedente', 'Antecedente')}</span></div>
+        <div class="lin"><small>XP</small>${k('xp', '0', 'number', 'style="width:70px"')}<small>/ <span data-calc="xpprox"></span></small></div>
+        <div class="lin"><small>Bônus de proficiência</small><b data-calc="prof"></b></div>
+      </div>
+      <div class="id-acoes"><button class="btn-insp" data-acao="insp">Inspiração</button><button class="btn-ini" data-rola="ini" title="Rolar iniciativa">Iniciativa <span data-calc="ini"></span></button></div>
+    </div>
+    <div class="caixa"><div class="ctit">Pontos de vida</div><div class="f-pv">
+      <div class="pvnums"><div>${k('pv', '0', 'number', 'aria-label="PV atuais"')}<span class="barra" data-barra></span>Atuais</div><div style="font-size:22px">/</div>
+        <div>${k('pvmax', '0', 'number', 'aria-label="PV máximos"')}Máximo</div><div>${k('pvtemp', '0', 'number', 'aria-label="PV temporários"')}Temporários</div></div>
+      ${pode ? `<div class="pvdelta"><input type="number" data-pvdelta min="0" aria-label="Quanto de dano ou cura"><div class="lin"><button data-acao="dano" title="Tira PV (primeiro os temporários)">Dano</button><button data-acao="cura" title="Devolve PV até o máximo">Cura</button></div></div>
+      <div class="descansos"><button data-acao="curto">Descanso curto</button><button data-acao="descanso">Descanso longo</button></div>` : '<span></span><span></span>'}
+      <div class="dvlin">Dados de vida <select data-k="a.dado_vida"><option value="">d?</option>${['d6', 'd8', 'd10', 'd12'].map(d => `<option>${d}</option>`).join('')}</select>
+        ${k('dv', '0', 'number', 'title="Restantes"')} / <span data-calc="nivel"></span><button class="rola" data-rola="dv" title="Gasta um e soma Constituição">Rolar</button></div>
+      <div class="morte" data-se-zero hidden>Testes contra a morte · sucessos ${[1, 2, 3].map(i => `<input type="checkbox" data-k="a.morte_s${i}">`).join('')}
+        falhas ${[1, 2, 3].map(i => `<input type="checkbox" data-k="a.morte_f${i}">`).join('')}<button class="rola" data-rola="morte">Rolar</button></div>
+    </div></div>
+  </div>
+  <div class="f-meio">
+    <div class="caixa"><div class="ctit">Atributos</div><div class="atrs6">${ATR.map(([c, t]) => `<div class="atr6">
+      <div class="top">${ABREV[c]} ${k(c, '10', 'number', `min="1" max="30" aria-label="${t}"`)}</div>
+      <div class="pares"><div class="bx"><button data-rola="atr:${c}" data-calc="mod:${c}" title="Teste de ${t}"></button>Mod</div>
+        <div class="bx"><button data-rola="res:${c}" data-calc="res:${c}" data-prof-res="${c}" title="Teste de resistência de ${t}"></button>Resist.</div></div>
+      <button class="ponto" data-acao="profres" data-c="${c}" title="Proficiente na resistência de ${t}"></button></div>`).join('')}</div></div>
+    <div class="caixa f-ca"><div class="ctit">CA / Deslocamento</div><label>Classe de armadura ${k('ca', '10', 'number')}</label><label>Deslocamento ${k('desloc', '9', 'number')}</label></div>
+  </div>
+  <div class="f-corpo">
+    <div class="coluna">
+      <div class="caixa"><div class="ctit">Perícias</div>${Object.entries(PERICIAS).map(([c, [t, at]]) => `<div class="pericia"><button class="link" data-rola="per:${c}">${t}</button><em>${ABREV[at]}</em><span class="val" data-calc="per:${c}" data-prof-per="${c}"></span><button class="ponto" data-ciclo="per_${c}"></button></div>`).join('')}</div>
+      <div class="caixa"><div class="ctit">Proficiências e idiomas</div>
+        <span class="rot">Armas</span><textarea data-k="a.prof_armas"></textarea>
+        <span class="rot">Armaduras</span><textarea data-k="a.prof_armaduras"></textarea>
+        <span class="rot">Ferramentas</span><textarea data-k="a.prof_ferramentas"></textarea>
+        <span class="rot">Idiomas</span><textarea data-k="a.idiomas"></textarea>
+        <div data-se-antigo="outras_prof"><span class="rot">Outras</span><textarea data-k="a.outras_prof"></textarea></div></div>
+    </div>
+    <div class="coluna">
+      <nav class="fabas">${[['combate', 'Combate'], ['magias', 'Magias'], ['inventario', 'Inventário'], ['talentos', 'Características e talentos'], ['notas', 'Notas'], ['sobre', 'Sobre']].map(([c, t]) => `<button data-fab="${c}">${t}</button>`).join('')}</nav>
+      <section data-fsec="combate">
+        <div class="sec">${cab('Ataques', 'ataques', undefined, 'alcance · acerto · dano')}${lista('ataques', undefined, 'Nenhum ataque. O + adiciona.')}</div>
+        ${[['acao', 'Ações'], ['bonus', 'Ações bônus'], ['reacao', 'Reações'], ['livre', 'Ações livres']].map(([v, t]) => `<div class="sec">${cab(t, 'acoes', v)}${lista('acoes', v, 'Nada aqui.')}</div>`).join('')}
+      </section>
+      <section data-fsec="magias">
+        <div class="conj-cab"><label>Conjuração <select data-k="a.conj"><option value="int">INT</option><option value="sab">SAB</option><option value="car">CAR</option></select></label>
+          <span>CD <span data-calc="cd"></span></span><button class="link" data-rola="atqm">Ataque mágico <span data-calc="atqm"></span></button></div>
+        ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(nv => `<div class="sec"><div class="sec-cab">${nv ? nv + 'º círculo' : 'Truques'}${nv ? `<span class="espacos" data-espacos="${nv}"></span>${pode ? `<span class="espacos" title="Quantos espaços deste círculo">${k('esp_' + nv, '0', 'number')}</span>` : ''}` : ''}<span class="cols">alcance · acerto/CD · efeito</span>${mais('magias', nv, 'Adicionar magia')}</div>${lista('magias', nv, nv ? 'Nenhuma magia deste círculo.' : 'Nenhum truque.')}</div>`).join('')}
+      </section>
+      <section data-fsec="inventario">
+        <div class="moedas">${MOEDAS.map(([c, t]) => `<label class="c">${t}${k(c, '0', 'number')}</label>`).join('')}<span>Peso total: <b data-calc="peso"></b></span></div>
+        <div class="sec">${cab('Equipamento', 'itens', undefined, 'equipado · tipo · peso · qtd')}${lista('itens', undefined, 'Nenhum item.')}</div>
+        <label class="c bloco">Outras posses<textarea data-k="a.equipamento"></textarea></label>
+      </section>
+      <section data-fsec="talentos">
+        ${[['classe', 'Características de classe'], ['especie', 'Traços da espécie'], ['talento', 'Talentos'], ['outro', 'Outras']].map(([v, t]) => `<div class="sec">${cab(t, 'talentos', v, 'origem · usos')}${lista('talentos', v, 'Nada aqui.')}</div>`).join('')}
+        <div data-se-antigo="caracteristicas"><label class="c bloco">Texto da ficha antiga<textarea data-k="a.caracteristicas"></textarea></label></div>
+      </section>
+      <section data-fsec="notas">
+        ${[['org', 'Organizações'], ['aliado', 'Aliados'], ['inimigo', 'Inimigos']].map(([v, t]) => `<div class="sec">${cab(t, 'notas_l', v)}${lista('notas_l', v, 'Nada aqui.')}</div>`).join('')}
+        <label class="c bloco">Anotações<textarea data-k="a.notas" style="min-height:120px"></textarea></label>
+      </section>
+      <section data-fsec="sobre">
+        <div class="sec"><div class="sec-cab">Antecedente</div><div class="sobre-car"><label class="c">Nome${k('antecedente')}</label></div><label class="c bloco">Descrição<textarea data-k="a.desc_antecedente"></textarea></label></div>
+        <div class="sec"><div class="sec-cab">Características</div><div class="sobre-car">${[['tendencia', 'Tendência'], ['genero', 'Gênero'], ['olhos', 'Olhos'], ['tamanho', 'Tamanho'], ['altura', 'Altura'], ['fe', 'Fé'], ['cabelo', 'Cabelo'], ['pele', 'Pele'], ['idade', 'Idade'], ['peso', 'Peso']].map(([c, t]) => `<label class="c">${t}${k(c)}</label>`).join('')}</div></div>
+        <div class="sec"><div class="sec-cab">Personalidade</div><div class="sobre-car">${[['personalidade', 'Traços'], ['ideais', 'Ideais'], ['vinculos', 'Vínculos'], ['defeitos', 'Defeitos']].map(([c, t]) => `<label class="c bloco">${t}<textarea data-k="a.${c}"></textarea></label>`).join('')}</div></div>
+        <div class="sec"><div class="sec-cab">Aparência</div><textarea data-k="a.aparencia"></textarea></div>
+        <div class="sec"><div class="sec-cab">História</div><textarea data-k="a.historia" style="min-height:120px"></textarea></div>
+        <div class="sec" data-se-antigo="aliados,tesouro"><div class="sec-cab">Aliados e tesouro (ficha antiga)</div><textarea data-k="a.aliados"></textarea><textarea data-k="a.tesouro"></textarea></div>
+      </section>
+    </div>
+    <div class="coluna f-dir">
+      <div class="caixa"><div class="ctit">Recursos<span style="margin-left:auto"></span>${mais('recursos', undefined, 'Adicionar recurso')}</div>${lista('recursos', undefined, 'Pontos de feitiçaria, fúria, canalizar divindade… O + adiciona.')}</div>
+      <div class="caixa"><div class="ctit">Defesas</div>${[['resistencias', 'Resistências'], ['vulnerabilidades', 'Vulnerabilidades'], ['imunidades', 'Imunidades'], ['imun_condicoes', 'Imunidade a condições']].map(([c, t]) => `<label class="c">${t}${k(c)}</label>`).join('')}</div>
+      <div class="caixa"><div class="ctit">Condições</div><div class="chips" data-condicoes></div>${pode ? `<select data-addcond aria-label="Adicionar condição"><option value="">Adicionar condição…</option>${CONDICOES.map(c => `<option>${c}</option>`).join('')}</select>` : ''}</div>
+      <div class="caixa"><div class="ctit">Sentidos</div><div class="linhas"><label>Intuição passiva <b data-calc="pas:intuicao"></b></label><label>Investigação passiva <b data-calc="pas:investigacao"></b></label><label>Percepção passiva <b data-calc="pas:percepcao"></b></label></div><label class="c">Outros sentidos${k('sentidos', 'Visão no escuro 18 m')}</label></div>
+    </div>
+  </div>`;
+}
+
+// ---- linhas das listas (ataques, ações, magias, itens, características, recursos, notas)
+const tira = (nome, i, pode) => pode ? `<button class="acao-l" data-acao="-l" data-lista="${nome}" data-i="${i}" title="Tirar">×</button>` : '<span></span>';
+const seta = (nome, i) => `<button class="acao-l" data-acao="abre" data-lista="${nome}" data-i="${i}" title="Detalhes">${abertas.has(nome + ':' + i) ? '▾' : '▸'}</button>`;
+const kl = (nome, i, c, ph = '', tipo = 'text', extra = '') => `<input type="${tipo}" data-k="l.${nome}.${i}.${c}" placeholder="${ph}" ${extra}>`;
+const descArea = (nome, i) => `<label class="c bloco">Descrição<textarea data-k="l.${nome}.${i}.desc"></textarea></label>`;
+const descCurta = (nome, i) => `<div class="desc-curta" data-desc="${nome}:${i}"></div>`;
+const linhaTexto = (nome, ph) => (i, pode, ab) => `<div class="lin l-tal">${seta(nome, i)}${kl(nome, i, 'n', 'Nome', 'text', 'class="nome"')}${kl(nome, i, 'origem', ph)}
+  <span class="usos" title="Usos gastos / total">${kl(nome, i, 'usados', '0', 'number')}/${kl(nome, i, 'usos', '–', 'number')}</span>${tira(nome, i, pode)}</div>`
+  + (ab ? `<div class="det">${descArea(nome, i)}</div>` : descCurta(nome, i));
+const LINHAS = {
+  ataques: (i, pode, ab) => `<div class="lin l-atq">${seta('ataques', i)}<button class="acao-l" data-rola="atq:${i}" title="Rolar acerto e dano">🎲</button>
+    <div>${kl('ataques', i, 'n', 'Arma', 'text', 'class="nome"')}<small class="sub" data-sub="ataques:${i}"></small></div>${kl('ataques', i, 'r', '1,5 m')}
+    <span class="vermelho" data-res="ataques:${i}:a"></span><span class="vermelho" data-res="ataques:${i}:d"></span>${tira('ataques', i, pode)}</div>`
+    + (ab ? `<div class="det"><label class="c">Tipo<select data-k="l.ataques.${i}.cat">${Object.entries(TIPO_ATQ).map(([v, t]) => `<option value="${v}">${t}</option>`).join('')}</select></label>
+      <label class="c">Acerto${kl('ataques', i, 'a', 'automático: atributo + prof.')}</label><label class="c">Dano${kl('ataques', i, 'd', '1d8+@{for_mod}')}</label>
+      <label class="c">Tipo de dano${kl('ataques', i, 't', 'cortante')}</label>${descArea('ataques', i)}</div>` : ''),
+  acoes: linhaTexto('acoes', 'Detalhe'),
+  talentos: linhaTexto('talentos', 'Origem (ex.: Feiticeiro)'),
+  magias: (i, pode, ab) => `<div class="lin l-mag">${seta('magias', i)}<input type="checkbox" data-k="l.magias.${i}.prep" title="Preparada">
+    <div>${kl('magias', i, 'n', 'Nome da magia', 'text', 'class="nome"')}<small class="sub" data-sub="magias:${i}"></small></div>${kl('magias', i, 'alcance', 'alcance')}
+    <span class="vermelho" data-res="magias:${i}:hit"></span><span class="vermelho" data-res="magias:${i}:d"></span><button class="rola" data-rola="mag:${i}">Lançar</button>${tira('magias', i, pode)}</div>`
+    + (ab ? `<div class="det">
+      <label class="c">Escola<select data-k="l.magias.${i}.escola"><option value="">—</option>${ESCOLAS.map(e => `<option>${e}</option>`).join('')}</select></label>
+      <label class="c">Tempo de conjuração${kl('magias', i, 'tempo', '1 ação')}</label><label class="c">Alcance${kl('magias', i, 'alcance', '18 metros')}</label>
+      <label class="c">Componentes${kl('magias', i, 'comp', 'V, S, M (pena)')}</label><label class="c">Duração${kl('magias', i, 'dur', 'instantânea')}</label>
+      <label class="c">Acerto / CD<select data-k="l.magias.${i}.hit"><option value="">—</option><option value="atq">Ataque mágico</option>${ATR.map(([c, t]) => `<option value="${c}">Resistência de ${t}</option>`).join('')}</select></label>
+      <label class="c">Dano / cura${kl('magias', i, 'd', '8d6')}</label><label class="c">Tipo${kl('magias', i, 't', 'fogo')}</label>
+      <div class="flags"><label><input type="checkbox" data-k="l.magias.${i}.conc"> Concentração</label><label><input type="checkbox" data-k="l.magias.${i}.ritual"> Ritual</label></div>
+      ${descArea('magias', i)}</div>` : descCurta('magias', i)),
+  itens: (i, pode, ab) => `<div class="lin l-item">${seta('itens', i)}<input type="checkbox" data-k="l.itens.${i}.equip" title="Equipado">
+    ${kl('itens', i, 'n', 'Item', 'text', 'class="nome"')}${kl('itens', i, 'tipo', 'Equipamento')}${kl('itens', i, 'peso', 'kg', 'number', 'step="0.1" title="Peso de cada um (kg)"')}
+    <span class="qtd">${pode ? `<button data-acao="qtd" data-i="${i}" data-d="-1">−</button>` : ''}${kl('itens', i, 'qtd', '1', 'number')}${pode ? `<button data-acao="qtd" data-i="${i}" data-d="1">+</button>` : ''}</span>${tira('itens', i, pode)}</div>`
+    + (ab ? `<div class="det">${descArea('itens', i)}</div>` : descCurta('itens', i)),
+  recursos: (i, pode) => `<div class="lin l-rec">${kl('recursos', i, 'n', 'Recurso', 'text', 'class="nome"')}${pode ? `<button data-acao="rec" data-i="${i}" data-d="-1" title="Gastar">−</button>` : '<span></span>'}
+    ${kl('recursos', i, 'atual', '0', 'number')}<span>/</span>${kl('recursos', i, 'max', '0', 'number')}${pode ? `<button data-acao="rec" data-i="${i}" data-d="1" title="Recuperar">+</button>` : '<span></span>'}${tira('recursos', i, pode)}</div>
+    <div class="rec-lin">recupera no <select data-k="l.recursos.${i}.rec"><option value="longo">descanso longo</option><option value="curto">descanso curto</option><option value="nunca">—</option></select></div>`,
+  notas_l: (i, pode, ab) => `<div class="lin l-nota">${seta('notas_l', i)}${kl('notas_l', i, 'n', 'Nome', 'text', 'class="nome"')}${tira('notas_l', i, pode)}</div>`
+    + (ab ? `<div class="det">${descArea('notas_l', i)}</div>` : descCurta('notas_l', i)),
 };
 
 function fecharJanela() { janela = null; $('janela').hidden = true; assinaturaDiario = ''; renderDiario(); }
@@ -1234,41 +1384,80 @@ function fecharJanela() { janela = null; $('janela').hidden = true; assinaturaDi
 function lerK(o, k) {
   const a = o.attrs || {};
   if (k.startsWith('a.')) return a[k.slice(2)];
-  const rep = /^(atq|mag)\.(\d+)\.(\w+)$/.exec(k);   // linhas repetidas: atq.0.n = ataques[0].n
-  if (rep) return ((a[rep[1] === 'atq' ? 'ataques' : 'magias'] || [])[rep[2]] || {})[rep[3]];
+  const l = /^l\.(\w+)\.(\d+)\.(\w+)$/.exec(k);   // linhas das listas: l.magias.0.n = magias[0].n
+  if (l) return ((a[l[1]] || [])[l[2]] || {})[l[3]];
   if (k === 'ver*') return (o.ver || []).includes('*');
   if (k.startsWith('ver:')) return (o.ver || []).includes(k.slice(4));
   if (k.startsWith('owner:')) return (o.owner || []).includes(k.slice(6));
   return o[k];
 }
+const escrever = (el, t) => { t = String(t); if (el.textContent !== t) el.textContent = t; };   // só mexe no DOM se mudou
 function preencher() {
   const o = objs[janela]; if (!o) return fecharJanela();
   const j = $('janela'), a = o.attrs || {}, pode = meu(o);
-  for (const box of j.querySelectorAll('[data-lista]')) {   // ataques e magias: refaz as linhas só quando muda quais são
-    const nome = box.dataset.lista, itens = a[nome] || [], nv = box.dataset.nv;
-    const idx = itens.map((_, i) => i).filter(i => nv === undefined || (+itens[i].nv || 0) === +nv);
-    const sig = idx.map(i => i + (magiasAbertas.has(i) && nome === 'magias' ? '+' : '')).join(',') + '|' + pode;
+  for (const box of j.querySelectorAll('div[data-l]')) {   // listas: refaz as linhas só quando muda quais são
+    const nome = box.dataset.l, itens = a[nome] || [], [campo, padrao] = FILTRO[nome] || [];
+    const idx = itens.map((_, i) => i).filter(i => box.dataset.valor === undefined || String(itens[i][campo] ?? padrao) === box.dataset.valor);
+    const sig = idx.map(i => i + (abertas.has(nome + ':' + i) ? '+' : '')).join(',') + '|' + pode;
     if (box.dataset.sig === sig) continue;
     box.dataset.sig = sig;
-    box.innerHTML = idx.map(i => nome === 'ataques' ? linhaAtaque(i, pode) : linhaMagia(i, +nv, pode)).join('');
+    box.innerHTML = idx.length ? idx.map(i => `<div class="item">${LINHAS[nome](i, pode, abertas.has(nome + ':' + i))}</div>`).join('') : `<div class="vazio-l">${box.dataset.vazio}</div>`;
   }
-  for (const r of j.querySelectorAll('[data-resumo]')) r.textContent = resumoMagia((a.magias || [])[r.dataset.resumo] || {});
+  for (const box of j.querySelectorAll('[data-espacos]')) {   // espaços de magia em losangos: cheio = disponível
+    const nv = box.dataset.espacos, esp = Math.min(20, +a['esp_' + nv] || 0), livres = esp - (+a['gasto_' + nv] || 0), sig = esp + ':' + livres;
+    if (box.dataset.sig === sig) continue;
+    box.dataset.sig = sig;
+    box.innerHTML = Array.from({ length:esp }, (_, n) => `<button class="losango${n < livres ? ' cheio' : ''}" data-acao="slot" data-nv="${nv}" data-j="${n}" title="${n < livres ? 'Gastar' : 'Recuperar'} um espaço"></button>`).join('');
+  }
+  const cond = j.querySelector('[data-condicoes]');
+  if (cond) {
+    const sig = JSON.stringify(a.condicoes || []);
+    if (cond.dataset.sig !== sig) {
+      cond.dataset.sig = sig;
+      cond.innerHTML = (a.condicoes || []).length ? a.condicoes.map(c => `<button class="chip-c" data-acao="-cond" data-c="${CONDICOES.includes(c) ? c : ''}" title="Tirar">${CONDICOES.includes(c) ? c : '?'} ×</button>`).join('') : 'Nenhuma';
+    }
+  }
   for (const sec of j.querySelectorAll('[data-fsec]')) sec.hidden = sec.dataset.fsec !== fichaAba;
   for (const b of j.querySelectorAll('[data-fab]')) b.classList.toggle('ativa', b.dataset.fab === fichaAba);
+  for (const b of j.querySelectorAll('[data-modo]')) b.classList.toggle('on', (a.modo || '') === b.dataset.modo);
+  for (const b of j.querySelectorAll('[data-pub]')) b.classList.toggle('on', (a.privado ? '1' : '') === b.dataset.pub);
+  j.querySelector('.btn-insp')?.classList.toggle('on', !!a.inspiracao);
   for (const c of j.querySelectorAll('[data-ciclo]')) {
     const n = nivelPer(a[c.dataset.ciclo]);
-    c.textContent = '○●◆'[n]; c.title = ['Sem proficiência', 'Proficiente', 'Especialista (dobra a proficiência)'][n]; c.disabled = !pode;
+    const cls = 'ponto' + (n === 1 ? ' on' : n === 2 ? ' dois' : '');
+    if (c.className !== cls) { c.className = cls; c.title = ['Sem proficiência (clique: proficiente)', 'Proficiente (clique: especialista)', 'Especialista, dobra a proficiência (clique: nada)'][n]; }
+    if (c.disabled !== !pode) c.disabled = !pode;
   }
+  for (const c of j.querySelectorAll('[data-acao="profres"]')) { c.classList.toggle('on', !!a['res_' + c.dataset.c]); c.disabled = !pode; }
+  for (const c of j.querySelectorAll('[data-prof-res]')) c.classList.toggle('prof', !!a['res_' + c.dataset.profRes]);
+  for (const c of j.querySelectorAll('[data-prof-per]')) c.classList.toggle('prof', nivelPer(a['per_' + c.dataset.profPer]) > 0);
+  for (const d of j.querySelectorAll('[data-se-antigo]')) d.hidden = d.dataset.seAntigo.split(',').every(c => !a[c]);
+  const zero = j.querySelector('[data-se-zero]'); if (zero) zero.hidden = !(+a.pvmax > 0 && (+a.pv || 0) <= 0);
+  const barra = j.querySelector('[data-barra]'); if (barra) barra.style.width = Math.max(0, Math.min(100, (+a.pv || 0) / (+a.pvmax || 1) * 100)) + '%';
   for (const inp of j.querySelectorAll('[data-k]')) {
-    inp.disabled = !pode || (inp.dataset.k.startsWith('owner:') && !souGM());
+    const dis = !pode || (inp.dataset.k.startsWith('owner:') && !souGM());
+    if (inp.disabled !== dis) inp.disabled = dis;
     if (inp === document.activeElement) continue;       // não atropelar quem está digitando
     const v = lerK(o, inp.dataset.k);
-    if (inp.type === 'checkbox') inp.checked = !!v; else inp.value = v ?? '';
+    if (inp.type === 'checkbox') { if (inp.checked !== !!v) inp.checked = !!v; }
+    else if (inp.value !== String(v ?? '')) inp.value = v ?? '';
   }
+  const item = (l, i) => (a[l] || [])[i] || {};
+  for (const r of j.querySelectorAll('[data-res]')) {     // acerto e dano já com os números da ficha ("+5", "1d8+2")
+    const [l, i, c] = r.dataset.res.split(':'), it = item(l, i);
+    escrever(r, c === 'hit' ? hitMagia(a, it) : c === 'a' ? somaFicha(a, acertoAtq(a, it)) : resolver(a, it[c]));
+  }
+  for (const s of j.querySelectorAll('[data-sub]')) {
+    const [l, i] = s.dataset.sub.split(':'), it = item(l, i);
+    escrever(s, l === 'ataques' ? [TIPO_ATQ[it.cat || ''], it.t].filter(Boolean).join(' · ') : resumoMagia(it));
+  }
+  for (const d of j.querySelectorAll('[data-desc]')) { const [l, i] = d.dataset.desc.split(':'); escrever(d, item(l, i).desc || ''); d.hidden = !d.textContent; }
   const prof = profDe(a), mc = modDe(a[conjDe(a)]);
-  const CALC = { prof:() => fmt(prof), mod:k => fmt(modDe(a[k])), res:k => fmt(modDe(a[k]) + (a['res_' + k] ? prof : 0)),
-    per:k => fmt(bonusPer(a, k)), pp:() => 10 + bonusPer(a, 'percepcao'), ini:() => fmt(modDe(a.des)), cd:() => 8 + prof + mc, atqm:() => fmt(prof + mc) };
-  for (const c of j.querySelectorAll('[data-calc]')) { const [tipo, k] = c.dataset.calc.split(':'); c.textContent = CALC[tipo](k); }
+  const peso = (a.itens || []).reduce((s, it) => s + (+it.peso || 0) * (it.qtd === undefined || it.qtd === '' ? 1 : +it.qtd || 0), 0);
+  const CALC = { prof:() => fmt(prof), mod:c => fmt(modDe(a[c])), res:c => fmt(modDe(a[c]) + (a['res_' + c] ? prof : 0)),
+    per:c => fmt(bonusPer(a, c)), pas:c => 10 + bonusPer(a, c), ini:() => fmt(modDe(a.des)), cd:() => 8 + prof + mc, atqm:() => fmt(prof + mc),
+    nivel:() => +a.nivel || 1, iniciais:() => iniciais(o.name), xpprox:() => XP_NIVEL[Math.min(19, +a.nivel || 1)] ?? '—', peso:() => Math.round(peso * 10) / 10 + ' kg' };
+  for (const c of j.querySelectorAll('[data-calc]')) { const [tipo, k] = c.dataset.calc.split(':'); escrever(c, CALC[tipo](k)); }
   const img = j.querySelector('[data-img]'); if (img) { img.hidden = !o.img; if (o.img && img.getAttribute('src') !== o.img) img.src = o.img; }
   const pdf = j.querySelector('[data-pdf]');
   if (pdf) {
@@ -1319,22 +1508,31 @@ addEventListener('keydown', e => {                      // ← → passam págin
 function mudar(props) {                                  // aplica já na tela e manda; o servidor junta os campos da ficha
   const o = objs[janela];
   if (props.attrs) o.attrs = { ...o.attrs, ...props.attrs }; else Object.assign(o, props);
+  preencher();                                            // mostra já, sem esperar a volta do servidor
   enviar({ op:'change', id:janela, props });
 }
 $('janela').addEventListener('change', e => {
-  const k = e.target.dataset.k, o = objs[janela]; if (!k || !o) return;
+  const o = objs[janela];
+  if (o && e.target.matches('[data-addcond]')) {         // condição escolhida na lista entra como etiqueta
+    const c = e.target.value, atuais = (o.attrs || {}).condicoes || []; e.target.value = '';
+    if (c && !atuais.includes(c)) mudar({ attrs:{ condicoes:[...atuais, c] } });
+    return;
+  }
+  const k = e.target.dataset.k; if (!k || !o) return;
   const t = e.target, v = t.type === 'checkbox' ? t.checked : t.type === 'number' && t.value !== '' ? +t.value : t.value;
   if (k.startsWith('a.')) return mudar({ attrs:{ [k.slice(2)]:v } });
-  const rep = /^(atq|mag)\.(\d+)\.(\w+)$/.exec(k);
-  if (rep) {
-    const nome = rep[1] === 'atq' ? 'ataques' : 'magias', l = structuredClone((o.attrs || {})[nome] || []);
-    l[rep[2]][rep[3]] = v; return mudar({ attrs:{ [nome]:l } });
+  const l = /^l\.(\w+)\.(\d+)\.(\w+)$/.exec(k);
+  if (l) {
+    const lista = structuredClone((o.attrs || {})[l[1]] || []);
+    if (!lista[l[2]]) return;
+    lista[l[2]][l[3]] = v; return mudar({ attrs:{ [l[1]]:lista } });
   }
   if (k.startsWith('ver')) return mudar({ ver:[...$('janela').querySelectorAll('[data-k^="ver"]:checked')].map(i => i.dataset.k === 'ver*' ? '*' : i.dataset.k.slice(4)) });
   if (k.startsWith('owner:')) return mudar({ owner:[...$('janela').querySelectorAll('[data-k^="owner:"]:checked')].map(i => i.dataset.k.slice(6)) });
   mudar({ [k]:v });
 });
 async function falarComFicha(text, token) {
+  if (((objs[janela] || {}).attrs || {}).privado) text = text.replace(/^\/r /, '/gr ');   // "Sussurrado": só você e o mestre
   const r = await postar('/chat', { text, ficha:janela, token });
   if (!r.ok) avisar((await r.json()).erro); else avisar('');
 }
@@ -1345,15 +1543,56 @@ $('janela').addEventListener('click', async e => {
   if (ac === 'fechar') return fecharJanela();
   if (ac === 'del') { if (await confirmar(`Apagar “${o.name || 'sem nome'}”? Não dá para desfazer.`)) { enviar({ op:'destroy', id:janela }); fecharJanela(); } return; }
   if (b.dataset.fab) { fichaAba = b.dataset.fab; return preencher(); }
-  if (b.dataset.ciclo) { if (meu(o)) mudar({ attrs:{ [b.dataset.ciclo]:(nivelPer(a[b.dataset.ciclo]) + 1) % 3 } }); return; }
-  if (ac === '+atq') return mudar({ attrs:{ ataques:[...(a.ataques || []), { n:'', a:'', d:'', t:'' }] } });
-  if (ac === '-atq') return mudar({ attrs:{ ataques:(a.ataques || []).filter((_, i) => i !== +b.dataset.i) } });
-  if (ac === 'vermag') { const i = +b.dataset.i; magiasAbertas.has(i) ? magiasAbertas.delete(i) : magiasAbertas.add(i); return preencher(); }
-  if (ac === '+mag') { magiasAbertas.add((a.magias || []).length); return mudar({ attrs:{ magias:[...(a.magias || []), { n:'', nv:+b.dataset.nv, prep:false, d:'' }] } }); }
-  if (ac === '-mag') { magiasAbertas.clear(); return mudar({ attrs:{ magias:(a.magias || []).filter((_, i) => i !== +b.dataset.i) } }); }
+  const pode = meu(o);
+  if (b.dataset.ciclo) { if (pode) mudar({ attrs:{ [b.dataset.ciclo]:(nivelPer(a[b.dataset.ciclo]) + 1) % 3 } }); return; }
+  if (b.dataset.modo !== undefined) { if (pode) mudar({ attrs:{ modo:b.dataset.modo } }); return; }
+  if (b.dataset.pub !== undefined) { if (pode) mudar({ attrs:{ privado:!!b.dataset.pub } }); return; }
+  if (ac === 'abre') { const ch = b.dataset.lista + ':' + b.dataset.i; abertas.has(ch) ? abertas.delete(ch) : abertas.add(ch); return preencher(); }
+  if (ac === 'insp') { if (pode) mudar({ attrs:{ inspiracao:!a.inspiracao } }); return; }
+  if (ac === 'profres') { if (pode) mudar({ attrs:{ ['res_' + b.dataset.c]:!a['res_' + b.dataset.c] } }); return; }
+  if (ac === '+l') {
+    const nome = b.dataset.lista, [campo] = FILTRO[nome] || [], novo = { n:'' };
+    if (campo && b.dataset.valor !== undefined) novo[campo] = nome === 'magias' ? +b.dataset.valor : b.dataset.valor;
+    if (nome === 'itens') novo.qtd = 1;
+    if (nome === 'recursos') Object.assign(novo, { atual:0, max:0, rec:'longo' });
+    abertas.add(nome + ':' + (a[nome] || []).length);   // item novo já abre para preencher
+    return mudar({ attrs:{ [nome]:[...(a[nome] || []), novo] } });
+  }
+  if (ac === '-l') {
+    const nome = b.dataset.lista;
+    for (const ch of [...abertas]) if (ch.startsWith(nome + ':')) abertas.delete(ch);   // os índices mudam
+    return mudar({ attrs:{ [nome]:(a[nome] || []).filter((_, i) => i !== +b.dataset.i) } });
+  }
+  if (ac === 'qtd' || ac === 'rec') {                   // − / + na quantidade do item ou no recurso
+    if (!pode) return;
+    const nome = ac === 'qtd' ? 'itens' : 'recursos', c = ac === 'qtd' ? 'qtd' : 'atual', l = structuredClone(a[nome] || []), it = l[b.dataset.i];
+    let v = (+it[c] || 0) + +b.dataset.d;
+    if (ac === 'rec' && +it.max) v = Math.min(+it.max, v);
+    it[c] = Math.max(0, v);
+    return mudar({ attrs:{ [nome]:l } });
+  }
+  if (ac === 'slot') {                                  // losango cheio gasta, vazio recupera
+    if (!pode) return;
+    const nv = b.dataset.nv, gasto = +a['gasto_' + nv] || 0, livres = (+a['esp_' + nv] || 0) - gasto;
+    return mudar({ attrs:{ ['gasto_' + nv]:+b.dataset.j < livres ? gasto + 1 : Math.max(0, gasto - 1) } });
+  }
+  if (ac === '-cond') { if (pode) mudar({ attrs:{ condicoes:(a.condicoes || []).filter(c => c !== b.dataset.c) } }); return; }
+  if (ac === 'dano' || ac === 'cura') {                 // dano gasta primeiro os PV temporários; cura não passa do máximo
+    const caixa = $('janela').querySelector('[data-pvdelta]'), n = Math.abs(+caixa.value || 0); if (!n) return caixa.focus();
+    let pv = +a.pv || 0, temp = +a.pvtemp || 0;
+    if (ac === 'dano') { const t = Math.min(temp, n); temp -= t; pv = Math.max(0, pv - (n - t)); }
+    else pv = +a.pvmax ? Math.min(+a.pvmax, pv + n) : pv + n;
+    caixa.value = '';
+    return mudar({ attrs:{ pv, pvtemp:temp } });
+  }
+  if (ac === 'curto') {
+    mudar({ attrs:{ recursos:(a.recursos || []).map(r => r.rec === 'curto' ? { ...r, atual:+r.max || 0 } : r) } });
+    return falarComFicha('/em faz um descanso curto');
+  }
   if (ac === 'descanso') {
-    const total = +(/^(\d+)/.exec(a.dv_total || '') || [, 0])[1];
-    const mud = { pv:+a.pvmax || a.pv, pvtemp:0, dv:Math.min(total || +a.dv || 0, (+a.dv || 0) + Math.max(1, Math.floor(total / 2))) };
+    const nivel = +a.nivel || 1;
+    const mud = { pv:+a.pvmax || a.pv, pvtemp:0, dv:Math.min(nivel, (+a.dv || 0) + Math.max(1, Math.floor(nivel / 2))),
+      recursos:(a.recursos || []).map(r => r.rec === 'nunca' ? r : { ...r, atual:+r.max || 0 }) };
     for (let nv = 1; nv <= 9; nv++) mud['gasto_' + nv] = 0;
     for (const i of [1, 2, 3]) { mud['morte_s' + i] = false; mud['morte_f' + i] = false; }
     mudar({ attrs:mud });
@@ -1379,15 +1618,15 @@ $('janela').addEventListener('click', async e => {
   if (tipo === 'atqm') return falarComFicha(`/r ${d20}+@{${conjDe(a)}_mod}+@{prof} ataque mágico${modo}`);
   if (tipo === 'morte') return falarComFicha('/r 1d20 teste contra a morte');
   if (tipo === 'dv') {
-    const dado = /d(\d+)/i.exec(a.dv_total || '');
-    if (!dado) return avisar('Escreva o total de dados de vida, ex.: 5d10.');
-    if ((+a.dv || 0) <= 0) return avisar('Sem dados de vida restantes.');
+    const dado = dadoVida(a);
+    if (!dado) return avisar('Escolha o dado de vida (d6, d8, d10 ou d12).');
+    if ((+a.dv || 0) <= 0) return avisar('Sem dados de vida restantes. O descanso longo recupera metade.');
     mudar({ attrs:{ dv:+a.dv - 1 } });
-    return falarComFicha(`/r 1d${dado[1]}+@{con_mod} dado de vida`);
+    return falarComFicha(`/r 1${dado}+@{con_mod} dado de vida`);
   }
   if (tipo === 'atq') {                              // como no Roll20: um clique rola o acerto e o dano
     const atq = (a.ataques || [])[k] || {}, nome = atq.n || 'ataque';
-    await falarComFicha(`/r ${d20}${sinal(String(atq.a || '+0').trim())} ${nome}${modo}`);
+    await falarComFicha(`/r ${d20}${sinal(acertoAtq(a, atq))} ${nome}${modo}`);
     if (atq.d) await falarComFicha(`/r ${atq.d} dano${atq.t ? ' ' + atq.t : ''} (${nome})`);
     return;
   }
@@ -1395,11 +1634,13 @@ $('janela').addEventListener('click', async e => {
     const m = (a.magias || [])[k] || {}, nv = +m.nv || 0, nome = m.n || 'uma magia';
     if (nv) {
       const esp = +a['esp_' + nv] || 0, gasto = +a['gasto_' + nv] || 0;
-      if (esp && gasto >= esp) return avisar(`Sem espaços de magia de nível ${nv}. Um descanso longo recupera.`);
+      if (esp && gasto >= esp) return avisar(`Sem espaços de ${nv}º círculo. Um descanso longo recupera.`);
       if (esp) mudar({ attrs:{ ['gasto_' + nv]:gasto + 1 } });
     }
-    const info = [nv ? 'nível ' + nv : 'truque', resumoMagia(m)].filter(Boolean).join(' · ').slice(0, 300);   // como o cartão de magia do Roll20, numa linha
-    return m.d ? falarComFicha(`/r ${m.d} ${nome} (${info})`) : falarComFicha(`/em lança ${nome} (${info})`);
+    const info = [nv ? nv + 'º círculo' : 'truque', resumoMagia(m)].filter(Boolean).join(' · ').slice(0, 300);   // o cartão de magia do Roll20, numa linha
+    const cd = ABREV[m.hit] ? ` — teste de ${ABREV[m.hit]} CD ${8 + profDe(a) + modDe(a[conjDe(a)])}` : '';
+    if (m.hit === 'atq') await falarComFicha(`/r ${d20}+@{${conjDe(a)}_mod}+@{prof} ${nome} (ataque mágico)${modo}`);
+    return m.d ? falarComFicha(`/r ${m.d} ${nome}${m.t ? ' ' + m.t : ''} (${info})${cd}`) : falarComFicha(`/em lança ${nome} (${info})${cd}`);
   }
 });
 $('imgArq').onchange = async e => {                      // anexo do documento: imagem, PDF ou texto
