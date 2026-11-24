@@ -394,7 +394,7 @@ def efeito(quem, corpo):
                 if visivel(h, dono):
                     q.put({'op': 'fx', 'kind': 'mostrar', 'id': corpo['id']})
         return
-    nums = {k: corpo[k] for k in ('x', 'y', 'x2', 'y2') if isinstance(corpo.get(k), (int, float))}
+    nums = {k: corpo[k] for k in ('x', 'y', 'x2', 'y2', 'max') if isinstance(corpo.get(k), (int, float))}
     if kind not in ('ping', 'regua', 'magia') or 'x' not in nums or not isinstance(corpo.get('page'), str):
         raise ValueError('efeito inválido')
     if kind == 'magia' and corpo.get('efeito') not in MAGIAS:

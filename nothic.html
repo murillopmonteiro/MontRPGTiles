@@ -375,7 +375,12 @@
   body.lay-mestre { grid-template:auto 1fr / 64px 1fr 380px; grid-template-areas:"h h h" "f a p"; }
   body.lay-mestre #ferramentas { grid-area:f; display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 0; background:var(--panel); border-right:1px solid var(--line); }
   #ferramentas button { width:44px; height:44px; padding:0; border:0; border-radius:10px; background:none; color:var(--dim); display:grid; place-items:center; }
-  #ferramentas button svg { width:20px; height:20px; } #ferramentas button.on { background:#4a3416; color:#f4d58a; } #ferramentas button:hover { color:var(--ink); }
+  #ferramentas button svg { width:20px; height:20px; }
+  .corFerr { width:44px; height:28px; display:grid; place-items:center; }
+  .corFerr input { width:28px; height:28px; padding:0; border:2px solid var(--line); border-radius:50%; background:none; cursor:pointer; overflow:hidden; }
+  .corFerr input::-webkit-color-swatch-wrapper { padding:0; } .corFerr input::-webkit-color-swatch { border:0; border-radius:50%; }
+  /* com uma ferramenta ativa (régua, ping, desenho, texto) os tokens e portas não pegam o clique */
+  #board[data-ferr] .tok, #board[data-ferr] .porta { pointer-events:none; } #ferramentas button.on { background:#4a3416; color:#f4d58a; } #ferramentas button:hover { color:var(--ink); }
   body.lay-mestre #ini { padding:14px 16px; }
   body.lay-mestre #ini h3 .ctrl button { height:30px; } body.lay-mestre #iniVai { background:var(--gold); color:#1d1a17; border-color:var(--gold); font-weight:700; }
   body.lay-mestre #ini li small { margin-left:auto; }
@@ -438,6 +443,9 @@
   <button type="button" data-ferr="" class="on" title="Selecionar e mover (Shift + arrastar: régua)" aria-label="Selecionar e mover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3l14 8-6 2-3 6z"/></svg></button>
   <button type="button" data-ferr="regua" title="Régua: arraste no mapa" aria-label="Régua"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg></button>
   <button type="button" data-ferr="ping" title="Ping: clique no mapa" aria-label="Ping"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="10"/></svg></button>
+  <button type="button" data-ferr="desenho" title="Desenhar à mão livre no mapa (botão direito num traço: apagar)" aria-label="Desenhar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+  <button type="button" data-ferr="texto" title="Escrever um texto no mapa: clique onde ele fica (botão direito no texto: apagar)" aria-label="Texto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg></button>
+  <label class="corFerr" title="Cor do desenho e do texto"><input type="color" id="corDesenho" value="#f4d58a" aria-label="Cor do desenho e do texto"></label>
   <button type="button" id="ferrMagia" title="Magia: áreas, efeitos e luzes" aria-label="Magia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/></svg></button>
   <button type="button" id="addTok" title="Cria um token no canto do mapa" aria-label="Novo token"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></button>
 </nav>
@@ -872,6 +880,17 @@ function tokensAtingidos(a, pg) {
 function desenharAreas(pg, s) {
   const c = ajustarCanvas(areasC, pg, s);
   for (const e of board.querySelectorAll('.tok.atingido')) e.classList.remove('atingido');
+  const linha = (pts, cor, w) => {
+    c.strokeStyle = cor || '#f4d58a'; c.lineWidth = Math.max(2, (w || .08) * s); c.lineCap = c.lineJoin = 'round';
+    c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x * s, y * s) : c.moveTo(x * s, y * s)); c.stroke();
+  };
+  for (const [, d] of naPagina('desenho', pg)) linha(d.pts || [], d.cor, d.w);
+  if (traco) linha(traco, $('corDesenho').value, .08);
+  for (const [, t] of naPagina('texto', pg)) {
+    c.font = `700 ${Math.max(11, (t.tam || .45) * s)}px Inter, system-ui, sans-serif`; c.textBaseline = 'middle';
+    c.lineWidth = 4; c.strokeStyle = '#141217cc'; c.lineJoin = 'round'; c.strokeText(t.txt || '', t.x * s, t.y * s);
+    c.fillStyle = t.cor || '#f4d58a'; c.fillText(t.txt || '', t.x * s, t.y * s);
+  }
   for (const [, a] of naPagina('aoe', pg)) desenharArea(c, a, s, pg, true);
   if (previa && previa.area) desenharArea(c, previa.area, s, pg, true);
   for (const [, l] of naPagina('luz', pg)) {
@@ -1160,10 +1179,12 @@ function desenharFx() {
     const a = [Math.floor(r.x) + .5, Math.floor(r.y) + .5], b = [Math.floor(r.x2) + .5, Math.floor(r.y2) + .5];
     c.strokeStyle = r.color; c.lineWidth = 3; c.setLineDash([8, 6]);
     c.beginPath(); c.moveTo(a[0] * s, a[1] * s); c.lineTo(b[0] * s, b[1] * s); c.stroke(); c.setLineDash([]);
-    const txt = `${distPes(b[0] - a[0], b[1] - a[1])} ft`;
+    const d = distPes(b[0] - a[0], b[1] - a[1]), passou = r.max && d > r.max;
+    const txt = r.max ? `${d} / ${r.max} ft` : `${d} ft`;        // com ficha: quanto andou / deslocamento
     c.font = '700 14px system-ui'; const w = c.measureText(txt).width + 14;
-    c.fillStyle = '#141217e0'; c.beginPath(); c.roundRect(b[0] * s + 10, b[1] * s - 12, w, 24, 6); c.fill();
-    c.fillStyle = r.color; c.fillText(txt, b[0] * s + 17, b[1] * s + 5);
+    const lx = b[0] * s + s * .5, ly = b[1] * s - s * .5 - 12;   // acima e à direita da casa final (o token não cobre)
+    c.fillStyle = '#141217e0'; c.beginPath(); c.roundRect(lx, ly, w, 24, 6); c.fill();
+    c.fillStyle = passou ? '#ff6b57' : r.color; c.fillText(txt, lx + 7, ly + 17);
   }
   if ((pings.length || magias.length) && !animando) { animando = true; requestAnimationFrame(() => { animando = false; desenharFx(); }); }
 }
@@ -1174,17 +1195,28 @@ board.addEventListener('dblclick', e => {
 });
 
 /* ---- arrastar tokens, régua (Shift) e mira ---- */
-let ultimoEnvio = 0, regua = null, miraInicio = null, ferramenta = '';
+let ultimoEnvio = 0, regua = null, miraInicio = null, ferramenta = '', traco = null;
 board.addEventListener('pointerdown', e => {
   if (e.button !== 0) return;
   if (mira) { miraInicio = quadrado(e); board.setPointerCapture(e.pointerId); e.preventDefault(); return; }
   if (ferramenta === 'ping' && paginaAtual().id && !e.target.closest('.tok, .porta')) {
     const p = quadrado(e); postar('/fx', { kind:'ping', page:paginaAtual().id, x:p.x, y:p.y }); e.preventDefault(); return;
   }
-  if ((e.shiftKey || (ferramenta === 'regua' && !e.target.closest('.tok, .porta'))) && paginaAtual().id) {
+  if (ferramenta === 'desenho' && paginaAtual().id) {
+    const p = quadrado(e); traco = [[p.x, p.y]];
+    board.setPointerCapture(e.pointerId); e.preventDefault(); return;
+  }
+  if (ferramenta === 'texto' && paginaAtual().id) {
+    const p = quadrado(e); e.preventDefault();
+    perguntar('Texto no mapa:').then(txt => { txt = (txt || '').trim(); if (txt) enviar({ op:'add', type:'texto', id:'x-' + crypto.randomUUID().slice(0, 12),
+      props:{ page:paginaAtual().id, x:p.x, y:p.y, txt:txt.slice(0, 200), cor:$('corDesenho').value } }); });
+    return;
+  }
+  if ((e.shiftKey || ferramenta === 'regua') && paginaAtual().id) {
     const p = quadrado(e); regua = { x:p.x, y:p.y };
     board.setPointerCapture(e.pointerId); e.preventDefault(); return;
   }
+  if (ferramenta) return;                               // com ferramenta ativa, nada de arrastar token
   const tk = e.target.closest('.tok'); if (!tk) return;
   const t = objs[tk.dataset.id]; if (!meu(t)) return;
   const p = quadrado(e);
@@ -1197,6 +1229,11 @@ board.addEventListener('pointermove', e => {
     if (mira.tipo === 'area') { previa = { area:areaDe(mira.valor, miraInicio, p) }; desenharAreas(paginaAtual(), px()); }
     return;
   }
+  if (traco) {                                   // desenhando: só guarda pontos que andaram um pouco
+    const u = traco[traco.length - 1];
+    if (Math.hypot(p.x - u[0], p.y - u[1]) > .06) { traco.push([p.x, p.y]); desenharAreas(paginaAtual(), px()); }
+    return;
+  }
   if (regua) {
     const m = { kind:'regua', page:paginaAtual().id, x:regua.x, y:regua.y, x2:p.x, y2:p.y };
     reguas[eu.nome] = { ...m, who:eu.nome, color:corDe(eu.nome) }; desenharFx();
@@ -1204,13 +1241,27 @@ board.addEventListener('pointermove', e => {
     return;
   }
   if (!arrastando) return;
-  const t = objs[arrastando.id];
+  const t = objs[arrastando.id], de = arrastando.de;
   t.x = p.x - arrastando.dx; t.y = p.y - arrastando.dy;
   render();
-  if (agora - ultimoEnvio > 100) { ultimoEnvio = agora; enviar({ op:'change', id:arrastando.id, props:{ x:t.x, y:t.y } }); }
+  // régua automática: de onde o token saiu até a casa onde ele vai cair, com o deslocamento da ficha
+  const r = { kind:'regua', page:paginaAtual().id, x:de[0] + .5, y:de[1] + .5, x2:Math.round(t.x) + .5, y2:Math.round(t.y) + .5 };
+  const desloc = +(((objs[t.ficha] || {}).attrs || {}).desloc) || 0; if (desloc) r.max = desloc;
+  const mudou = r.x2 !== r.x || r.y2 !== r.y;
+  if (mudou) reguas[eu.nome] = { ...r, who:eu.nome, color:corDe(eu.nome) }; else delete reguas[eu.nome];
+  desenharFx();
+  if (agora - ultimoEnvio > 100) {
+    ultimoEnvio = agora; enviar({ op:'change', id:arrastando.id, props:{ x:t.x, y:t.y } });
+    postar('/fx', mudou ? r : { ...r, fim:true });
+  }
 });
 function soltar(e) {
   if (mira && miraInicio) { const a = miraInicio; miraInicio = null; concluirMira(a, e && e.clientX != null ? quadrado(e) : a); return; }
+  if (traco) {
+    const pts = traco.map(([x, y]) => [Math.round(x * 100) / 100, Math.round(y * 100) / 100]); traco = null;
+    if (pts.length > 1) enviar({ op:'add', type:'desenho', id:'w-' + crypto.randomUUID().slice(0, 12), props:{ page:paginaAtual().id, pts, cor:$('corDesenho').value, w:.08 } });
+    desenharAreas(paginaAtual(), px()); return;
+  }
   if (regua) { regua = null; delete reguas[eu.nome]; desenharFx(); postar('/fx', { kind:'regua', page:paginaAtual().id, x:0, y:0, fim:true }); return; }
   if (!arrastando) return;
   const { id, el:tk, de } = arrastando, t = objs[id], pg = paginaAtual(), n = t.n || 1;
@@ -1222,6 +1273,7 @@ function soltar(e) {
     [t.x, t.y] = de; avisar('Tem uma parede (ou porta fechada) no caminho.');
   }
   tk.classList.remove('drag'); arrastando = null;
+  if (reguas[eu.nome]) { delete reguas[eu.nome]; desenharFx(); postar('/fx', { kind:'regua', page:pg.id, x:0, y:0, fim:true }); }
   if (t.x === de[0] && t.y === de[1]) { render(); return mostrarBolinhas(id); }   // só clicou: bolinhas
   enviar({ op:'change', id, props:{ x:t.x, y:t.y } });
   render();
@@ -1336,12 +1388,20 @@ function menuDaArea(e) {
   const pg = paginaAtual(), p = quadrado(e);
   const luz = naPagina('luz', pg).find(([, l]) => Math.hypot(l.x - p.x, l.y - p.y) < .6);
   const area = naPagina('aoe', pg).reverse().find(([, a]) => Luz.dentroArea(a, p.x, p.y) || Math.hypot(a.x - p.x, a.y - p.y) < .5);
-  const alvo = luz || area; if (!alvo) return;
+  const pertoDoTraco = d => (d.pts || []).some(([x, y], i, a) => {      // distância do ponto a cada segmento
+    if (!i) return Math.hypot(x - p.x, y - p.y) < .3;
+    const [x0, y0] = a[i - 1], dx = x - x0, dy = y - y0, l2 = dx * dx + dy * dy || 1;
+    const k = Math.max(0, Math.min(1, ((p.x - x0) * dx + (p.y - y0) * dy) / l2));
+    return Math.hypot(x0 + k * dx - p.x, y0 + k * dy - p.y) < .3;
+  });
+  const texto = souGM() && naPagina('texto', pg).reverse().find(([, t]) => p.x > t.x - .3 && p.x < t.x + (t.txt || '').length * (t.tam || .45) * .6 && Math.abs(p.y - t.y) < .4);
+  const traco = souGM() && naPagina('desenho', pg).reverse().find(([, d]) => pertoDoTraco(d));
+  const alvo = luz || area || texto || traco; if (!alvo) return;
   const [id, o] = alvo; if (!meu(o)) return;
   e.preventDefault();
   menu.innerHTML = '';
   const nomes = { circulo:'Esfera', cone:'Cone', cubo:'Cubo', linha:'Linha', luz:'Luz', dancantes:'Luzes dançantes', escuridao:'Escuridão' };
-  menu.appendChild(el('h4', '', `${nomes[o.shape || o.nome] || 'Magia'} de ${(o.owner || [])[0] || 'Mestre'}`));
+  menu.appendChild(el('h4', '', o.type === 'texto' ? 'Texto' : o.type === 'desenho' ? 'Desenho' : `${nomes[o.shape || o.nome] || 'Magia'} de ${(o.owner || [])[0] || 'Mestre'}`));
   const del = el('button', '', 'Apagar'); del.dataset.a = 'del'; menu.appendChild(del);
   abrirMenu(e);
   menu.onchange = null;
@@ -2081,6 +2141,7 @@ $('ferramentas').addEventListener('click', e => {
   ferramenta = b.dataset.ferr;
   for (const x of $('ferramentas').querySelectorAll('[data-ferr]')) x.classList.toggle('on', x === b);
   board.classList.toggle('mira', !!ferramenta);
+  if (ferramenta) board.dataset.ferr = ferramenta; else delete board.dataset.ferr;
 });
 $('doca').addEventListener('click', e => {
   const b = e.target.closest('[data-doca]'); if (!b) return;
