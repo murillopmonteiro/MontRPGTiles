@@ -134,8 +134,8 @@ def rolar_com_rotulo(texto):
 
 def visivel(obj, quem):
     papel, nome = quem
-    if obj is None or (papel != 'gm' and obj.get('layer') == 'gm'):
-        return False
+    if obj is None or (papel != 'gm' and (obj.get('layer') == 'gm' or obj.get('type') == 'modelo')):
+        return False   # modelos de token são a biblioteca do mestre
     if obj.get('type') == 'msg':
         to = obj.get('to')
         return not to or nome in to or nome == obj.get('who')
@@ -176,9 +176,12 @@ def permitir(msg, quem, obj):
         return
     if op != 'change' or not obj or obj.get('type') != 'token' or not meu:
         raise Proibido('jogador só move os próprios tokens')
-    # no próprio token: posição e a luz que carrega (tocha, lanterna)
-    if not props or set(props) - {'x', 'y', 'luz'}:
-        raise Proibido('jogador só muda posição e luz do token')
+    # no próprio token: posição, a luz que carrega (tocha, lanterna) e as condições
+    if not props or set(props) - {'x', 'y', 'luz', 'cond'}:
+        raise Proibido('jogador só muda posição, luz e condições do token')
+    c = props.get('cond', [])
+    if not (isinstance(c, list) and len(c) <= 20 and all(isinstance(x, str) and len(x) <= 30 for x in c)):
+        raise Proibido('condições inválidas')
     if not all(isinstance(props[k], (int, float)) for k in ('x', 'y') if k in props) or not luz_valida(props.get('luz')):
         raise Proibido('valores inválidos')
 
@@ -412,6 +415,10 @@ class Mesa(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=PASTA, **kw)
 
+    def end_headers(self):
+        self.send_header('Cache-Control', 'no-cache')   # sempre confere a versão nova da mesa (304 se não mudou)
+        super().end_headers()
+
     def log_message(self, *a):
         pass
 
@@ -625,6 +632,13 @@ def teste():
     assert post({'op': 'destroy', 'id': 't1'}, ANA) == 403
     assert req('POST', '/upload' + ANA, b'PNG', 'image/png')[0] == 403
 
+    # modelos de token: só o mestre cria e edita, e os jogadores nem recebem
+    assert post({'op': 'add', 'type': 'modelo', 'id': 'm1', 'props': {'name': 'Orc', 'img': '/uploads/x.png', 'n': 1}}, ANA) == 403
+    assert post({'op': 'add', 'type': 'modelo', 'id': 'm1', 'props': {'name': 'Orc', 'img': '/uploads/x.png', 'n': 1}}) == 200
+    assert evento(mestre)['type'] == 'modelo'
+    assert post({'op': 'change', 'id': 'm1', 'props': {'n': 2}}, ANA) == 403
+    assert 'm1' not in snapshot(('player', 'Ana')) and 'm1' in snapshot(MESTRE)
+
     # esconder: o jogador recebe destroy; mostrar de novo: recebe add com tudo
     assert post({'op': 'change', 'id': 't2', 'props': {'layer': 'gm'}}) == 200
     assert evento(mestre)['op'] == 'change' and evento(ana)['op'] == 'destroy'; evento(bia)
@@ -676,6 +690,9 @@ def teste():
     # Fase 3: luz no próprio token, áreas e luzes de magia do jogador, merge do mapa
     assert post({'op': 'change', 'id': 't1', 'props': {'luz': [20, 20]}}, ANA) == 200
     assert post({'op': 'change', 'id': 't1', 'props': {'luz': [20, 9999]}}, ANA) == 403
+    assert post({'op': 'change', 'id': 't1', 'props': {'cond': ['Caído', 'Cego']}}, ANA) == 200
+    assert post({'op': 'change', 'id': 't1', 'props': {'cond': 'Caído'}}, ANA) == 403
+    assert post({'op': 'change', 'id': 't2', 'props': {'cond': ['Caído']}}, ANA) == 403, 'condição no token dos outros'
     assert post({'op': 'change', 'id': 't1', 'props': {'dv': 120}}, ANA) == 403, 'visão no escuro é do mestre'
     area = {'shape': 'cone', 'x': 1, 'y': 1, 'angle': 0, 'size': 15, 'owner': ['Ana']}
     assert post({'op': 'add', 'type': 'aoe', 'id': 'a1', 'props': area}, ANA) == 200

@@ -197,6 +197,11 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 - Fichas antigas continuam abrindo; campos que não existem mais na ficha nova (características em texto, aliados e tesouro) aparecem só quando têm algo escrito.
 - **Travamento corrigido:** os botões das linhas usavam a mesma marca das listas, e cada redesenho enchia os botões de linhas, dobrando a página (de 1 mil para 290 mil elementos em seis passos). As listas agora têm marca própria, e a ficha só se redesenha quando ela mesma muda, não a cada token que anda. Testado num Edge invisível: trocar de aba leva poucos milissegundos e 200 eventos da mesa com a ficha aberta não fazem a página crescer.
 
+### Modelos de token
+- Aba **Tokens** (só o mestre): "+ Modelo" ou soltar PNG/WebP transparentes cria um modelo (`modelo`: `name`, `img`, `n` = tamanho em quadrados). Clicar edita nome, tamanho (1×1 a 4×4), troca a imagem ou apaga.
+- Arrastar o modelo para o mapa cria um token com a imagem, sem círculo nem borda, ocupando os `n` quadrados. Só o mestre coloca tokens no mapa (o servidor já recusava `add` de jogador).
+- O servidor não manda modelos aos jogadores. `ponytail:` o token copia o modelo ao ser colocado; mudar o modelo depois não muda os tokens já no mapa (como o token padrão do Roll20).
+
 ### Fora do plano (de propósito)
 - **Áudio, música e vídeo:** usar o Discord.
 - **API de scripts (Mods), loja, baralhos, dados 3D, grade hexagonal:** só se fizerem falta de verdade.
