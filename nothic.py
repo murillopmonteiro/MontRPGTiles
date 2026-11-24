@@ -542,10 +542,15 @@ def limpar_sessoes():
         presenca(nome, papel, -1)
 
 
+class Servidor(ThreadingHTTPServer):
+    # no Windows, SO_REUSEADDR deixa dois nothic.py ouvirem a mesma porta, cada um com a sua mesa
+    # (o mapa vai para um e a página lê do outro); sem ele, o segundo falha ao abrir
+    allow_reuse_address = os.name != 'nt'
+    daemon_threads = True
+
+
 def servidor(host, porta):
-    srv = ThreadingHTTPServer((host, porta), Mesa)
-    srv.daemon_threads = True
-    return srv
+    return Servidor((host, porta), Mesa)
 
 
 # ---------------------------------------------------------------- autoteste
@@ -777,12 +782,16 @@ def teste():
 if __name__ == '__main__':
     if '--teste' in sys.argv:
         teste(); sys.exit()
+    host = '0.0.0.0' if '--lan' in sys.argv else '127.0.0.1'
+    try:                                  # abre a porta antes de tudo: um segundo Nothic não chega a mexer no campanha.json
+        srv = servidor(host, 8765)
+    except OSError:
+        sys.exit('Já tem um Nothic rodando na porta 8765. Feche o outro (Ctrl+C na janela dele) e tente de novo.')
     carregar()
     threading.Thread(target=gravar_periodicamente, daemon=True).start()
-    host = '0.0.0.0' if '--lan' in sys.argv else '127.0.0.1'
     base = 'http://localhost:8765'
     print('Nothic rodando (Ctrl+C para parar). Guarde o link do mestre só para você:')
     print(f'  Mestre (mesa):  {base}/nothic.html?gm={estado["gm"]}')
     print(f'  Mestre (MonTT): {base}/MonTT.html?gm={estado["gm"]}')
     print(f'  Jogadores:      {base}/nothic.html?p=SeuNome   (pelo túnel, troque o endereço)', flush=True)
-    servidor(host, 8765).serve_forever()
+    srv.serve_forever()
