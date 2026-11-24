@@ -130,6 +130,11 @@
   #janela .atq { display:grid; grid-template-columns:1fr 110px 110px auto auto auto; gap:4px; margin-bottom:4px; }
   #janela img { max-width:100%; border-radius:6px; margin-top:6px; }
   #janela .texto { white-space:pre-wrap; overflow-wrap:anywhere; }
+  #pergunta { background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:16px; width:min(380px, 90vw); box-shadow:0 8px 32px #000c; }
+  #pergunta::backdrop { background:#0008; }
+  #pergunta form { display:flex; flex-direction:column; gap:10px; }
+  #pergunta label { white-space:pre-line; font-size:14px; }
+  #pergunta .linha { display:flex; gap:8px; flex-direction:row-reverse; }
   .gmonly { display:none !important; } body.gm .gmonly { display:revert !important; }
   @media (max-width: 760px) { body { grid-template:auto 1fr 45vh / 1fr; } aside { border-left:0; border-top:1px solid var(--line); } #janela { right:3vw; } }
 </style>
@@ -206,14 +211,26 @@
   </div>
   <small>Clique no mapa para mirar. Cone, linha e raio: arraste na direção. Esc cancela.</small>
 </div>
+<dialog id="pergunta"><form method="dialog">
+  <label for="pergValor" id="pergTexto"></label>
+  <input id="pergValor" autocomplete="off">
+  <div class="linha"><button value="ok" class="ativo">OK</button><button value="" formnovalidate>Cancelar</button></div>
+</form></dialog>
 <script src="nothic-luz.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const board = $('board'), fog = $('fog'), fxc = $('fx'), areasC = $('areas'), escuroC = $('escuro');
 const params = new URLSearchParams(location.search);
+// pergunta numa caixa da própria página: prompt()/confirm() não funcionam em todo navegador (o do app, por exemplo)
+function perguntar(texto, padrao = '', soConfirmar = false) {
+  const d = $('pergunta'), i = $('pergValor');
+  $('pergTexto').textContent = texto; i.hidden = soConfirmar; i.value = padrao; d.returnValue = '';
+  d.showModal(); if (!soConfirmar) i.select();
+  return new Promise(ok => { d.onclose = () => ok(d.returnValue === 'ok' ? (soConfirmar || i.value) : (soConfirmar ? false : null)); });
+}
+const confirmar = texto => perguntar(texto, '', true);
 if (!params.get('gm') && !params.get('p')) {           // link sem nome: pergunta uma vez
-  const nome = (prompt('Seu nome na mesa:') || '').trim();
-  if (nome) { params.set('p', nome); location.search = params; }
+  perguntar('Seu nome na mesa:').then(nome => { nome = (nome || '').trim(); if (nome) { params.set('p', nome); location.search = params; } });
 }
 const Q = location.search;                              // ?gm=… ou ?p=… vai em toda requisição
 let objs = {}, eu = { papel:'', nome:'' }, zoom = 1, arrastando = null, verComo = '';
@@ -561,7 +578,7 @@ function passarTurno(d) {
 }
 $('iniVai').onclick = () => passarTurno(1);
 $('iniVolta').onclick = () => passarTurno(-1);
-$('iniLimpa').onclick = () => confirm('Limpar a iniciativa?') && mudarOrdem([], 0, 1);
+$('iniLimpa').onclick = async () => (await confirmar('Limpar a iniciativa?')) && mudarOrdem([], 0, 1);
 
 /* ---- chat ---- */
 const vistos = new Set();
@@ -921,12 +938,12 @@ board.addEventListener('contextmenu', e => {
     const a = ev.target.dataset.a; if (!a) return;
     menu.hidden = true;
     if (a === 'vis') enviar({ op:'change', id, props:{ layer: t.layer === 'gm' ? 'objects' : 'gm' } });
-    if (a === 'del' && confirm('Apagar este token?')) enviar({ op:'destroy', id });
+    if (a === 'del' && await confirmar('Apagar este token?')) enviar({ op:'destroy', id });
     if (a === 'ficha') abrir(t.ficha);
     if (a === 'pv') mudarPV(id);
     if (a === 'ini') {
       const padrao = f ? fmt(modDe((f.attrs || {}).des)) : '+0';
-      const mod = prompt(`Modificador de iniciativa de ${t.name || 'token'} (ex.: +2):`, padrao); if (mod == null) return;
+      const mod = await perguntar(`Modificador de iniciativa de ${t.name || 'token'} (ex.: +2):`, padrao); if (mod == null) return;
       const r = await postar('/chat', { text:'/init ' + mod.trim(), token:id });
       if (!r.ok) avisar((await r.json()).erro);
     }
@@ -956,8 +973,8 @@ $('pagina').onchange = e => enviar({ op:'change', id:'mesa', props:{ page:e.targ
 $('luzModo').onchange = e => enviar({ op:'change', id:paginaAtual().id, props:{ luzModo:e.target.value } });
 $('explorer').onchange = e => enviar({ op:'change', id:paginaAtual().id, props:{ explorer:e.target.checked } });
 $('verComo').onchange = e => { verComo = e.target.value; render(); };
-$('addTok').onclick = () => {
-  const nome = prompt('Nome do token:', 'Herói'); if (!nome) return;
+$('addTok').onclick = async () => {
+  const nome = await perguntar('Nome do token:', 'Herói'); if (!nome) return;
   const cores = ['#c0392b', '#2e86c1', '#27ae60', '#8e44ad', '#d68910', '#16a085'];
   enviar({ op:'add', type:'token', id:'t-' + crypto.randomUUID().slice(0, 12),
            props:{ page:paginaAtual().id, x:0, y:0, n:1, r:.42, name:nome, kind:'hero', owner:[], color:cores[Math.random() * cores.length | 0] } });
@@ -1046,12 +1063,12 @@ function novoObjeto(type, props) {
   abrirQuandoChegar = id;
   enviar({ op:'add', type, id, props });
 }
-$('novaFicha').onclick = () => {
-  const nome = prompt('Nome do personagem:'); if (!nome) return;
+$('novaFicha').onclick = async () => {
+  const nome = await perguntar('Nome do personagem:'); if (!nome) return;
   novoObjeto('character', { name:nome, owner:souGM() ? [] : [eu.nome], ver:[],
     attrs:{ for:10, des:10, con:10, int:10, sab:10, car:10, nivel:1, ca:10, pv:10, pvmax:10, desloc:30 } });
 };
-$('novoDoc').onclick = () => { const nome = prompt('Título do documento:'); if (nome) novoObjeto('handout', { name:nome, text:'', ver:[] }); };
+$('novoDoc').onclick = async () => { const nome = await perguntar('Título do documento:'); if (nome) novoObjeto('handout', { name:nome, text:'', ver:[] }); };
 
 function abrir(id) {
   const o = objs[id]; if (!o) return;
@@ -1154,7 +1171,7 @@ $('janela').addEventListener('click', async e => {
   const b = e.target.closest('button'), o = objs[janela]; if (!b || !o) return;
   const a = o.attrs || {}, ac = b.dataset.acao;
   if (ac === 'fechar') return fecharJanela();
-  if (ac === 'del') { if (confirm(`Apagar “${o.name || 'sem nome'}”? Não dá para desfazer.`)) { enviar({ op:'destroy', id:janela }); fecharJanela(); } return; }
+  if (ac === 'del') { if (await confirmar(`Apagar “${o.name || 'sem nome'}”? Não dá para desfazer.`)) { enviar({ op:'destroy', id:janela }); fecharJanela(); } return; }
   if (ac === '+atq') return mudar({ attrs:{ ataques:[...(a.ataques || []), { n:'', a:'', d:'' }] } });
   if (ac === '-atq') return mudar({ attrs:{ ataques:(a.ataques || []).filter((_, i) => i !== +b.dataset.i) } });
   if (ac === 'img') return $('imgArq').click();
@@ -1185,9 +1202,9 @@ $('imgArq').onchange = async e => {                      // anexo do documento: 
     mudar(props);
   } catch (err) { avisar(err.message); }
 };
-function mudarPV(tid) {
+async function mudarPV(tid) {
   const t = objs[tid], f = t.ficha && objs[t.ficha], v = f ? f.attrs || {} : t;
-  const r = prompt(`PV de ${t.name || 'token'} (agora ${v.pv ?? '?'}/${v.pvmax ?? '?'}).\nNovo valor, -7 para dano, +5 para cura, ou 12/20 para mudar também o máximo:`);
+  const r = await perguntar(`PV de ${t.name || 'token'} (agora ${v.pv ?? '?'}/${v.pvmax ?? '?'}).\nNovo valor, -7 para dano, +5 para cura, ou 12/20 para mudar também o máximo:`);
   const m = (r || '').trim().match(/^([+-]?)(\d+)(?:\s*\/\s*(\d+))?$/); if (!m) return r && avisar('Use 12, -7, +5 ou 12/20.');
   const max = m[3] ? +m[3] : +v.pvmax || 0;
   let pv = m[1] ? (+v.pv || 0) + (m[1] === '-' ? -m[2] : +m[2]) : +m[2];
@@ -1195,7 +1212,11 @@ function mudarPV(tid) {
   const mud = { pv:Math.max(0, pv), ...(m[3] ? { pvmax:max } : {}) };
   enviar(f ? { op:'change', id:t.ficha, props:{ attrs:mud } } : { op:'change', id:tid, props:mud });
 }
-addEventListener('keydown', e => { if (e.key === 'Escape' && janela && !mira) fecharJanela(); });
+let escDaPergunta = 0;                                   // Esc na caixa de pergunta só cancela a pergunta
+$('pergunta').addEventListener('cancel', () => { escDaPergunta = performance.now(); });
+addEventListener('keydown', e => {
+  if (e.key === 'Escape' && janela && !mira && !$('pergunta').open && performance.now() - escDaPergunta > 300) fecharJanela();
+});
 
 /* ---- zoom contínuo (Ctrl + roda, ou pinça no touchpad) e mãozinha para arrastar o mapa ---- */
 const palco = document.querySelector('main');
