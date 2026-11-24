@@ -188,7 +188,7 @@ button,input,select{font:inherit;color:inherit}
     <div class="grp">
       <button class="btn" id="mapTabBtn" title="New, save and open maps (N)">Maps</button>
       <button class="btn primary" id="exportBtn" title="Export the map as a PNG image">Export PNG</button>
-      <button class="btn" id="mesaBtn" title="Envia este andar para a mesa online (abra o MonTT pelo py mesa.py)">Enviar à mesa</button>
+      <button class="btn" id="mesaBtn" title="Envia este andar para o Nothic, a mesa online (abra o MonTT pelo py mesa.py)">Enviar ao Nothic</button>
       <input type="file" id="fileIn" accept=".json,application/json" hidden>
       <input type="file" id="dirIn" webkitdirectory directory multiple hidden>
       <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp" multiple hidden>
@@ -2656,7 +2656,7 @@ async function sendToTable(){
   try{ drawScene(c.getContext('2d'),s,{export:true}); } finally { map.tokens=toks; settings.fogView=fv; map.fog=fg; }
   const blob=await new Promise(r=>c.toBlob(r,'image/webp',.9));
   try{
-    toast('Enviando para a mesa…');
+    toast('Enviando para o Nothic…');
     const {url}=await mesaPost('/upload',blob,'image/webp');
     const lv=map.levels[map.level], page=levelPage();
     const name=map.levels.length>1 ? map.name+' · '+lv.name : map.name;
@@ -2665,7 +2665,7 @@ async function sendToTable(){
     await Promise.all(toks.map(t=>{ const z=sizeOf(t);
       return mesaOp({op:'add',type:'token',id:'k-'+t.id,keep:true,props:{page,x:t.x,y:t.y,n:z.n,r:z.r,name:t.name,kind:t.kind,color:t.color,owner:[]}}); }));
     mesaPage=page; mesaFog=JSON.stringify(mesaMapa());
-    toast('Mapa enviado. A névoa agora segue sozinha para a mesa');
+    toast('Mapa enviado. A névoa agora segue sozinha para o Nothic');
   }catch(err){ toast(String(err.message)==='403' ? 'O link do mestre não confere: use o que o py mesa.py mostra' : 'Não deu: o py mesa.py está rodando?'); }
 }
 // o que a mesa precisa do mapa além da imagem: névoa, paredes e portas (luz dinâmica)

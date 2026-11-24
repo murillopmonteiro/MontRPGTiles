@@ -1,4 +1,4 @@
-# Plano: a mesa online (um VTT pequeno, no estilo do Roll20)
+# Plano: Nothic, a mesa online (um VTT pequeno, no estilo do Roll20)
 
 Objetivo: uma mesa virtual para o mestre e uns 3 a 6 amigos, com mapa, tokens, névoa, luz dinâmica, dados, fichas, chat e iniciativa. Não é para escalar: um servidor, uma campanha de cada vez.
 
@@ -123,7 +123,7 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 ### Fase 0: prova de conceito + envio do MonTT ✅ feita (commit `21964b5`)
 - `mesa.py`: `GET /stream` (SSE; hoje `GET /poll`), `POST /op` (add/change/destroy), `POST /upload` (PNG/JPG/WebP, nome gerado pelo servidor), serve os arquivos da pasta sem expor `.git` nem `campanha.json`. Grava `campanha.json` a cada 2 s, com troca atômica.
 - `mesa.html`: mostra o mapa atual, com tokens arrastáveis que se encaixam na grade, zoom, criação de token e duplo clique para apagar.
-- MonTT ganhou **Enviar à mesa**: o andar atual vai como imagem na visão de jogador (névoa opaca, sem marcas de mestre, sem tokens) e cada token vira uma peça. Reenviar troca só a imagem (`keep`), e os tokens ficam onde estavam.
+- MonTT ganhou **Enviar à mesa** (hoje "Enviar ao Nothic"): o andar atual vai como imagem na visão de jogador (névoa opaca, sem marcas de mestre, sem tokens) e cada token vira uma peça. Reenviar troca só a imagem (`keep`), e os tokens ficam onde estavam.
 - **Testado:** envio do mapa de exemplo, arraste sincronizado entre duas abas, reenvio sem perder posições, recarregar a página mantém o estado, autoteste `py mesa.py --teste`.
 - **Falta testar:** outro PC (`--lan`) e o túnel `cloudflared`.
 
@@ -194,7 +194,7 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 | `mesa.py` | servidor: SSE + ops + upload + gravação; `py mesa.py --teste` roda o autoteste |
 | `mesa.html` | a mesa (o que os jogadores abrem) |
 | `mesa-luz.js` | geometria da visão, do movimento e das áreas de magia; `node mesa-luz.js` testa |
-| `MonTT.html` | o editor de mapas; função `sendToTable` = botão "Enviar à mesa" |
+| `MonTT.html` | o editor de mapas; função `sendToTable` = botão "Enviar ao Nothic" |
 | `lightscreen-core.js` | rolador de dados e tabelas (o chat vai reaproveitar a sintaxe) |
 | `campanha.json`, `uploads/` | gerados pelo servidor, fora do git |
 

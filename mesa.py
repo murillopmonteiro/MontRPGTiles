@@ -1,4 +1,4 @@
-"""Mesa online: servidor de sincronização, só com a biblioteca padrão do Python.
+"""Nothic, a mesa online: servidor de sincronização, só com a biblioteca padrão do Python.
 
     py mesa.py            -> mostra os links do mestre e dos jogadores
     py mesa.py --lan      -> aceita outros PCs da rede
@@ -742,7 +742,7 @@ if __name__ == '__main__':
     threading.Thread(target=gravar_periodicamente, daemon=True).start()
     host = '0.0.0.0' if '--lan' in sys.argv else '127.0.0.1'
     base = 'http://localhost:8765'
-    print('Mesa rodando (Ctrl+C para parar). Guarde o link do mestre só para você:')
+    print('Nothic rodando (Ctrl+C para parar). Guarde o link do mestre só para você:')
     print(f'  Mestre (mesa):  {base}/mesa.html?gm={estado["gm"]}')
     print(f'  Mestre (MonTT): {base}/MonTT.html?gm={estado["gm"]}')
     print(f'  Jogadores:      {base}/mesa.html?p=SeuNome   (pelo túnel, troque o endereço)', flush=True)

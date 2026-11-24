@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mesa</title>
+<title>Nothic</title>
 <link rel="icon" href="logo.svg">
 <style>
   :root { --bg:#16141a; --panel:#211e26; --line:#3a3442; --ink:#ece5d8; --dim:#a39a8c; --gold:#d4a24c; }
@@ -127,7 +127,7 @@
 <body>
 <header>
   <img src="logo.svg" alt="" width="26" height="26">
-  <strong id="titulo">Mesa</strong>
+  <strong id="titulo">Nothic</strong>
   <span id="papel">…</span>
   <div id="online"></div>
   <select id="pagina" class="gmonly" title="Mapa que os jogadores estão vendo"></select>
@@ -145,7 +145,7 @@
 </header>
 <main>
   <div id="board" class="grid"><canvas id="areas"></canvas><canvas id="escuro"></canvas><canvas id="fog"></canvas><canvas id="fx"></canvas></div>
-  <div id="vazio">Nenhum mapa ainda.<br>O mestre envia um mapa pelo MonTT Maker (botão “Enviar à mesa”).</div>
+  <div id="vazio">Nenhum mapa ainda.<br>O mestre envia um mapa pelo MonTT Maker (botão “Enviar ao Nothic”).</div>
   <div id="dica">Arrastar o fundo: mover o mapa · Ctrl + roda: zoom · Duplo clique: ping · Shift + arrastar: régua · Botão direito: menu do token ou da área</div>
 </main>
 <aside>
@@ -266,7 +266,8 @@ const olhos = () => souGM() ? verComo : eu.nome;
 
 function render() {
   const pg = paginaAtual(), s = px();
-  $('titulo').textContent = pg.name || 'Mesa';
+  $('titulo').textContent = pg.name || 'Nothic';
+  document.title = pg.name ? pg.name + ' · Nothic' : 'Nothic';
   $('papel').textContent = souGM() ? 'mestre' : eu.nome;
   $('papel').className = souGM() ? 'gm' : '';
   $('vazio').hidden = !!pg.id;
