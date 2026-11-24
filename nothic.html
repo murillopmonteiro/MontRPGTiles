@@ -90,13 +90,23 @@
   #magia { width:300px; }
   #magia .grade { display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; }
   #magia .grade button { padding:4px 6px; font-size:12px; }
-  #diario { padding:8px 12px; border-bottom:1px solid var(--line); }
-  #diario .ctrl { margin-left:auto; display:flex; gap:4px; } #diario .ctrl button { padding:2px 8px; }
-  #diario ul { list-style:none; margin:6px 0 0; padding:0; max-height:20vh; overflow:auto; }
-  #diario li { display:flex; gap:6px; align-items:center; padding:3px 6px; border-radius:6px; cursor:pointer; font-size:13px; }
-  #diario li:hover, #diario li.aberto { background:#2c2833; }
-  #diario li small { margin-left:auto; color:var(--dim); font-size:11px; }
-  #diario li.vazio { cursor:default; color:var(--dim); font-size:12px; }
+  #abas { display:flex; border-bottom:1px solid var(--line); padding:0 8px; }
+  #abas button { flex:1; border:0; border-bottom:2px solid transparent; border-radius:0; background:none; color:var(--dim); padding:8px 4px; font-size:13px; position:relative; }
+  #abas button.ativa { color:var(--ink); border-bottom-color:var(--gold); }
+  #abas button.novo::after { content:''; position:absolute; top:7px; margin-left:4px; width:7px; height:7px; border-radius:50%; background:var(--gold); }
+  .aba { flex:1; min-height:0; display:flex; flex-direction:column; } .aba[hidden] { display:none; }
+  .lista { padding:8px 12px; gap:6px; }
+  .lista .ctrl { display:flex; gap:6px; align-items:center; } .lista .ctrl button { padding:4px 10px; } .lista .ctrl small { color:var(--dim); font-size:11px; }
+  .lista ul { list-style:none; margin:0; padding:0; flex:1; overflow:auto; min-height:0; }
+  .lista li { display:flex; gap:6px; align-items:center; padding:5px 6px; border-radius:6px; cursor:pointer; font-size:13px; }
+  .lista li:hover, .lista li.aberto { background:#2c2833; }
+  .lista li small { margin-left:auto; color:var(--dim); font-size:11px; text-align:right; }
+  .lista li.vazio { cursor:default; color:var(--dim); font-size:12px; }
+  #aba-docs.soltando { outline:2px dashed var(--gold); outline-offset:-6px; }
+  #janela.largo { width:min(900px, 94vw); }
+  @media (min-width: 761px) { #janela { max-width:calc(100vw - 356px); } }   /* nunca passa da borda esquerda */
+  #janela iframe { width:100%; height:70vh; border:0; border-radius:6px; background:#fff; margin-top:6px; }
+  #janela .anexo { font-size:12px; color:var(--dim); }
   .tok i { position:absolute; left:8%; bottom:-8px; width:84%; height:5px; background:#000b; border-radius:3px; overflow:hidden; }
   .tok i[hidden] { display:none; } .tok i u { display:block; height:100%; }
   #janela { position:fixed; z-index:40; top:60px; right:340px; width:min(560px, 94vw); max-height:calc(100vh - 80px); overflow:auto;
@@ -154,18 +164,29 @@
       <span class="ctrl gmonly"><button id="iniVolta" title="Turno anterior">◀</button><button id="iniVai" title="Próximo turno">▶</button><button id="iniLimpa" title="Limpar a iniciativa">Limpar</button></span></h3>
     <ol id="iniLista"></ol>
   </section>
-  <section id="diario">
-    <h3>Diário <span class="ctrl"><button id="novaFicha" title="Cria uma ficha de personagem">+ Ficha</button><button id="novoTexto" class="gmonly" title="Cria um handout: texto e imagem para mostrar aos jogadores">+ Texto</button></span></h3>
-    <ul id="diarioLista"></ul>
-  </section>
-  <div id="msgs" aria-live="polite"></div>
-  <div id="dados"></div>
+  <nav id="abas" role="tablist">
+    <button role="tab" data-aba="chat" id="tabChat" class="ativa">Chat</button>
+    <button role="tab" data-aba="fichas">Fichas</button>
+    <button role="tab" data-aba="docs" id="tabDocs">Documentos</button>
+  </nav>
   <div id="erro"></div>
-  <form id="chat"><input id="texto" autocomplete="off" placeholder="Mensagem, /r 1d20+5 ou /fx fogo" maxlength="500"><button>Enviar</button></form>
+  <div class="aba" id="aba-chat">
+    <div id="msgs" aria-live="polite"></div>
+    <div id="dados"></div>
+    <form id="chat"><input id="texto" autocomplete="off" placeholder="Mensagem, /r 1d20+5 ou /fx fogo" maxlength="500"><button>Enviar</button></form>
+  </div>
+  <div class="aba lista" id="aba-fichas" hidden>
+    <div class="ctrl"><button id="novaFicha" title="Cria uma ficha de personagem de D&amp;D 5e">+ Ficha</button><small class="gmonly">Arraste uma ficha para o mapa para criar o token</small></div>
+    <ul id="listaFichas"></ul>
+  </div>
+  <div class="aba lista" id="aba-docs" hidden>
+    <div class="ctrl gmonly"><button id="novoDoc" title="Cria um documento: texto, imagem ou PDF">+ Documento</button><small>ou solte arquivos aqui</small></div>
+    <ul id="listaDocs"></ul>
+  </div>
 </aside>
 <div id="menu" class="pop" hidden></div>
 <div id="janela" hidden></div>
-<input type="file" id="imgArq" accept="image/png,image/jpeg,image/webp" hidden>
+<input type="file" id="imgArq" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,text/plain,.txt,.md" hidden>
 <div id="magia" class="pop" hidden>
   <h4>Áreas</h4>
   <div class="grade">
@@ -555,6 +576,7 @@ function renderChat() {
   }
   while (caixa.children.length > 200) caixa.firstChild.remove();
   if (novas && noFim) caixa.scrollTop = caixa.scrollHeight;
+  if (novas && aba !== 'chat') $('tabChat').classList.add('novo');   // bolinha na aba Chat
 }
 function desenharMsg(id, m) {
   const d = el('div', 'msg ' + m.kind + (m.to ? ' priv' : '')); d.dataset.id = id;
@@ -671,6 +693,7 @@ $('magia').onclick = e => {
 /* ---- efeitos passageiros: ping, régua e animações de magia ---- */
 let pings = [], reguas = {}, magias = [];
 function receberFx(m) {
+  if (m.kind === 'mostrar') { if (objs[m.id]) { abrir(m.id); mostrarAba('docs'); } return; }
   if (m.page !== paginaAtual().id) return;
   if (m.kind === 'ping') pings.push({ ...m, t0:performance.now() });
   if (m.kind === 'regua') { if (m.fim) delete reguas[m.who]; else reguas[m.who] = m; }
@@ -950,22 +973,62 @@ const PERICIAS = { acrobacia:['Acrobacia', 'des'], adestrar:['Adestrar animais',
 let janela = null, abrirQuandoChegar = null, assinaturaDiario = '';
 const fichaAberta = () => janela && objs[janela] && objs[janela].type === 'character' ? janela : undefined;
 
-function renderDiario() {
-  const itens = [...doTipo('character'), ...doTipo('handout')].sort((a, b) => (a[1].name || '').localeCompare(b[1].name || ''));
-  const sig = JSON.stringify([janela, souGM(), itens.map(([id, o]) => [id, o.name, o.owner])]);
-  if (sig === assinaturaDiario) return;            // não refaz a lista a cada token que anda (quebraria o arraste)
-  assinaturaDiario = sig;
-  const ul = $('diarioLista'); ul.innerHTML = '';
-  if (!itens.length) ul.appendChild(el('li', 'vazio', souGM() ? 'Crie fichas e textos nos botões acima.' : 'Nada aqui ainda. “+ Ficha” cria a sua.'));
+/* ---- painel lateral em abas: Chat, Fichas, Documentos ---- */
+let aba = 'chat';
+function mostrarAba(a) {
+  aba = a;
+  for (const b of $('abas').children) b.classList.toggle('ativa', b.dataset.aba === a);
+  for (const d of document.querySelectorAll('aside .aba')) d.hidden = d.id !== 'aba-' + a;
+  $('abas').querySelector(`[data-aba="${a}"]`).classList.remove('novo');
+  if (a === 'chat') { const c = $('msgs'); c.scrollTop = c.scrollHeight; }
+}
+$('abas').onclick = e => { const b = e.target.closest('[data-aba]'); if (b) mostrarAba(b.dataset.aba); };
+
+const tipoDoc = o => [o.pdf && 'PDF', o.img && 'imagem', o.text && 'texto'].filter(Boolean).join(' + ') || 'vazio';
+const quemVe = o => (o.ver || []).includes('*') ? 'todos veem' : (o.ver || []).length ? (o.ver || []).join(', ') : 'só você';
+function listar(ul, itens, vazio, detalhe) {
+  ul.innerHTML = '';
+  if (!itens.length) ul.appendChild(el('li', 'vazio', vazio));
   for (const [id, o] of itens) {
     const li = el('li', id === janela ? 'aberto' : '', o.name || 'Sem nome'); li.dataset.id = id;
-    li.appendChild(el('small', '', o.type === 'handout' ? 'texto' : (o.owner || []).join(', ') || 'ficha'));
-    if (souGM() && o.type === 'character') { li.draggable = true; li.title = 'Clique para abrir · arraste para o mapa para criar um token ligado'; }
+    li.appendChild(el('small', '', detalhe(o)));
     ul.appendChild(li);
   }
+  return ul;
 }
-$('diarioLista').onclick = e => { const li = e.target.closest('li[data-id]'); if (li) abrir(li.dataset.id); };
-$('diarioLista').ondragstart = e => e.dataTransfer.setData('text/plain', 'ficha:' + e.target.dataset.id);
+function renderDiario() {
+  const porNome = t => doTipo(t).sort((a, b) => (a[1].name || '').localeCompare(b[1].name || ''));
+  const fichas = porNome('character'), docs = porNome('handout');
+  const sig = JSON.stringify([janela, souGM(), [...fichas, ...docs].map(([id, o]) => [id, o.name, o.owner, o.ver, !!o.pdf, !!o.img, !!o.text])]);
+  if (sig === assinaturaDiario) return;            // não refaz a lista a cada token que anda (quebraria o arraste)
+  assinaturaDiario = sig;
+  listar($('listaFichas'), fichas, souGM() ? 'Nenhuma ficha ainda. “+ Ficha” cria uma.' : 'Nenhuma ficha sua ainda. “+ Ficha” cria a sua.',
+    o => (o.owner || []).join(', ') || 'do mestre');
+  for (const li of $('listaFichas').querySelectorAll('li[data-id]')) if (souGM()) { li.draggable = true; li.title = 'Clique para abrir · arraste para o mapa para criar um token ligado'; }
+  listar($('listaDocs'), docs, souGM() ? 'Nenhum documento. Crie um ou solte arquivos (PDF, imagem, texto) aqui.' : 'O mestre ainda não mostrou nenhum documento.',
+    o => souGM() ? `${tipoDoc(o)} · ${quemVe(o)}` : tipoDoc(o));
+}
+for (const ul of [$('listaFichas'), $('listaDocs')]) ul.onclick = e => { const li = e.target.closest('li[data-id]'); if (li) abrir(li.dataset.id); };
+$('listaFichas').ondragstart = e => e.dataTransfer.setData('text/plain', 'ficha:' + e.target.dataset.id);
+
+// arquivo → campos do documento: imagem e PDF sobem para uploads/, texto vira o texto do documento
+async function lerArquivo(f) {
+  if (f.type.startsWith('text/') || /\.(txt|md)$/i.test(f.name)) return { text:await f.text() };
+  const r = await fetch('/upload' + Q, { method:'POST', headers:{ 'Content-Type':f.type }, body:f });
+  const d = await r.json(); if (!r.ok) throw new Error(d.erro);
+  return f.type === 'application/pdf' ? { pdf:d.url } : { img:d.url };
+}
+const docs = $('aba-docs');                          // soltar arquivos na aba cria um documento por arquivo (como no Roll20)
+docs.addEventListener('dragover', e => { if (souGM() && e.dataTransfer.types.includes('Files')) { e.preventDefault(); docs.classList.add('soltando'); } });
+docs.addEventListener('dragleave', () => docs.classList.remove('soltando'));
+docs.addEventListener('drop', async e => {
+  docs.classList.remove('soltando'); if (!souGM() || !e.dataTransfer.files.length) return;
+  e.preventDefault();
+  for (const f of e.dataTransfer.files) {
+    try { novoObjeto('handout', { name:f.name.replace(/\.[^.]+$/, ''), text:'', ver:[], ...(await lerArquivo(f)) }); }
+    catch (err) { avisar(`${f.name}: ${err.message}`); }
+  }
+});
 board.addEventListener('dragover', e => { if (souGM()) e.preventDefault(); });
 board.addEventListener('drop', e => {                // ficha arrastada para o mapa vira um token ligado a ela
   const d = e.dataTransfer.getData('text/plain'), pg = paginaAtual();
@@ -988,7 +1051,7 @@ $('novaFicha').onclick = () => {
   novoObjeto('character', { name:nome, owner:souGM() ? [] : [eu.nome], ver:[],
     attrs:{ for:10, des:10, con:10, int:10, sab:10, car:10, nivel:1, ca:10, pv:10, pvmax:10, desloc:30 } });
 };
-$('novoTexto').onclick = () => { const nome = prompt('Título do texto:'); if (nome) novoObjeto('handout', { name:nome, text:'', ver:[] }); };
+$('novoDoc').onclick = () => { const nome = prompt('Título do documento:'); if (nome) novoObjeto('handout', { name:nome, text:'', ver:[] }); };
 
 function abrir(id) {
   const o = objs[id]; if (!o) return;
@@ -998,9 +1061,12 @@ function abrir(id) {
   const topo = `<div class="topo"><input class="nome" data-k="name" aria-label="Nome">
     ${pode ? '<button data-acao="del" title="Apagar">Apagar</button>' : ''}<button data-acao="fechar" aria-label="Fechar">×</button></div>`;
   if (o.type === 'handout') {
-    j.innerHTML = topo + `<img data-img alt="" hidden>` + (souGM()
-      ? `<div class="linha"><button data-acao="img">Imagem…</button><button data-acao="semimg">Tirar imagem</button></div>
-         <h4>Texto (os jogadores leem)</h4><textarea data-k="text"></textarea>
+    j.innerHTML = topo + (souGM()
+      ? `<div class="linha"><button data-acao="mostrar" title="Abre este documento agora na tela de todos os jogadores">Mostrar aos jogadores</button>
+           <button data-acao="img" title="Imagem, PDF ou arquivo de texto">Anexar arquivo…</button><button data-acao="semimg">Tirar anexos</button></div>` : '')
+      + `<img data-img alt="" hidden><div data-pdf hidden><iframe title="PDF"></iframe><a class="anexo" target="_blank" rel="noopener">Abrir o PDF em outra aba</a></div>`
+      + (souGM()
+      ? `<h4>Texto (os jogadores leem)</h4><textarea data-k="text"></textarea>
          <h4>Notas do mestre (só você vê)</h4><textarea data-k="gmnota"></textarea>`
       : `<p class="texto" data-texto></p>`);
   } else {
@@ -1059,6 +1125,11 @@ function preencher() {
       : tipo === 'res' ? fmt(modDe(a[k]) + (a['res_' + k] ? prof : 0)) : fmt(modDe(a[PERICIAS[k][1]]) + (a['per_' + k] ? prof : 0));
   }
   const img = j.querySelector('[data-img]'); if (img) { img.hidden = !o.img; if (o.img && img.getAttribute('src') !== o.img) img.src = o.img; }
+  const pdf = j.querySelector('[data-pdf]');
+  if (pdf) {
+    pdf.hidden = !o.pdf; j.classList.toggle('largo', !!o.pdf);
+    if (o.pdf && pdf.firstChild.getAttribute('src') !== o.pdf) { pdf.firstChild.src = o.pdf; pdf.lastChild.href = o.pdf; }
+  }
   const txt = j.querySelector('[data-texto]'); if (txt) txt.textContent = o.text || '';
 }
 function mudar(props) {                                  // aplica já na tela e manda; o servidor junta os campos da ficha
@@ -1087,7 +1158,12 @@ $('janela').addEventListener('click', async e => {
   if (ac === '+atq') return mudar({ attrs:{ ataques:[...(a.ataques || []), { n:'', a:'', d:'' }] } });
   if (ac === '-atq') return mudar({ attrs:{ ataques:(a.ataques || []).filter((_, i) => i !== +b.dataset.i) } });
   if (ac === 'img') return $('imgArq').click();
-  if (ac === 'semimg') return mudar({ img:'' });
+  if (ac === 'semimg') return mudar({ img:'', pdf:'' });
+  if (ac === 'mostrar') {                          // "Show to Players": libera para todos e abre na tela deles
+    if (!(o.ver || []).includes('*')) mudar({ ver:[...(o.ver || []), '*'] });
+    setTimeout(() => postar('/fx', { kind:'mostrar', id:janela }), 300);
+    return avisar('Documento aberto na tela dos jogadores.');
+  }
   if (!b.dataset.rola) return;
   const [tipo, k] = b.dataset.rola.split(':'), prof = c => a[c] ? '+@{prof}' : '';
   if (tipo === 'ini') {
@@ -1101,11 +1177,13 @@ $('janela').addEventListener('click', async e => {
   if (tipo === 'acerto') return falarComFicha(`/r 1d20${/^[+-]/.test(ac2) ? ac2 : '+' + ac2} ${nome}`);
   if (tipo === 'dano') return atq.d ? falarComFicha(`/r ${atq.d} dano de ${nome}`) : avisar('Escreva o dano do ataque (ex.: 1d8+@{for_mod}).');
 });
-$('imgArq').onchange = async e => {                      // imagem do handout: mesmo upload do mapa
+$('imgArq').onchange = async e => {                      // anexo do documento: imagem, PDF ou texto
   const f = e.target.files[0]; e.target.value = ''; if (!f || !janela) return;
-  const r = await fetch('/upload' + Q, { method:'POST', headers:{ 'Content-Type':f.type }, body:f });
-  const d = await r.json(); if (!r.ok) return avisar(d.erro);
-  mudar({ img:d.url });
+  try {
+    const props = await lerArquivo(f), atual = (objs[janela] || {}).text;
+    if (props.text && atual) props.text = atual + '\n\n' + props.text;   // texto anexado vai para o fim, não apaga o que já tinha
+    mudar(props);
+  } catch (err) { avisar(err.message); }
 };
 function mudarPV(tid) {
   const t = objs[tid], f = t.ficha && objs[t.ficha], v = f ? f.attrs || {} : t;

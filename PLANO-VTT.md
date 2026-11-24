@@ -181,6 +181,13 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 - **Testado no navegador:** o mestre criou a ficha do Brannoc digitando Destreza 16 e nível 5, marcou Furtividade e rolou: `1d20+3+3` como "Brannoc (Mestre)"; deu a ficha à Ana e a arrastou para o mapa (token ligado, dono Ana); a Ana tirou 7 PV pelo menu do token e a barra caiu para 30% (amarela) nas duas telas; ela rolou `/r 1d20+@{des_mod} ataque furtivo` no chat com a ficha aberta; o mestre criou a "Carta do barão" com uma nota secreta, mostrou só para a Ana e a carta abriu sozinha na tela dela, sem a nota; o PV de um goblin sem ficha ficou sem barra para a Ana. O autoteste cobre permissões, merge, `@{}` (com sinal negativo) e handouts.
 - `ponytail:` a ficha inteira vai para quem pode vê-la (o Roll20 manda um resumo e carrega o resto ao abrir; com 6 pessoas não pesa). Mudar os donos da ficha não muda os donos dos tokens já no mapa (use o menu do token). O PV de monstro não aparece na tela do jogador, mas chega no navegador dele (DevTools), como a imagem do mapa.
 
+### Depois da Fase 4: abas e documentos
+- O painel lateral virou três abas: **Chat** (com uma bolinha quando chega mensagem e você está em outra aba), **Fichas** e **Documentos**.
+- **Documentos** (os handouts do Roll20): texto, imagem e PDF. O mestre cria pelo botão ou solta arquivos na aba (um documento por arquivo; `.txt`/`.md` viram o texto). Na janela, "Anexar arquivo…" junta mais um anexo, o PDF aparece num leitor dentro da janela, e as notas do mestre continuam só dele.
+- **Mostrar aos jogadores** (o "Show to Players"): libera para todos e manda um `fx` `mostrar` que abre o documento na tela de quem pode vê-lo, mesmo que já estivesse liberado antes. Só o mestre pode.
+- O servidor aceita PDF e GIF no upload, além de PNG, JPG e WebP.
+- `ponytail:` sem pastas nem arquivamento de documentos (o Roll20 tem); entra quando a lista ficar grande.
+
 ### Fora do plano (de propósito)
 - **Áudio, música e vídeo:** usar o Discord.
 - **API de scripts (Mods), loja, baralhos, dados 3D, grade hexagonal:** só se fizerem falta de verdade.

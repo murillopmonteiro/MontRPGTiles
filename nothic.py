@@ -30,7 +30,8 @@ ARQUIVO = os.path.join(PASTA, 'campanha.json')
 OPS = {'add', 'change', 'destroy'}
 MAX_CORPO = 256 * 1024
 MAX_IMAGEM = 25 * 1024 * 1024
-IMAGENS = {'image/png': '.png', 'image/jpeg': '.jpg', 'image/webp': '.webp'}
+ARQUIVOS = {'image/png': '.png', 'image/jpeg': '.jpg', 'image/webp': '.webp', 'image/gif': '.gif',
+            'application/pdf': '.pdf'}   # mapas e anexos dos documentos
 MESTRE = ('gm', 'Mestre')
 MSGS_GUARDADAS, MSGS_NO_SNAPSHOT = 300, 100
 CORES = ['#e0735a', '#5fa8e0', '#7fd18f', '#c98ae8', '#e8c46a', '#5fd1c4', '#f08fb0', '#a3b86c']
@@ -379,6 +380,17 @@ MAGIAS = {'fogo', 'raio', 'relampago', 'cura', 'nuvem', 'gelo', 'brilho'}
 def efeito(quem, corpo):
     """Ping, régua e animações de magia: vão para todos na hora e não são salvos (o 'broadcast' do Roll20)."""
     kind = corpo.get('kind')
+    if kind == 'mostrar':   # o "Show to Players" do Roll20: abre o documento na tela de quem pode vê-lo
+        if quem[0] != 'gm':
+            raise Proibido('só o mestre mostra documentos')
+        with trava:
+            h = estado['objs'].get(corpo.get('id'))
+            if not h or h.get('type') != 'handout':
+                raise ValueError('documento não existe')
+            for q, dono in clientes.items():
+                if visivel(h, dono):
+                    q.put({'op': 'fx', 'kind': 'mostrar', 'id': corpo['id']})
+        return
     nums = {k: corpo[k] for k in ('x', 'y', 'x2', 'y2') if isinstance(corpo.get(k), (int, float))}
     if kind not in ('ping', 'regua', 'magia') or 'x' not in nums or not isinstance(corpo.get('page'), str):
         raise ValueError('efeito inválido')
@@ -484,10 +496,10 @@ class Mesa(SimpleHTTPRequestHandler):
         if quem[0] != 'gm':
             self.descartar(n)
             return self.responder(403, {'erro': 'só o mestre envia imagens'})
-        ext = IMAGENS.get((self.headers.get('Content-Type') or '').split(';')[0])
+        ext = ARQUIVOS.get((self.headers.get('Content-Type') or '').split(';')[0])
         if not ext:
             self.descartar(n)
-            return self.responder(415, {'erro': 'só PNG, JPG ou WebP'})
+            return self.responder(415, {'erro': 'só PNG, JPG, WebP, GIF ou PDF'})
         if not 0 < n <= MAX_IMAGEM:
             return self.send_error(413)
         os.makedirs(os.path.join(PASTA, 'uploads'), exist_ok=True)
@@ -692,6 +704,13 @@ def teste():
         except PermissionError:
             time.sleep(.05)
     assert req('POST', '/upload' + GM, b'<script>', 'text/html')[0] == 415
+    cod, corpo = req('POST', '/upload' + GM, b'%PDF-1.4 fake', 'application/pdf')
+    pdf = json.loads(corpo)['url']; assert cod == 200 and pdf.endswith('.pdf')
+    for _ in range(20):
+        try:
+            os.remove(os.path.join(PASTA, pdf.lstrip('/'))); break
+        except PermissionError:
+            time.sleep(.05)
     for caminho in ('/.git/config', '/campanha.json'):
         assert req('GET', caminho)[0] == 404, caminho
 
@@ -723,6 +742,9 @@ def teste():
     h = snapshot(ANA_).get('h1'); assert h and 'gmnota' not in h and 'h1' not in snapshot(BIA_)
     assert post({'op': 'change', 'id': 'h1', 'props': {'text': 'hack'}}, ANA) == 403
     assert post({'op': 'change', 'id': 'h1', 'props': {'ver': 'Ana'}}) == 400
+    mostrar = lambda q, hid='h1': req('POST', '/fx' + q, json.dumps({'kind': 'mostrar', 'id': hid}))[0]
+    assert mostrar(ANA) == 403 and mostrar(GM, 'c1') == 400 and mostrar(GM) == 200
+    assert any(ana.proximo().get('kind') == 'mostrar' for _ in range(500)), 'a Ana vê o h1, então recebe'
 
     assert estado['objs']['pl-Ana']['online'] is True
     # sessão que parou de perguntar sai da mesa; link de outra pessoa não reaproveita a sessão
