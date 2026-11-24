@@ -105,7 +105,13 @@
   #aba-docs.soltando { outline:2px dashed var(--gold); outline-offset:-6px; }
   #janela.largo { width:min(900px, 94vw); }
   @media (min-width: 761px) { #janela { max-width:calc(100vw - 356px); } }   /* nunca passa da borda esquerda */
-  #janela iframe { width:100%; height:70vh; border:0; border-radius:6px; background:#fff; margin-top:6px; }
+  .leitor { display:flex; flex-direction:column; align-items:center; gap:6px; margin-top:6px; }
+  .leitor[hidden] { display:none; }
+  .leitor canvas { max-width:100%; border-radius:3px; background:#fff; box-shadow:0 6px 24px #000b; }
+  .paginas { display:flex; align-items:center; gap:2px; font-size:12px; color:var(--dim); font-variant-numeric:tabular-nums; }
+  .paginas[hidden] { display:none; }
+  .paginas button { background:none; border:0; color:var(--ink); font-size:18px; line-height:1; padding:0 8px; }
+  .paginas button:disabled { opacity:.25; cursor:default; }
   #janela .anexo { font-size:12px; color:var(--dim); }
   .tok i { position:absolute; left:8%; bottom:-8px; width:84%; height:5px; background:#000b; border-radius:3px; overflow:hidden; }
   .tok i[hidden] { display:none; } .tok i u { display:block; height:100%; }
@@ -1081,7 +1087,7 @@ function abrir(id) {
     j.innerHTML = topo + (souGM()
       ? `<div class="linha"><button data-acao="mostrar" title="Abre este documento agora na tela de todos os jogadores">Mostrar aos jogadores</button>
            <button data-acao="img" title="Imagem, PDF ou arquivo de texto">Anexar arquivo…</button><button data-acao="semimg">Tirar anexos</button></div>` : '')
-      + `<img data-img alt="" hidden><div data-pdf hidden><iframe title="PDF"></iframe><a class="anexo" target="_blank" rel="noopener">Abrir o PDF em outra aba</a></div>`
+      + `<img data-img alt="" hidden><div data-pdf class="leitor" hidden><canvas></canvas><div class="paginas" hidden><button data-pag="-1" aria-label="Página anterior">‹</button><span></span><button data-pag="1" aria-label="Próxima página">›</button></div></div>`
       + (souGM()
       ? `<h4>Texto (os jogadores leem)</h4><textarea data-k="text"></textarea>
          <h4>Notas do mestre (só você vê)</h4><textarea data-k="gmnota"></textarea>`
@@ -1145,10 +1151,49 @@ function preencher() {
   const pdf = j.querySelector('[data-pdf]');
   if (pdf) {
     pdf.hidden = !o.pdf; j.classList.toggle('largo', !!o.pdf);
-    if (o.pdf && pdf.firstChild.getAttribute('src') !== o.pdf) { pdf.firstChild.src = o.pdf; pdf.lastChild.href = o.pdf; }
+    if (o.pdf && leitor.url !== o.pdf) carregarPdf(o.pdf, pdf);             // PDF novo: carrega uma vez
+    else if (o.pdf && leitor.box !== pdf) { leitor.box = pdf; desenharPagina(); }   // janela reaberta: só redesenha
   }
   const txt = j.querySelector('[data-texto]'); if (txt) txt.textContent = o.text || '';
 }
+/* ---- leitor de PDF: só a página e um "‹ 1 / 5 ›" pequeno (pdf.js, guardado em vendor/pdfjs) ---- */
+let pdfjs = null, leitor = { url:'' };
+async function carregarPdf(url, box) {
+  leitor = { url, box, doc:null, pag:1, n:0 };
+  try {
+    if (!pdfjs) {
+      pdfjs = await import('/vendor/pdfjs/pdf.min.mjs');
+      pdfjs.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.mjs';
+    }
+    const doc = await pdfjs.getDocument({ url }).promise;
+    if (leitor.url !== url) return;                     // trocou de documento enquanto carregava
+    Object.assign(leitor, { doc, n:doc.numPages });
+    desenharPagina();
+  } catch (err) { avisar('Não deu para abrir o PDF: ' + err.message); }
+}
+async function desenharPagina() {
+  const box = leitor.box; if (!box || !box.isConnected || !leitor.doc) return;
+  const page = await leitor.doc.getPage(leitor.pag), base = page.getViewport({ scale:1 });
+  // a página inteira cabe na janela: pela largura, sem passar de 75% da altura da tela
+  const esc = Math.min((box.clientWidth || 500) / base.width, innerHeight * .75 / base.height), dpr = devicePixelRatio || 1;
+  const c = box.querySelector('canvas'), v = page.getViewport({ scale:esc * dpr });
+  leitor.tarefa?.cancel();
+  c.width = v.width; c.height = v.height; c.style.width = v.width / dpr + 'px';
+  leitor.tarefa = page.render({ canvas:c, viewport:v });
+  leitor.tarefa.promise.catch(() => {});                // cancelada por uma troca rápida de página: tudo bem
+  const nav = box.querySelector('.paginas'), [ant, , prox] = nav.children;
+  nav.hidden = leitor.n < 2; nav.children[1].textContent = `${leitor.pag} / ${leitor.n}`;
+  ant.disabled = leitor.pag <= 1; prox.disabled = leitor.pag >= leitor.n;
+}
+function mudarPagina(d) {
+  const p = Math.max(1, Math.min(leitor.n, leitor.pag + d));
+  if (p !== leitor.pag) { leitor.pag = p; desenharPagina(); }
+}
+addEventListener('keydown', e => {                      // ← → passam página com um PDF aberto
+  if (!leitor.doc || $('janela').hidden || $('janela').querySelector('[data-pdf]')?.hidden || e.target.closest('input, textarea')) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); mudarPagina(e.key === 'ArrowRight' ? 1 : -1); }
+});
+
 function mudar(props) {                                  // aplica já na tela e manda; o servidor junta os campos da ficha
   const o = objs[janela];
   if (props.attrs) o.attrs = { ...o.attrs, ...props.attrs }; else Object.assign(o, props);
@@ -1170,6 +1215,7 @@ async function falarComFicha(text, token) {
 $('janela').addEventListener('click', async e => {
   const b = e.target.closest('button'), o = objs[janela]; if (!b || !o) return;
   const a = o.attrs || {}, ac = b.dataset.acao;
+  if (b.dataset.pag) return mudarPagina(+b.dataset.pag);
   if (ac === 'fechar') return fecharJanela();
   if (ac === 'del') { if (await confirmar(`Apagar “${o.name || 'sem nome'}”? Não dá para desfazer.`)) { enviar({ op:'destroy', id:janela }); fecharJanela(); } return; }
   if (ac === '+atq') return mudar({ attrs:{ ataques:[...(a.ataques || []), { n:'', a:'', d:'' }] } });

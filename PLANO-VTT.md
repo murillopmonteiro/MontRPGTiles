@@ -183,7 +183,7 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 
 ### Depois da Fase 4: abas e documentos
 - O painel lateral virou três abas: **Chat** (com uma bolinha quando chega mensagem e você está em outra aba), **Fichas** e **Documentos**.
-- **Documentos** (os handouts do Roll20): texto, imagem e PDF. O mestre cria pelo botão ou solta arquivos na aba (um documento por arquivo; `.txt`/`.md` viram o texto). Na janela, "Anexar arquivo…" junta mais um anexo, o PDF aparece num leitor dentro da janela, e as notas do mestre continuam só dele.
+- **Documentos** (os handouts do Roll20): texto, imagem e PDF. O mestre cria pelo botão ou solta arquivos na aba (um documento por arquivo; `.txt`/`.md` viram o texto). Na janela, "Anexar arquivo…" junta mais um anexo e as notas do mestre continuam só dele. O PDF é desenhado pelo pdf.js (guardado em `vendor/pdfjs`, carregado só quando abre um PDF): só a página, do tamanho da janela, com um "‹ 1 / 5 ›" pequeno embaixo e ← → para passar.
 - **Mostrar aos jogadores** (o "Show to Players"): libera para todos e manda um `fx` `mostrar` que abre o documento na tela de quem pode vê-lo, mesmo que já estivesse liberado antes. Só o mestre pode.
 - O servidor aceita PDF e GIF no upload, além de PNG, JPG e WebP.
 - `ponytail:` sem pastas nem arquivamento de documentos (o Roll20 tem); entra quando a lista ficar grande.
