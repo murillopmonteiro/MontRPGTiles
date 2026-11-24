@@ -188,6 +188,13 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 - O servidor aceita PDF e GIF no upload, além de PNG, JPG e WebP.
 - `ponytail:` sem pastas nem arquivamento de documentos (o Roll20 tem); entra quando a lista ficar grande.
 
+### Ficha completa, no modelo do Roll20
+- Cabeçalho: classe, nível, antecedente, raça, tendência, XP e o seletor de rolagem (normal, com vantagem, com desvantagem), que vale para todos os d20 da ficha.
+- **Principal** em três colunas, como a ficha 5e do Roll20: atributos (clique no nome rola o teste) ao lado de inspiração, bônus de proficiência, resistências e perícias (○ nada, ● proficiente, ◆ especialista); percepção passiva e outras proficiências. No meio: CA, iniciativa, deslocamento, PV (máximo, atual, temporário), dados de vida (rolar gasta um e soma Constituição), testes contra a morte, ataques (🎲 rola acerto e dano juntos, com tipo de dano) e equipamento com moedas. À direita: personalidade, ideais, vínculos, defeitos, características e talentos.
+- **Magias**: habilidade de conjuração, CD e ataque mágico calculados, truques e níveis 1–9 com espaços e usados; "Lançar" gasta um espaço (avisa quando acabou) e rola o dano/cura se tiver. "Descanso longo" recupera PV, espaços, metade dos dados de vida e limpa os testes contra a morte.
+- **História**: idade, altura, peso, olhos, pele, cabelo, aparência, história, aliados, tesouro e notas.
+- Fichas antigas continuam abrindo (a perícia marcada vira "proficiente", as notas vão para História).
+
 ### Fora do plano (de propósito)
 - **Áudio, música e vídeo:** usar o Discord.
 - **API de scripts (Mods), loja, baralhos, dados 3D, grade hexagonal:** só se fizerem falta de verdade.

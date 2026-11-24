@@ -127,13 +127,51 @@
   #janela input { padding:4px 6px; } #janela input[type=number] { width:62px; }
   #janela textarea { width:100%; min-height:90px; background:#2c2833; color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px; font:inherit; resize:vertical; }
   #janela button.rola { padding:1px 6px; font-size:12px; }
-  #janela .atr { display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; }
-  #janela .atr > div { border:1px solid var(--line); border-radius:8px; padding:6px 2px; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:11px; }
-  #janela .atr input[type=number] { width:52px; text-align:center; }
-  #janela .mod { font-size:18px; font-weight:800; }
-  #janela .pericias { columns:2; font-size:13px; } #janela .pericias span { display:flex; gap:4px; align-items:center; margin-bottom:3px; }
-  #janela .pericias i, #janela .atr i { font-style:normal; color:var(--dim); }
-  #janela .atq { display:grid; grid-template-columns:1fr 110px 110px auto auto auto; gap:4px; margin-bottom:4px; }
+  #janela select { padding:4px 6px; }
+  #janela.character { width:min(1040px, 94vw); }
+  #janela .cab { display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin-bottom:6px; }
+  #janela .cab .g input { width:118px; }
+  #janela .fabas { display:flex; gap:2px; border-bottom:1px solid var(--line); margin:6px 0 10px; }
+  #janela .fabas button { border:0; border-bottom:2px solid transparent; border-radius:0; background:none; color:var(--dim); padding:6px 14px; }
+  #janela .fabas button.ativa { color:var(--ink); border-bottom-color:var(--gold); }
+  #janela section[hidden] { display:none; }
+  #janela .f3 { display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:12px; align-items:start; }
+  #janela .col { display:flex; flex-direction:column; gap:10px; min-width:0; }
+  #janela .atr-per { display:grid; grid-template-columns:82px 1fr; gap:10px; align-items:start; }
+  #janela .atrs { display:flex; flex-direction:column; gap:8px; }
+  #janela .caixa { border:1px solid var(--line); border-radius:8px; padding:8px; background:#26222c; display:flex; flex-direction:column; gap:4px; min-width:0; }
+  #janela .caixa .tit { text-align:center; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-top:2px; }
+  #janela .atr1 { align-items:center; padding:6px 4px; gap:2px; }
+  #janela .atr1 .rotulo { background:none; border:0; padding:0; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); }
+  #janela .atr1 .rotulo:hover { color:var(--gold); }
+  #janela .atr1 .mod { font-size:24px; font-weight:800; line-height:1.15; }
+  #janela .atr1 input { width:46px; text-align:center; padding:2px; font-size:12px; border-radius:99px; }
+  #janela .linha1 { flex-direction:row; align-items:center; gap:8px; font-size:12px; }
+  #janela .linha1 b { font-size:16px; min-width:30px; text-align:center; }
+  #janela .lista-rol { display:flex; flex-direction:column; gap:2px; font-size:12px; }
+  #janela .lista-rol span { display:flex; align-items:center; gap:5px; }
+  #janela .lista-rol i { font-style:normal; min-width:24px; text-align:right; font-variant-numeric:tabular-nums; }
+  #janela .lista-rol em { font-style:normal; color:var(--dim); font-size:10px; margin-left:auto; }
+  #janela button.link { background:none; border:0; padding:0; color:var(--ink); text-align:left; font-size:12px; }
+  #janela button.link:hover { color:var(--gold); text-decoration:underline; }
+  #janela button.ciclo { background:none; border:0; padding:0; width:14px; color:var(--gold); font-size:12px; }
+  #janela .tres { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+  #janela .duas { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  #janela .grande { align-items:center; }
+  #janela .grande input, #janela .grande b, #janela button.big { font-size:22px; font-weight:800; width:72px; text-align:center; }
+  #janela button.big { width:auto; }
+  #janela .pvatual { font-size:28px; font-weight:800; text-align:center; width:100% !important; }
+  #janela .morte span { display:flex; gap:4px; align-items:center; font-size:12px; }
+  #janela .atq { display:grid; grid-template-columns:22px 1.5fr 62px 1.1fr 1fr 22px; gap:4px; align-items:center; margin-bottom:4px; }
+  #janela .mag { display:grid; grid-template-columns:18px 1fr 96px auto 22px; gap:4px; align-items:center; margin-bottom:4px; }
+  #janela .atq input:not([type=checkbox]), #janela .mag input:not([type=checkbox]) { min-width:0; width:100%; }
+  #janela .cab-atq small { font-size:10px; color:var(--dim); text-transform:uppercase; }
+  #janela .moedas { display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; } #janela .moedas input { width:100%; }
+  #janela label.bloco { width:100%; }
+  #janela .niveis { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  #janela .nv-cab { display:flex; gap:8px; align-items:end; } #janela .nv-cab b { margin-right:auto; font-size:13px; }
+  #janela .nv-cab input { width:52px !important; }
+  @media (max-width: 900px) { #janela .f3, #janela .niveis, #janela .duas { grid-template-columns:1fr; } }
   #janela img { max-width:100%; border-radius:6px; margin-top:6px; }
   #janela .texto { white-space:pre-wrap; overflow-wrap:anywhere; }
   #pergunta { background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:16px; width:min(380px, 90vw); box-shadow:0 8px 32px #000c; }
@@ -1093,20 +1131,7 @@ function abrir(id) {
          <h4>Notas do mestre (só você vê)</h4><textarea data-k="gmnota"></textarea>`
       : `<p class="texto" data-texto></p>`);
   } else {
-    const n = (k, t, w) => `<label class="c">${t}<input type="${w ? 'text' : 'number'}" data-k="a.${k}" ${w ? `style="width:${w}px"` : ''}></label>`;
-    j.innerHTML = topo + `<div class="linha">${n('classe', 'Classe', 110)}${n('nivel', 'Nível')}${n('raca', 'Raça', 100)}${n('ca', 'CA')}
-        ${n('pv', 'PV')}${n('pvmax', 'PV máx.')}${n('desloc', 'Desloc.')}
-        <label class="c">Prof.<b data-calc="prof"></b></label><button class="rola" data-rola="ini">Iniciativa <span data-calc="mod:des"></span></button></div>
-      <h4>Atributos <small>(clique em Teste ou Resist.; marque a resistência em que tem proficiência)</small></h4>
-      <div class="atr">${ATR.map(([k, t]) => `<div><b>${t}</b><input type="number" data-k="a.${k}" min="1" max="30"><span class="mod" data-calc="mod:${k}"></span>
-        <button class="rola" data-rola="atr:${k}">Teste</button>
-        <span><input type="checkbox" data-k="a.res_${k}" title="Proficiente na resistência"><button class="rola" data-rola="res:${k}">Resist.</button> <i data-calc="res:${k}"></i></span></div>`).join('')}</div>
-      <h4>Perícias</h4>
-      <div class="pericias">${Object.entries(PERICIAS).map(([k, [t, at]]) => `<span><input type="checkbox" data-k="a.per_${k}" title="Proficiente">
-        <button class="rola" data-rola="per:${k}">${t}</button> <i data-calc="per:${k}"></i> <i>(${at})</i></span>`).join('')}</div>
-      <h4>Ataques <small>(acerto: +5 ou @{for_mod}+@{prof} · dano: 1d8+@{for_mod})</small></h4>
-      <div data-ataques></div>${pode ? '<button data-acao="+atq">+ Ataque</button>' : ''}
-      <h4>Magias, equipamento e notas</h4><textarea data-k="a.notas"></textarea>`;
+    j.innerHTML = topo + htmlFicha(pode);
   }
   if (pode) {   // quem vê: todos, ou (mestre) por jogador; numa ficha o mestre escolhe os donos
     const d = el('div', 'linha'), caixa = (k, t) => { const l = el('label'), c = el('input'); c.type = 'checkbox'; c.dataset.k = k; l.append(c, ' ' + t); d.appendChild(l); };
@@ -1116,12 +1141,78 @@ function abrir(id) {
   }
   assinaturaDiario = ''; render();
 }
+/* ---- ficha de D&D 5e no modelo do Roll20: Principal (3 colunas), Magias e História ---- */
+let fichaAba = 'principal';
+const nivelPer = v => v === true ? 1 : +v || 0;                      // perícia: 0 nada, 1 proficiente, 2 especialista
+const bonusPer = (a, k) => modDe(a[PERICIAS[k][1]]) + profDe(a) * nivelPer(a['per_' + k]);
+const conjDe = a => ['int', 'sab', 'car'].includes(a.conj) ? a.conj : 'int';
+const d20De = a => ({ vant:'2d20kh1', desv:'2d20kl1' })[a.modo] || '1d20';
+const MOEDAS = [['pc', 'PC'], ['pp', 'PP'], ['pe', 'PE'], ['po', 'PO'], ['pl', 'PL']];
+function htmlFicha(pode) {
+  const inp = (k, t, cls = '', tipo = 'text') => `<label class="c ${cls}">${t}<input type="${tipo}" data-k="a.${k}"></label>`;
+  const num = (k, t) => inp(k, t, '', 'number');
+  const area = (k, t, alto) => `<label class="c bloco">${t}<textarea data-k="a.${k}" style="min-height:${alto}px"></textarea></label>`;
+  const caixa = (dentro, tit, cls = '') => `<div class="caixa ${cls}">${dentro}<small class="tit">${tit}</small></div>`;
+  return `
+  <div class="cab">${inp('classe', 'Classe', 'g')}${num('nivel', 'Nível')}${inp('antecedente', 'Antecedente', 'g')}${inp('raca', 'Raça', 'g')}${inp('tendencia', 'Tendência', 'g')}${num('xp', 'XP')}
+    <label class="c" title="Vale para todos os testes de d20 desta ficha">Rolagens<select data-k="a.modo"><option value="">Normal</option><option value="vant">Com vantagem</option><option value="desv">Com desvantagem</option></select></label></div>
+  <nav class="fabas">${[['principal', 'Principal'], ['magias', 'Magias'], ['historia', 'História']].map(([k, t]) => `<button data-fab="${k}">${t}</button>`).join('')}</nav>
+
+  <section data-fsec="principal"><div class="f3">
+    <div class="col">
+      <div class="atr-per">
+        <div class="atrs">${ATR.map(([k, t]) => `<div class="caixa atr1"><button class="rotulo" data-rola="atr:${k}" title="Teste de ${t}">${t}</button><b class="mod" data-calc="mod:${k}"></b><input type="number" data-k="a.${k}" min="1" max="30" aria-label="${t}"></div>`).join('')}</div>
+        <div class="col">
+          <div class="caixa linha1"><label><input type="checkbox" data-k="a.inspiracao"> Inspiração</label></div>
+          <div class="caixa linha1"><b data-calc="prof"></b> Bônus de proficiência</div>
+          ${caixa(`<div class="lista-rol">${ATR.map(([k, t]) => `<span><input type="checkbox" data-k="a.res_${k}" title="Proficiente nesta resistência"><i data-calc="res:${k}"></i><button class="link" data-rola="res:${k}">${t}</button></span>`).join('')}</div>`, 'Testes de resistência')}
+          ${caixa(`<div class="lista-rol">${Object.entries(PERICIAS).map(([k, [t, at]]) => `<span><button class="ciclo" data-ciclo="per_${k}"></button><i data-calc="per:${k}"></i><button class="link" data-rola="per:${k}">${t}</button><em>${at}</em></span>`).join('')}</div>`, 'Perícias · ○ nada ● proficiente ◆ especialista')}
+        </div>
+      </div>
+      <div class="caixa linha1"><b data-calc="pp"></b> Sabedoria (Percepção) passiva</div>
+      ${area('outras_prof', 'Outras proficiências e idiomas', 90)}
+    </div>
+    <div class="col">
+      <div class="tres">${caixa('<input type="number" data-k="a.ca" aria-label="Classe de armadura">', 'Classe de armadura', 'grande')}
+        ${caixa('<button class="link big" data-rola="ini" data-calc="ini" title="Rolar iniciativa"></button>', 'Iniciativa', 'grande')}
+        ${caixa('<input type="number" data-k="a.desloc" aria-label="Deslocamento">', 'Deslocamento', 'grande')}</div>
+      ${caixa(`<div class="linha">${num('pvmax', 'PV máximos')}${num('pvtemp', 'PV temporários')}</div><input class="pvatual" type="number" data-k="a.pv" aria-label="PV atuais">`, 'Pontos de vida atuais')}
+      <div class="duas">${caixa(`${inp('dv_total', 'Total (ex.: 5d10)')}<div class="linha">${num('dv', 'Restantes')}<button class="rola" data-rola="dv">Rolar</button></div>`, 'Dados de vida')}
+        ${caixa(`<span>Sucessos ${[1, 2, 3].map(i => `<input type="checkbox" data-k="a.morte_s${i}">`).join('')}</span><span>Falhas ${[1, 2, 3].map(i => `<input type="checkbox" data-k="a.morte_f${i}">`).join('')}</span><button class="rola" data-rola="morte">Rolar</button>`, 'Testes contra a morte', 'morte')}</div>
+      ${caixa(`<div class="atq cab-atq"><span></span><small>Nome</small><small>Acerto</small><small>Dano</small><small>Tipo</small><span></span></div><div data-lista="ataques"></div>${pode ? '<button class="rola" data-acao="+atq">+ Ataque</button>' : ''}`, 'Ataques e conjuração · 🎲 rola acerto e dano')}
+      ${caixa(`<div class="moedas">${MOEDAS.map(([k, t]) => `<label class="c">${t}<input type="number" data-k="a.${k}"></label>`).join('')}</div><textarea data-k="a.equipamento" aria-label="Equipamento"></textarea>`, 'Equipamento')}
+    </div>
+    <div class="col">${area('personalidade', 'Traços de personalidade', 70)}${area('ideais', 'Ideais', 55)}${area('vinculos', 'Vínculos', 55)}${area('defeitos', 'Defeitos', 55)}${area('caracteristicas', 'Características e talentos', 240)}</div>
+  </div></section>
+
+  <section data-fsec="magias">
+    <div class="cab"><label class="c">Habilidade de conjuração<select data-k="a.conj"><option value="int">Inteligência</option><option value="sab">Sabedoria</option><option value="car">Carisma</option></select></label>
+      ${caixa('<b data-calc="cd"></b>', 'CD de resistência', 'grande')}
+      ${caixa('<button class="link big" data-rola="atqm" data-calc="atqm" title="Rolar ataque mágico"></button>', 'Ataque mágico', 'grande')}
+      ${pode ? '<button class="rola" data-acao="descanso" title="Recupera PV, espaços de magia e metade dos dados de vida">Descanso longo</button>' : ''}</div>
+    <div class="niveis">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(nv => caixa(`<div class="nv-cab"><b>${nv ? 'Nível ' + nv : 'Truques'}</b>${nv ? `<label class="c">Espaços<input type="number" data-k="a.esp_${nv}"></label><label class="c">Usados<input type="number" data-k="a.gasto_${nv}"></label>` : ''}</div>
+      <div data-lista="magias" data-nv="${nv}"></div>${pode ? `<button class="rola" data-acao="+mag" data-nv="${nv}">+ magia</button>` : ''}`, nv ? '● preparada · Lançar gasta um espaço' : 'Truques não gastam espaço')).join('')}</div>
+  </section>
+
+  <section data-fsec="historia">
+    <div class="cab">${['idade', 'altura', 'peso', 'olhos', 'pele', 'cabelo'].map(k => inp(k, k[0].toUpperCase() + k.slice(1), 'g')).join('')}</div>
+    <div class="duas">${area('aparencia', 'Aparência', 130)}${area('historia', 'História do personagem', 130)}</div>
+    <div class="duas">${area('aliados', 'Aliados e organizações', 100)}${area('tesouro', 'Tesouro', 100)}</div>
+    ${area('notas', 'Notas', 100)}
+  </section>`;
+}
+const linhaAtaque = (i, pode) => `<div class="atq"><button class="rola" data-rola="atq:${i}" title="Rolar acerto e dano">🎲</button><input data-k="atq.${i}.n" placeholder="Arma"><input data-k="atq.${i}.a" placeholder="+5">
+  <input data-k="atq.${i}.d" placeholder="1d8+@{for_mod}"><input data-k="atq.${i}.t" placeholder="cortante">${pode ? `<button class="rola" data-acao="-atq" data-i="${i}" aria-label="Tirar ataque">×</button>` : '<span></span>'}</div>`;
+const linhaMagia = (i, nv, pode) => `<div class="mag">${nv ? `<input type="checkbox" data-k="mag.${i}.prep" title="Preparada">` : '<span></span>'}<input data-k="mag.${i}.n" placeholder="Nome da magia">
+  <input data-k="mag.${i}.d" placeholder="dano/cura: 8d6"><button class="rola" data-rola="mag:${i}">Lançar</button>${pode ? `<button class="rola" data-acao="-mag" data-i="${i}" aria-label="Tirar magia">×</button>` : '<span></span>'}</div>`;
+
 function fecharJanela() { janela = null; $('janela').hidden = true; assinaturaDiario = ''; renderDiario(); }
 
 function lerK(o, k) {
   const a = o.attrs || {};
   if (k.startsWith('a.')) return a[k.slice(2)];
-  if (k.startsWith('atq.')) { const [, i, c] = k.split('.'); return ((a.ataques || [])[i] || {})[c]; }
+  const rep = /^(atq|mag)\.(\d+)\.(\w+)$/.exec(k);   // linhas repetidas: atq.0.n = ataques[0].n
+  if (rep) return ((a[rep[1] === 'atq' ? 'ataques' : 'magias'] || [])[rep[2]] || {})[rep[3]];
   if (k === 'ver*') return (o.ver || []).includes('*');
   if (k.startsWith('ver:')) return (o.ver || []).includes(k.slice(4));
   if (k.startsWith('owner:')) return (o.owner || []).includes(k.slice(6));
@@ -1130,11 +1221,19 @@ function lerK(o, k) {
 function preencher() {
   const o = objs[janela]; if (!o) return fecharJanela();
   const j = $('janela'), a = o.attrs || {}, pode = meu(o);
-  const lista = j.querySelector('[data-ataques]'), atqs = a.ataques || [];
-  if (lista && lista.children.length !== atqs.length) {   // linhas de ataque: refaz quando muda a quantidade
-    lista.innerHTML = atqs.map((_, i) => `<div class="atq"><input data-k="atq.${i}.n" placeholder="Arma ou magia"><input data-k="atq.${i}.a" placeholder="acerto">
-      <input data-k="atq.${i}.d" placeholder="dano"><button class="rola" data-rola="acerto:${i}">Acerto</button><button class="rola" data-rola="dano:${i}">Dano</button>
-      ${pode ? `<button class="rola" data-acao="-atq" data-i="${i}" aria-label="Tirar ataque">×</button>` : ''}</div>`).join('');
+  for (const box of j.querySelectorAll('[data-lista]')) {   // ataques e magias: refaz as linhas só quando muda quais são
+    const nome = box.dataset.lista, itens = a[nome] || [], nv = box.dataset.nv;
+    const idx = itens.map((_, i) => i).filter(i => nv === undefined || (+itens[i].nv || 0) === +nv);
+    const sig = idx.join(',') + '|' + pode;
+    if (box.dataset.sig === sig) continue;
+    box.dataset.sig = sig;
+    box.innerHTML = idx.map(i => nome === 'ataques' ? linhaAtaque(i, pode) : linhaMagia(i, +nv, pode)).join('');
+  }
+  for (const sec of j.querySelectorAll('[data-fsec]')) sec.hidden = sec.dataset.fsec !== fichaAba;
+  for (const b of j.querySelectorAll('[data-fab]')) b.classList.toggle('ativa', b.dataset.fab === fichaAba);
+  for (const c of j.querySelectorAll('[data-ciclo]')) {
+    const n = nivelPer(a[c.dataset.ciclo]);
+    c.textContent = '○●◆'[n]; c.title = ['Sem proficiência', 'Proficiente', 'Especialista (dobra a proficiência)'][n]; c.disabled = !pode;
   }
   for (const inp of j.querySelectorAll('[data-k]')) {
     inp.disabled = !pode || (inp.dataset.k.startsWith('owner:') && !souGM());
@@ -1142,11 +1241,10 @@ function preencher() {
     const v = lerK(o, inp.dataset.k);
     if (inp.type === 'checkbox') inp.checked = !!v; else inp.value = v ?? '';
   }
-  for (const c of j.querySelectorAll('[data-calc]')) {
-    const [tipo, k] = c.dataset.calc.split(':'), prof = profDe(a);
-    c.textContent = tipo === 'prof' ? fmt(prof) : tipo === 'mod' ? fmt(modDe(a[k]))
-      : tipo === 'res' ? fmt(modDe(a[k]) + (a['res_' + k] ? prof : 0)) : fmt(modDe(a[PERICIAS[k][1]]) + (a['per_' + k] ? prof : 0));
-  }
+  const prof = profDe(a), mc = modDe(a[conjDe(a)]);
+  const CALC = { prof:() => fmt(prof), mod:k => fmt(modDe(a[k])), res:k => fmt(modDe(a[k]) + (a['res_' + k] ? prof : 0)),
+    per:k => fmt(bonusPer(a, k)), pp:() => 10 + bonusPer(a, 'percepcao'), ini:() => fmt(modDe(a.des)), cd:() => 8 + prof + mc, atqm:() => fmt(prof + mc) };
+  for (const c of j.querySelectorAll('[data-calc]')) { const [tipo, k] = c.dataset.calc.split(':'); c.textContent = CALC[tipo](k); }
   const img = j.querySelector('[data-img]'); if (img) { img.hidden = !o.img; if (o.img && img.getAttribute('src') !== o.img) img.src = o.img; }
   const pdf = j.querySelector('[data-pdf]');
   if (pdf) {
@@ -1203,7 +1301,11 @@ $('janela').addEventListener('change', e => {
   const k = e.target.dataset.k, o = objs[janela]; if (!k || !o) return;
   const t = e.target, v = t.type === 'checkbox' ? t.checked : t.type === 'number' && t.value !== '' ? +t.value : t.value;
   if (k.startsWith('a.')) return mudar({ attrs:{ [k.slice(2)]:v } });
-  if (k.startsWith('atq.')) { const [, i, c] = k.split('.'), l = structuredClone((o.attrs || {}).ataques || []); l[i][c] = v; return mudar({ attrs:{ ataques:l } }); }
+  const rep = /^(atq|mag)\.(\d+)\.(\w+)$/.exec(k);
+  if (rep) {
+    const nome = rep[1] === 'atq' ? 'ataques' : 'magias', l = structuredClone((o.attrs || {})[nome] || []);
+    l[rep[2]][rep[3]] = v; return mudar({ attrs:{ [nome]:l } });
+  }
   if (k.startsWith('ver')) return mudar({ ver:[...$('janela').querySelectorAll('[data-k^="ver"]:checked')].map(i => i.dataset.k === 'ver*' ? '*' : i.dataset.k.slice(4)) });
   if (k.startsWith('owner:')) return mudar({ owner:[...$('janela').querySelectorAll('[data-k^="owner:"]:checked')].map(i => i.dataset.k.slice(6)) });
   mudar({ [k]:v });
@@ -1218,8 +1320,20 @@ $('janela').addEventListener('click', async e => {
   if (b.dataset.pag) return mudarPagina(+b.dataset.pag);
   if (ac === 'fechar') return fecharJanela();
   if (ac === 'del') { if (await confirmar(`Apagar “${o.name || 'sem nome'}”? Não dá para desfazer.`)) { enviar({ op:'destroy', id:janela }); fecharJanela(); } return; }
-  if (ac === '+atq') return mudar({ attrs:{ ataques:[...(a.ataques || []), { n:'', a:'', d:'' }] } });
+  if (b.dataset.fab) { fichaAba = b.dataset.fab; return preencher(); }
+  if (b.dataset.ciclo) { if (meu(o)) mudar({ attrs:{ [b.dataset.ciclo]:(nivelPer(a[b.dataset.ciclo]) + 1) % 3 } }); return; }
+  if (ac === '+atq') return mudar({ attrs:{ ataques:[...(a.ataques || []), { n:'', a:'', d:'', t:'' }] } });
   if (ac === '-atq') return mudar({ attrs:{ ataques:(a.ataques || []).filter((_, i) => i !== +b.dataset.i) } });
+  if (ac === '+mag') return mudar({ attrs:{ magias:[...(a.magias || []), { n:'', nv:+b.dataset.nv, prep:false, d:'' }] } });
+  if (ac === '-mag') return mudar({ attrs:{ magias:(a.magias || []).filter((_, i) => i !== +b.dataset.i) } });
+  if (ac === 'descanso') {
+    const total = +(/^(\d+)/.exec(a.dv_total || '') || [, 0])[1];
+    const mud = { pv:+a.pvmax || a.pv, pvtemp:0, dv:Math.min(total || +a.dv || 0, (+a.dv || 0) + Math.max(1, Math.floor(total / 2))) };
+    for (let nv = 1; nv <= 9; nv++) mud['gasto_' + nv] = 0;
+    for (const i of [1, 2, 3]) { mud['morte_s' + i] = false; mud['morte_f' + i] = false; }
+    mudar({ attrs:mud });
+    return falarComFicha('/em faz um descanso longo');
+  }
   if (ac === 'img') return $('imgArq').click();
   if (ac === 'semimg') return mudar({ img:'', pdf:'' });
   if (ac === 'mostrar') {                          // "Show to Players": libera para todos e abre na tela deles
@@ -1228,17 +1342,39 @@ $('janela').addEventListener('click', async e => {
     return avisar('Documento aberto na tela dos jogadores.');
   }
   if (!b.dataset.rola) return;
-  const [tipo, k] = b.dataset.rola.split(':'), prof = c => a[c] ? '+@{prof}' : '';
+  const [tipo, k] = b.dataset.rola.split(':'), d20 = d20De(a), profs = n => '+@{prof}'.repeat(n);
+  const modo = { vant:' (vantagem)', desv:' (desvantagem)' }[a.modo] || '', sinal = x => /^[+-]/.test(x) ? x : '+' + x;
   if (tipo === 'ini') {
     const tk = naPagina('token', paginaAtual()).find(([, t]) => t.ficha === janela);
     return tk ? falarComFicha('/init @{des_mod}', tk[0]) : falarComFicha('/r 1d20+@{des_mod} iniciativa');
   }
-  if (tipo === 'atr') return falarComFicha(`/r 1d20+@{${k}_mod} ${NOME_ATR[k]}`);
-  if (tipo === 'res') return falarComFicha(`/r 1d20+@{${k}_mod}${prof('res_' + k)} resistência de ${NOME_ATR[k]}`);
-  if (tipo === 'per') return falarComFicha(`/r 1d20+@{${PERICIAS[k][1]}_mod}${prof('per_' + k)} ${PERICIAS[k][0]}`);
-  const atq = (a.ataques || [])[k] || {}, nome = atq.n || 'ataque', ac2 = String(atq.a || '+0').trim();
-  if (tipo === 'acerto') return falarComFicha(`/r 1d20${/^[+-]/.test(ac2) ? ac2 : '+' + ac2} ${nome}`);
-  if (tipo === 'dano') return atq.d ? falarComFicha(`/r ${atq.d} dano de ${nome}`) : avisar('Escreva o dano do ataque (ex.: 1d8+@{for_mod}).');
+  if (tipo === 'atr') return falarComFicha(`/r ${d20}+@{${k}_mod} ${NOME_ATR[k]}${modo}`);
+  if (tipo === 'res') return falarComFicha(`/r ${d20}+@{${k}_mod}${profs(a['res_' + k] ? 1 : 0)} resistência de ${NOME_ATR[k]}${modo}`);
+  if (tipo === 'per') return falarComFicha(`/r ${d20}+@{${PERICIAS[k][1]}_mod}${profs(nivelPer(a['per_' + k]))} ${PERICIAS[k][0]}${modo}`);
+  if (tipo === 'atqm') return falarComFicha(`/r ${d20}+@{${conjDe(a)}_mod}+@{prof} ataque mágico${modo}`);
+  if (tipo === 'morte') return falarComFicha('/r 1d20 teste contra a morte');
+  if (tipo === 'dv') {
+    const dado = /d(\d+)/i.exec(a.dv_total || '');
+    if (!dado) return avisar('Escreva o total de dados de vida, ex.: 5d10.');
+    if ((+a.dv || 0) <= 0) return avisar('Sem dados de vida restantes.');
+    mudar({ attrs:{ dv:+a.dv - 1 } });
+    return falarComFicha(`/r 1d${dado[1]}+@{con_mod} dado de vida`);
+  }
+  if (tipo === 'atq') {                              // como no Roll20: um clique rola o acerto e o dano
+    const atq = (a.ataques || [])[k] || {}, nome = atq.n || 'ataque';
+    await falarComFicha(`/r ${d20}${sinal(String(atq.a || '+0').trim())} ${nome}${modo}`);
+    if (atq.d) await falarComFicha(`/r ${atq.d} dano${atq.t ? ' ' + atq.t : ''} (${nome})`);
+    return;
+  }
+  if (tipo === 'mag') {
+    const m = (a.magias || [])[k] || {}, nv = +m.nv || 0, nome = m.n || 'uma magia';
+    if (nv) {
+      const esp = +a['esp_' + nv] || 0, gasto = +a['gasto_' + nv] || 0;
+      if (esp && gasto >= esp) return avisar(`Sem espaços de magia de nível ${nv}. Um descanso longo recupera.`);
+      if (esp) mudar({ attrs:{ ['gasto_' + nv]:gasto + 1 } });
+    }
+    return m.d ? falarComFicha(`/r ${m.d} ${nome}${nv ? ` (nível ${nv})` : ''}`) : falarComFicha(`/em lança ${nome}${nv ? ` (nível ${nv})` : ''}`);
+  }
 });
 $('imgArq').onchange = async e => {                      // anexo do documento: imagem, PDF ou texto
   const f = e.target.files[0]; e.target.value = ''; if (!f || !janela) return;
