@@ -1,8 +1,8 @@
 """Nothic, a mesa online: servidor de sincronização, só com a biblioteca padrão do Python.
 
-    py mesa.py            -> mostra os links do mestre e dos jogadores
-    py mesa.py --lan      -> aceita outros PCs da rede
-    py mesa.py --teste    -> autoteste
+    py nothic.py            -> mostra os links do mestre e dos jogadores
+    py nothic.py --lan      -> aceita outros PCs da rede
+    py nothic.py --teste    -> autoteste
 
 Modelo (igual ao Roll20): o estado é um dicionário de objetos {id: {type, ...}}.
 O cliente envia POST /op {op: add|change|destroy, type, id, props} e recebe tudo
@@ -552,7 +552,7 @@ def teste():
     import http.client
     global ARQUIVO
     teste_dados()
-    ARQUIVO = os.path.join(os.environ.get('TEMP', '/tmp'), 'mesa-teste.json')
+    ARQUIVO = os.path.join(os.environ.get('TEMP', '/tmp'), 'nothic-teste.json')
     estado['gm'] = 's3gr3d0'
     srv = servidor('127.0.0.1', 0)
     porta = srv.server_address[1]
@@ -743,7 +743,7 @@ if __name__ == '__main__':
     host = '0.0.0.0' if '--lan' in sys.argv else '127.0.0.1'
     base = 'http://localhost:8765'
     print('Nothic rodando (Ctrl+C para parar). Guarde o link do mestre só para você:')
-    print(f'  Mestre (mesa):  {base}/mesa.html?gm={estado["gm"]}')
+    print(f'  Mestre (mesa):  {base}/nothic.html?gm={estado["gm"]}')
     print(f'  Mestre (MonTT): {base}/MonTT.html?gm={estado["gm"]}')
-    print(f'  Jogadores:      {base}/mesa.html?p=SeuNome   (pelo túnel, troque o endereço)', flush=True)
+    print(f'  Jogadores:      {base}/nothic.html?p=SeuNome   (pelo túnel, troque o endereço)', flush=True)
     servidor(host, 8765).serve_forever()

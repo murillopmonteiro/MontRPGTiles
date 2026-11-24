@@ -1,6 +1,6 @@
 /* Geometria da mesa: paredes do MonTT viram segmentos, a visão é um polígono por raios,
    e as áreas de magia dizem quais quadrados atingem. Tudo em "quadrados" (1 = 5 ft).
-   Teste: node mesa-luz.js */
+   Teste: node nothic-luz.js */
 (function (exp) {
   const EPS = 1e-9;
 
@@ -90,7 +90,7 @@
 
   Object.assign(exp, { segmentos, raio, visao, cruzaParede, dentroArea, quadradosAtingidos, contorno });
 
-  // ---- autoteste (node mesa-luz.js) ----
+  // ---- autoteste (node nothic-luz.js) ----
   if (typeof require !== 'undefined' && typeof module !== 'undefined' && require.main === module) {
     const assert = require('assert');
     // mapa 6x4 com uma parede vertical em x=3 (linhas 0..3) e uma porta na linha 1

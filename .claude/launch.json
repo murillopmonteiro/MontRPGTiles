@@ -16,10 +16,10 @@
       "port": 8766
     },
     {
-      "name": "mesa",
+      "name": "nothic",
       "runtimeExecutable": "py",
       "runtimeArgs": [
-        "C:/Users/mauri/Claude/Projects/MontRPGTiles/mesa.py"
+        "C:/Users/mauri/Claude/Projects/MontRPGTiles/nothic.py"
       ],
       "port": 8765
     }

@@ -188,7 +188,7 @@ button,input,select{font:inherit;color:inherit}
     <div class="grp">
       <button class="btn" id="mapTabBtn" title="New, save and open maps (N)">Maps</button>
       <button class="btn primary" id="exportBtn" title="Export the map as a PNG image">Export PNG</button>
-      <button class="btn" id="mesaBtn" title="Envia este andar para o Nothic, a mesa online (abra o MonTT pelo py mesa.py)">Enviar ao Nothic</button>
+      <button class="btn" id="mesaBtn" title="Envia este andar para o Nothic, a mesa online (abra o MonTT pelo py nothic.py)">Enviar ao Nothic</button>
       <input type="file" id="fileIn" accept=".json,application/json" hidden>
       <input type="file" id="dirIn" webkitdirectory directory multiple hidden>
       <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp" multiple hidden>
@@ -2639,7 +2639,7 @@ async function offer(filename,data,fallback){
 }
 $('exportBtn').onclick=()=>exportPNG();
 $('mesaBtn').onclick=()=>sendToTable();
-// Mesa online (mesa.py): a imagem vai na visão de jogador, sem tokens e sem névoa; a névoa vai
+// Mesa online (nothic.py): a imagem vai na visão de jogador, sem tokens e sem névoa; a névoa vai
 // como array e a mesa desenha por cima, então revelar uma sala aqui aparece lá na hora (syncFog).
 // Reenviar troca só a imagem; tokens que já estão na mesa ficam onde os jogadores deixaram (keep).
 // ponytail: a imagem inteira chega aos jogadores; quem abrir o DevTools vê embaixo da névoa.
@@ -2649,7 +2649,7 @@ function mesaPost(url,body,type){ return fetch(url+MESA_Q,{method:'POST',headers
 const mesaOp=o=>mesaPost('/op',JSON.stringify(o),'application/json');
 const levelPage=()=>'p-'+map.levels[map.level].id;
 async function sendToTable(){
-  if(!MESA_Q){ toast('Abra o MonTT pelo link de mestre que o py mesa.py mostra'); return; }
+  if(!MESA_Q){ toast('Abra o MonTT pelo link de mestre que o py nothic.py mostra'); return; }
   const s=settings.exportPx||100, c=document.createElement('canvas'); c.width=map.w*s; c.height=map.h*s;
   const toks=map.tokens, fv=settings.fogView, fg=map.fog;
   map.tokens=[]; settings.fogView='player'; map.fog=new Array(fg.length).fill(0);
@@ -2666,7 +2666,7 @@ async function sendToTable(){
       return mesaOp({op:'add',type:'token',id:'k-'+t.id,keep:true,props:{page,x:t.x,y:t.y,n:z.n,r:z.r,name:t.name,kind:t.kind,color:t.color,owner:[]}}); }));
     mesaPage=page; mesaFog=JSON.stringify(mesaMapa());
     toast('Mapa enviado. A névoa agora segue sozinha para o Nothic');
-  }catch(err){ toast(String(err.message)==='403' ? 'O link do mestre não confere: use o que o py mesa.py mostra' : 'Não deu: o py mesa.py está rodando?'); }
+  }catch(err){ toast(String(err.message)==='403' ? 'O link do mestre não confere: use o que o py nothic.py mostra' : 'Não deu: o py nothic.py está rodando?'); }
 }
 // o que a mesa precisa do mapa além da imagem: névoa, paredes e portas (luz dinâmica)
 function mesaMapa(){ return {fog:map.fog.slice(), hw:map.hw.slice(), vw:map.vw.slice()}; }

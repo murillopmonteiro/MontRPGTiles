@@ -77,7 +77,7 @@ O `MonTT.html` já tem grade, chão, **paredes como arestas da grade** (`hw`/`vw
 ### Arquitetura
 
 ```
- navegador (MonTT em modo mesa)          mesa.py (Python, só biblioteca padrão)
+ navegador (MonTT em modo mesa)          nothic.py (Python, só biblioteca padrão)
  ┌──────────────────────────┐   POST /op    ┌──────────────────────────────┐
  │ estado local = cópia     │ ────────────► │ valida permissão             │
  │ render (drawScene)       │               │ aplica no estado             │
@@ -86,7 +86,7 @@ O `MonTT.html` já tem grade, chão, **paredes como arestas da grade** (`hw`/`vw
                                             └──────────────────────────────┘
 ```
 
-- **Servidor: um arquivo `mesa.py` com `http.server` + `ThreadingHTTPServer`, sem dependências.** Envia por **long polling** (`GET /poll` fica esperando até ter novidade, até 20 s) e recebe por `fetch` POST. Começou com Server-Sent Events, mas o túnel rápido da Cloudflare segura o stream inteiro, e o long polling passa por qualquer túnel ou proxy. Não precisa de WebSocket: na mesa, as mudanças são poucas por segundo. Você já roda `py -m http.server`, então é o mesmo jeito de usar.
+- **Servidor: um arquivo `nothic.py` com `http.server` + `ThreadingHTTPServer`, sem dependências.** Envia por **long polling** (`GET /poll` fica esperando até ter novidade, até 20 s) e recebe por `fetch` POST. Começou com Server-Sent Events, mas o túnel rápido da Cloudflare segura o stream inteiro, e o long polling passa por qualquer túnel ou proxy. Não precisa de WebSocket: na mesa, as mudanças são poucas por segundo. Você já roda `py -m http.server`, então é o mesmo jeito de usar.
   - `ponytail:` long polling + POST, com uma thread por requisição. Uma aba fechada sai da mesa depois de 45 s sem perguntar. Aguenta umas dezenas de pessoas. Se um dia tiver um grupo grande, troca por WebSocket (`websockets` ou Node `ws`).
 - **Mensagem única, igual aos eventos do Roll20:** `{op: "add"|"change"|"destroy", type, id, props}`. O servidor coloca um número de sequência, aplica, retransmite e grava. Quem entra recebe a "foto" do estado inteiro e depois só as mudanças.
 - **Conflito:** a última escrita vence, propriedade por propriedade. Com 5 pessoas isso basta.
@@ -94,7 +94,7 @@ O `MonTT.html` já tem grade, chão, **paredes como arestas da grade** (`hw`/`vw
 - **Mestre e jogador:** o link do mestre leva `?gm=<segredo>`, o dos jogadores leva `?p=<nome>`. O servidor:
   - não envia aos jogadores os objetos da `gmlayer`, as `gmnotes` nem as marcas de mestre do gerador de masmorras;
   - só aceita que um jogador mexa em tokens cujo `controlledby` tenha o nome dele.
-- **Hospedagem:** o mestre roda `py mesa.py` no PC e cria um túnel com `cloudflared tunnel --url http://localhost:8765` (gera uma URL pública grátis) ou usa o Tailscale. Não precisa de servidor pago.
+- **Hospedagem:** o mestre roda `py nothic.py` no PC e cria um túnel com `cloudflared tunnel --url http://localhost:8765` (gera uma URL pública grátis) ou usa o Tailscale. Não precisa de servidor pago.
 
 ### Modelo de dados (os tipos do Roll20, só os que vamos usar)
 
@@ -121,14 +121,14 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 ## 3. Fases (cada uma termina com algo jogável)
 
 ### Fase 0: prova de conceito + envio do MonTT ✅ feita (commit `21964b5`)
-- `mesa.py`: `GET /stream` (SSE; hoje `GET /poll`), `POST /op` (add/change/destroy), `POST /upload` (PNG/JPG/WebP, nome gerado pelo servidor), serve os arquivos da pasta sem expor `.git` nem `campanha.json`. Grava `campanha.json` a cada 2 s, com troca atômica.
-- `mesa.html`: mostra o mapa atual, com tokens arrastáveis que se encaixam na grade, zoom, criação de token e duplo clique para apagar.
+- `nothic.py`: `GET /stream` (SSE; hoje `GET /poll`), `POST /op` (add/change/destroy), `POST /upload` (PNG/JPG/WebP, nome gerado pelo servidor), serve os arquivos da pasta sem expor `.git` nem `campanha.json`. Grava `campanha.json` a cada 2 s, com troca atômica.
+- `nothic.html`: mostra o mapa atual, com tokens arrastáveis que se encaixam na grade, zoom, criação de token e duplo clique para apagar.
 - MonTT ganhou **Enviar à mesa** (hoje "Enviar ao Nothic"): o andar atual vai como imagem na visão de jogador (névoa opaca, sem marcas de mestre, sem tokens) e cada token vira uma peça. Reenviar troca só a imagem (`keep`), e os tokens ficam onde estavam.
-- **Testado:** envio do mapa de exemplo, arraste sincronizado entre duas abas, reenvio sem perder posições, recarregar a página mantém o estado, autoteste `py mesa.py --teste`.
+- **Testado:** envio do mapa de exemplo, arraste sincronizado entre duas abas, reenvio sem perder posições, recarregar a página mantém o estado, autoteste `py nothic.py --teste`.
 - **Falta testar:** outro PC (`--lan`) e o túnel `cloudflared`.
 
 ### Fase 1: mestre e jogadores ✅ feita
-- **Links:** o `py mesa.py` gera um segredo na primeira vez (fica no `campanha.json`) e mostra os links: mestre na mesa (`mesa.html?gm=…`), mestre no MonTT (`MonTT.html?gm=…`) e jogadores (`mesa.html?p=Nome`). Se o link vier sem nome, a mesa pergunta.
+- **Links:** o `py nothic.py` gera um segredo na primeira vez (fica no `campanha.json`) e mostra os links: mestre na mesa (`nothic.html?gm=…`), mestre no MonTT (`MonTT.html?gm=…`) e jogadores (`nothic.html?p=Nome`). Se o link vier sem nome, a mesa pergunta.
 - **No servidor:** o jogador só manda `change` de `x`/`y` em tokens cujo `owner` tem o nome dele. Criar, apagar, enviar imagem ou mudar mapa e névoa é só do mestre. O resto volta `403`.
 - **Filtro por pessoa:** tokens com `layer:'gm'` e campos `gm*` nunca chegam aos jogadores. Esconder um token manda `destroy` só para eles, e mostrar de novo manda `add`.
 - **Presença:** cada pessoa aparece online na primeira conexão e offline quando fecha a última aba (como o `onDisconnect` do Roll20).
@@ -151,7 +151,7 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 
 ### Fase 3: luz dinâmica e efeitos de magia ✅ feita
 - **Paredes e portas do MonTT** vão com o mapa (`hw`/`vw`) e seguem ao vivo, como a névoa. Reenviar o mapa usa `merge`, então as portas abertas e a configuração de luz continuam.
-- **Geometria em `mesa-luz.js`** (testável com `node mesa-luz.js`): paredes seguidas viram um segmento só; a visão é o polígono de raios até as pontas das paredes; `cruzaParede` para o movimento; as quatro áreas do 5e (o quadrado conta se o centro estiver dentro).
+- **Geometria em `nothic-luz.js`** (testável com `node nothic-luz.js`): paredes seguidas viram um segmento só; a visão é o polígono de raios até as pontas das paredes; `cruzaParede` para o movimento; as quatro áreas do 5e (o quadrado conta se o centro estiver dentro).
 - **Luz dinâmica por mapa** (o mestre escolhe no topo: desligada, dia, noite):
   - O jogador enxerga pelos próprios tokens (o mestre pode desligar "Enxerga" num token). De dia, tudo que está à vista; de noite, só o que alguma luz alcança, ou o raio de visão no escuro do token, que conta como penumbra.
   - Cada luz ilumina só o que ela própria "vê": a luz de uma tocha não atravessa parede.
@@ -165,7 +165,7 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
   - **Áreas** que ficam no mapa: esfera, cone, cubo e linha, com tamanho em ft. Arrastar dá a direção (o cubo encaixa de 90 em 90°). Mostra os quadrados atingidos, destaca os tokens atingidos e diz quantos foram. O botão direito na área apaga.
   - **Animações** para todos (não ficam salvas): bola de fogo, raio de fogo (de A até B), relâmpago (de A até B), cura, nuvem, gelo.
   - **Luzes de magia:** Luz (20/20 no ponto), Luzes dançantes (penumbra de 10 ft), Escuridão (bolha de 15 ft que apaga luz e visão no escuro).
-- **Testado no navegador:** à noite, a tocha do Brannoc iluminou até a parede do castelo e os goblins lá dentro ficaram escondidos; o mestre abriu a porta e, com o Brannoc na frente dela, a luz entrou e a Ana viu os dois goblins; o cone de 15 ft da Ana marcou 2 atingidos; bola de fogo e relâmpago apareceram nas duas telas; a Escuridão escondeu os goblins mesmo com a tocha, e a Ana a apagou pelo botão direito; com a porta fechada, a Ana não conseguiu passar; o "Ver como: Ana" do mestre bateu com a tela dela; no modo dia, o lado de fora ficou todo visível. O autoteste do servidor cobre as permissões novas; o `node mesa-luz.js` cobre a geometria.
+- **Testado no navegador:** à noite, a tocha do Brannoc iluminou até a parede do castelo e os goblins lá dentro ficaram escondidos; o mestre abriu a porta e, com o Brannoc na frente dela, a luz entrou e a Ana viu os dois goblins; o cone de 15 ft da Ana marcou 2 atingidos; bola de fogo e relâmpago apareceram nas duas telas; a Escuridão escondeu os goblins mesmo com a tocha, e a Ana a apagou pelo botão direito; com a porta fechada, a Ana não conseguiu passar; o "Ver como: Ana" do mestre bateu com a tela dela; no modo dia, o lado de fora ficou todo visível. O autoteste do servidor cobre as permissões novas; o `node nothic-luz.js` cobre a geometria.
 - **Ainda não:** luz presa a um token que se move (a magia Luz fica no ponto onde foi lançada); barreiras transparentes ou de mão única; a imagem do mapa continua inteira no navegador do jogador (quem abrir o DevTools vê tudo).
 
 ### Fase 4: fichas e diário ✅ feita
@@ -191,9 +191,9 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 
 | Arquivo | O que é |
 |---|---|
-| `mesa.py` | servidor: SSE + ops + upload + gravação; `py mesa.py --teste` roda o autoteste |
-| `mesa.html` | a mesa (o que os jogadores abrem) |
-| `mesa-luz.js` | geometria da visão, do movimento e das áreas de magia; `node mesa-luz.js` testa |
+| `nothic.py` | servidor: SSE + ops + upload + gravação; `py nothic.py --teste` roda o autoteste |
+| `nothic.html` | a mesa (o que os jogadores abrem) |
+| `nothic-luz.js` | geometria da visão, do movimento e das áreas de magia; `node nothic-luz.js` testa |
 | `MonTT.html` | o editor de mapas; função `sendToTable` = botão "Enviar ao Nothic" |
 | `lightscreen-core.js` | rolador de dados e tabelas (o chat vai reaproveitar a sintaxe) |
 | `campanha.json`, `uploads/` | gerados pelo servidor, fora do git |
