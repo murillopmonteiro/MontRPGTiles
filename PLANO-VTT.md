@@ -202,6 +202,12 @@ As paredes **não precisam de um tipo `path`**, porque o MonTT já guarda as par
 - Arrastar o modelo para o mapa cria um token com a imagem, sem círculo nem borda, ocupando os `n` quadrados. Só o mestre coloca tokens no mapa (o servidor já recusava `add` de jogador).
 - O servidor não manda modelos aos jogadores. `ponytail:` o token copia o modelo ao ser colocado; mudar o modelo depois não muda os tokens já no mapa (como o token padrão do Roll20).
 
+### Layouts (design no canvas "Nothic — layouts da mesa")
+- O jogador escolhe na aba **Configurações** (engrenagem) entre **Padrão** (iniciativa em faixa sobre o mapa, painel à direita), **Completo** (personagem à esquerda com PV, atributos e ataques que rolam, atalhos embaixo do mapa) e **Imersivo** (só o mapa; personagem, iniciativa, doca e últimas mensagens flutuam; o painel abre pela doca). Fica salvo no `localStorage` do navegador.
+- O mestre usa sempre a **mesa do mestre**: controles com nome no topo, barra de ferramentas à esquerda (selecionar, régua, ping, magia, novo token) e a iniciativa com o PV de todos em cima do painel.
+- O painel do personagem usa a primeira ficha da qual o jogador é dono.
+- `ponytail:` "Tamanho da interface", "Trocar cor", a escolha de camada e o quadro do token selecionado do design ficaram de fora; entram quando fizerem falta.
+
 ### Fora do plano (de propósito)
 - **Áudio, música e vídeo:** usar o Discord.
 - **API de scripts (Mods), loja, baralhos, dados 3D, grade hexagonal:** só se fizerem falta de verdade.
