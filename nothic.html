@@ -77,6 +77,15 @@
   .msg.emote { font-style:italic; color:#d8cfe8; }
   .msg.priv { border-left:3px solid #8e6fc4; padding-left:8px; }
   .msg .nota { font-size:11px; color:#b9a3e0; display:block; }
+  .cmagia { margin-top:6px; border:1px solid #5a4a2a; border-radius:10px; background:linear-gradient(#2a2318, #241f29 60px); overflow:hidden; }
+  .cm-topo { padding:8px 12px; border-bottom:1px solid #5a4a2a; background:#3a2e1a; }
+  .cm-topo b { display:block; font-size:15px; color:#f4d58a; font-family:Cinzel, serif; letter-spacing:.02em; }
+  .cm-topo small { color:#d8c9a8; font-size:11px; }
+  .cm-tags { display:flex; gap:4px; padding:6px 12px 0; } .cm-tags span { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:2px 6px; border-radius:4px; background:#4a3416; color:#f4d58a; }
+  .cmagia dl { display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin:0; padding:8px 12px; }
+  .cmagia dt { font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); } .cmagia dd { margin:0; font-size:12px; }
+  .cm-cd { margin:0 12px 8px; padding:4px 8px; border-radius:6px; background:#2c2833; font-size:12px; font-weight:700; color:#f0a08c; }
+  .cm-desc { margin:0; padding:8px 12px 10px; border-top:1px solid var(--line); font-size:12px; line-height:1.5; white-space:pre-line; color:#d9d1c3; }
   .roll { margin-top:4px; background:#2c2833; border:1px solid var(--line); border-radius:8px; padding:6px 10px; }
   .roll .total { font-size:22px; font-weight:800; margin-right:8px; }
   .roll .expr { color:var(--dim); font-size:12px; }
@@ -335,6 +344,7 @@
   .tile { display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0; border:1px solid var(--line); border-radius:8px; background:#2c2833; color:var(--ink); }
   .tile small { font-size:10px; letter-spacing:.08em; color:var(--dim); } .tile b { font-size:18px; } .tile em { font-style:normal; font-size:11px; color:var(--dim); }
   .eu-lista { display:flex; flex-direction:column; gap:6px; }
+  .eu-lista > .passiva { display:flex; gap:10px; padding:4px 12px; font-size:13px; cursor:help; } .eu-lista > .passiva span:first-child { flex:1; } .eu-lista > .passiva span + span { color:var(--dim); font-size:12px; }
   .eu-lista > button { display:flex; gap:10px; align-items:center; height:38px; text-align:left; } .eu-lista > button span:first-child { flex:1; } .eu-lista > button span + span { color:var(--dim); }
   .chips { display:flex; gap:6px; flex-wrap:wrap; } .chips span { font-size:12px; padding:3px 10px; border-radius:99px; border:1px solid var(--line); }
   #eu .vazio { color:var(--dim); font-size:13px; }
@@ -962,7 +972,22 @@ function desenharMsg(id, m) {
   d.append(quem);
   if (m.text) d.append(el('span', '', m.text));
   if (m.roll) d.appendChild(cartaoRolagem(m.roll));
+  if (m.magia) d.appendChild(cartaoDeMagia(m.magia));
   return d;
+}
+function cartaoDeMagia(g) {                          // nome e círculo no topo, os dados em grade, a descrição embaixo
+  const c = el('div', 'cmagia');
+  const topo = el('div', 'cm-topo'); topo.append(el('b', '', g.n), el('small', '', [g.nivel, g.escola && g.escola.toLowerCase()].filter(Boolean).join(' · ')));
+  c.appendChild(topo);
+  const tags = [g.conc && 'Concentração', g.ritual && 'Ritual'].filter(Boolean);
+  if (tags.length) { const t = el('div', 'cm-tags'); for (const x of tags) t.appendChild(el('span', '', x)); c.appendChild(t); }
+  const dl = el('dl');
+  for (const [k, rot] of [['tempo', 'Conjuração'], ['alcance', 'Alcance'], ['comp', 'Componentes'], ['dur', 'Duração']])
+    if (g[k]) { const w = el('div'); w.append(el('dt', '', rot), el('dd', '', g[k])); dl.appendChild(w); }
+  if (dl.children.length) c.appendChild(dl);
+  if (g.cd) c.appendChild(el('div', 'cm-cd', g.cd));
+  if (g.desc) c.appendChild(el('p', 'cm-desc', g.desc));
+  return c;
 }
 function cartaoRolagem(r) {
   const c = el('div', 'roll');
@@ -1626,6 +1651,16 @@ const CONDICOES = ['Agarrado', 'Amedrontado', 'Atordoado', 'Caído', 'Cego', 'En
 const ESCOLAS = ['Abjuração', 'Adivinhação', 'Conjuração', 'Encantamento', 'Evocação', 'Ilusão', 'Necromancia', 'Transmutação'];
 const TIPO_ATQ = { '':'Corpo a corpo', dist:'À distância', mag:'Ataque mágico' };
 // "evocação · 1 ação · 45 metros · V, S, M · instantânea · concentração"
+// magia com dano "-" (Luz, Escudo…) não rola nada; toda magia lançada manda um cartão no chat (o do Roll20)
+const semDano = m => /^\s*[-–—]\s*$/.test(m.d || '');
+const cdMagia = (a, m) => { const b = profDe(a) + modDe(a[conjDe(a)]);
+  return m.hit === 'atq' ? `Ataque mágico ${fmt(b)}` : ABREV[m.hit] ? `Resistência de ${ABREV[m.hit]} · CD ${8 + b}` : ''; };
+async function cartaoMagia(fid, m) {
+  const a = (objs[fid] || {}).attrs || {}, nv = +m.nv || 0;
+  const r = await postar('/chat', { ficha:fid, priv:!!a.privado, magia:{ n:m.n || 'Magia', nivel:nv ? nv + 'º círculo' : 'Truque', escola:m.escola, tempo:m.tempo,
+    alcance:m.alcance, comp:m.comp, dur:m.dur, conc:!!m.conc, ritual:!!m.ritual, cd:cdMagia(a, m), desc:m.desc } });
+  if (!r.ok) avisar((await r.json()).erro);
+}
 const resumoMagia = m => [m.escola && m.escola.toLowerCase(), m.tempo, m.alcance, m.comp, m.dur, m.conc && 'concentração', m.ritual && 'ritual'].filter(Boolean).join(' · ');
 // @{des_mod}+@{prof} → "+5" só para mostrar; na hora de rolar quem faz a conta é o servidor
 const valorFicha = (a, k) => k.endsWith('_mod') && ABREV[k.slice(0, -4)] ? modDe(a[k.slice(0, -4)]) : k === 'prof' ? profDe(a) : +a[k] || 0;
@@ -1738,9 +1773,9 @@ const seta = (nome, i) => `<button class="acao-l" data-acao="abre" data-lista="$
 const kl = (nome, i, c, ph = '', tipo = 'text', extra = '') => `<input type="${tipo}" data-k="l.${nome}.${i}.${c}" placeholder="${ph}" ${extra}>`;
 const descArea = (nome, i) => `<label class="c bloco">Descrição<textarea data-k="l.${nome}.${i}.desc"></textarea></label>`;
 const descCurta = (nome, i) => `<div class="desc-curta" data-desc="${nome}:${i}"></div>`;
-const linhaTexto = (nome, ph) => (i, pode, ab) => `<div class="lin l-tal">${seta(nome, i)}${kl(nome, i, 'n', 'Nome', 'text', 'class="nome"')}${kl(nome, i, 'origem', ph)}
+const linhaTexto = (nome, ph, det = () => '') => (i, pode, ab) => `<div class="lin l-tal">${seta(nome, i)}${kl(nome, i, 'n', 'Nome', 'text', 'class="nome"')}${kl(nome, i, 'origem', ph)}
   <span class="usos" title="Usos gastos / total">${kl(nome, i, 'usados', '0', 'number')}/${kl(nome, i, 'usos', '–', 'number')}</span>${tira(nome, i, pode)}</div>`
-  + (ab ? `<div class="det">${descArea(nome, i)}</div>` : descCurta(nome, i));
+  + (ab ? `<div class="det">${det(i)}${descArea(nome, i)}</div>` : descCurta(nome, i));
 const LINHAS = {
   ataques: (i, pode, ab) => `<div class="lin l-atq">${seta('ataques', i)}<button class="acao-l" data-rola="atq:${i}" title="Rolar acerto e dano">🎲</button>
     <div>${kl('ataques', i, 'n', 'Arma', 'text', 'class="nome"')}<small class="sub" data-sub="ataques:${i}"></small></div>${kl('ataques', i, 'r', '1,5 m')}
@@ -1749,7 +1784,7 @@ const LINHAS = {
       <label class="c">Acerto${kl('ataques', i, 'a', 'automático: atributo + prof.')}</label><label class="c">Dano${kl('ataques', i, 'd', '1d8+@{for_mod}')}</label>
       <label class="c">Tipo de dano${kl('ataques', i, 't', 'cortante')}</label>${descArea('ataques', i)}</div>` : ''),
   acoes: linhaTexto('acoes', 'Detalhe'),
-  talentos: linhaTexto('talentos', 'Origem (ex.: Feiticeiro)'),
+  talentos: linhaTexto('talentos', 'Origem (ex.: Feiticeiro)', i => `<label class="c">Uso<select data-k="l.talentos.${i}.ativa" title="Ativa: aparece como ação no painel do jogador, junto com os ataques"><option value="">Passiva</option><option value="1">Ativa (vira ação)</option></select></label>`),
   magias: (i, pode, ab) => `<div class="lin l-mag">${seta('magias', i)}<input type="checkbox" data-k="l.magias.${i}.prep" title="Preparada">
     <div>${kl('magias', i, 'n', 'Nome da magia', 'text', 'class="nome"')}<small class="sub" data-sub="magias:${i}"></small></div>${kl('magias', i, 'alcance', 'alcance')}
     <span class="vermelho" data-res="magias:${i}:hit"></span><span class="vermelho" data-res="magias:${i}:d"></span><button class="rola" data-rola="mag:${i}">Lançar</button>${tira('magias', i, pode)}</div>`
@@ -2030,10 +2065,10 @@ $('janela').addEventListener('click', async e => {
       if (esp && gasto >= esp) return avisar(`Sem espaços de ${nv}º círculo. Um descanso longo recupera.`);
       if (esp) mudar({ attrs:{ ['gasto_' + nv]:gasto + 1 } });
     }
-    const info = [nv ? nv + 'º círculo' : 'truque', resumoMagia(m)].filter(Boolean).join(' · ').slice(0, 300);   // o cartão de magia do Roll20, numa linha
-    const cd = ABREV[m.hit] ? ` — teste de ${ABREV[m.hit]} CD ${8 + profDe(a) + modDe(a[conjDe(a)])}` : '';
+    await cartaoMagia(janela, m);
+    if (semDano(m)) return;
     if (m.hit === 'atq') await falarComFicha(`/r ${d20}+@{${conjDe(a)}_mod}+@{prof} ${nome} (ataque mágico)${modo}`);
-    return m.d ? falarComFicha(`/r ${m.d} ${nome}${m.t ? ' ' + m.t : ''} (${info})${cd}`) : falarComFicha(`/em lança ${nome} (${info})${cd}`);
+    if (m.d) await falarComFicha(`/r ${m.d} ${nome}${m.t ? ' ' + m.t : ''}`);
   }
 });
 $('imgArq').onchange = async e => {                      // anexo do documento: imagem, PDF ou texto
@@ -2215,14 +2250,16 @@ function renderEu() {
   box.append(t3, t6);
   const atqs = (a.ataques || []).filter(x => x && x.n);
   const atacar = async atq => { await rolarComo(fid, `/r ${d20De(a)}${/^[+-]/.test(acertoAtq(a, atq)) ? '' : '+'}${acertoAtq(a, atq)} ${atq.n}`); if (atq.d) await rolarComo(fid, `/r ${atq.d} dano${atq.t ? ' ' + atq.t : ''} (${atq.n})`); };
-  if (atqs.length) {
-    const l = el('div', 'eu-lista'); l.appendChild(el('p', 'ctit', 'Ataques'));
+  const tals = (a.talentos || []).map((t, i) => [t, i]).filter(([t]) => t && t.n), ativas = tals.filter(([t]) => t.ativa);
+  if (atqs.length || ativas.length) {
+    const l = el('div', 'eu-lista'); l.appendChild(el('p', 'ctit', 'Ações'));
     for (const atq of atqs) { const b = botao('', () => atacar(atq)); b.append(el('span', '', atq.n), el('span', '', [atq.d].filter(Boolean).join(''))); l.appendChild(b); }
+    for (const [t, i] of ativas) { const b = botao('', () => usarTalento(fid, i)); b.append(el('span', '', t.n), el('span', '', [t.origem, usosTal(t)].filter(Boolean).join(' · '))); l.appendChild(b); }
     box.appendChild(l);
   }
   // habilidades: recursos com usos (Segundo fôlego…) e características e talentos
-  const recs = (a.recursos || []).map((r, i) => [r, i]).filter(([r]) => r && r.n), tals = (a.talentos || []).map((t, i) => [t, i]).filter(([t]) => t && t.n);
-  if (recs.length || tals.length) {
+  const recs = (a.recursos || []).map((r, i) => [r, i]).filter(([r]) => r && r.n), passivas = tals.filter(([t]) => !t.ativa);
+  if (recs.length || passivas.length) {
     const l = el('div', 'eu-lista'); l.appendChild(el('p', 'ctit', 'Habilidades'));
     for (const [r, i] of recs) {
       const b = botao('', async () => {                     // usar gasta um (como o − da ficha) e avisa no chat
@@ -2233,13 +2270,8 @@ function renderEu() {
       });
       b.append(el('span', '', r.n), el('span', '', +r.max ? `${+r.atual || 0}/${+r.max}` : '')); l.appendChild(b);
     }
-    for (const [t, i] of tals) {
-      const b = botao('', async () => {
-        const lista = structuredClone(objs[fid].attrs.talentos || []), it = lista[i];
-        if (+it.usos) { if ((+it.usados || 0) >= +it.usos) return avisar(`${it.n}: sem usos.`); it.usados = (+it.usados || 0) + 1; enviar({ op:'change', id:fid, props:{ attrs:{ talentos:lista } } }); }
-        rolarComo(fid, `/em usa ${it.n}`);
-      });
-      b.append(el('span', '', t.n), el('span', '', [t.origem, +t.usos ? `${+t.usos - (+t.usados || 0)}/${+t.usos}` : ''].filter(Boolean).join(' · '))); l.appendChild(b);
+    for (const [t] of passivas) {                         // passiva: só lembra que existe (a descrição no title)
+      const d = el('div', 'passiva'); d.title = t.desc || ''; d.append(el('span', '', t.n), el('span', '', [t.origem, usosTal(t)].filter(Boolean).join(' · '))); l.appendChild(d);
     }
     box.appendChild(l);
   }
@@ -2262,18 +2294,24 @@ function renderEu() {
           if ((+b2['gasto_' + nv] || 0) >= +b2['esp_' + nv]) return avisar(`Sem espaços de ${nv}º círculo. Um descanso longo recupera.`);
           enviar({ op:'change', id:fid, props:{ attrs:{ ['gasto_' + nv]:(+b2['gasto_' + nv] || 0) + 1 } } });
         }
-        const info = [nv ? nv + 'º círculo' : 'truque', resumoMagia(m)].filter(Boolean).join(' · ').slice(0, 300);
-        const cd = ABREV[m.hit] ? ` — teste de ${ABREV[m.hit]} CD ${8 + profDe(b2) + modDe(b2[conjDe(b2)])}` : '';
+        await cartaoMagia(fid, m);
+        if (semDano(m)) return;
         if (m.hit === 'atq') await rolarComo(fid, `/r ${d20De(b2)}+@{${conjDe(b2)}_mod}+@{prof} ${m.n} (ataque mágico)`);
-        return m.d ? rolarComo(fid, `/r ${m.d} ${m.n}${m.t ? ' ' + m.t : ''} (${info})${cd}`) : rolarComo(fid, `/em lança ${m.n} (${info})${cd}`);
+        if (m.d) await rolarComo(fid, `/r ${m.d} ${m.n}${m.t ? ' ' + m.t : ''}`);
       });
-      b.append(el('span', '', m.n), el('span', '', [m.d, nv ? nv + 'º' : 'truque'].filter(Boolean).join(' · '))); l.appendChild(b);
+      b.append(el('span', '', m.n), el('span', '', [semDano(m) ? '' : m.d, nv ? nv + 'º' : 'truque'].filter(Boolean).join(' · '))); l.appendChild(b);
     }
     box.appendChild(l);
   }
   const lc = el('div', 'eu-lista'); lc.append(el('p', 'ctit', 'Condições'), (a.condicoes || []).length ? conds : el('p', 'vazio', 'Nenhuma')); box.appendChild(lc);
   box.appendChild(ini); ini.hidden = true;               // fica no lugar (escondida) para a aba Iniciativa
   atalhosEu(fid, a);
+}
+const usosTal = t => +t.usos ? `${+t.usos - (+t.usados || 0)}/${+t.usos}` : '';
+function usarTalento(fid, i) {                          // habilidade ativa: gasta um uso (se tiver) e avisa no chat
+  const lista = structuredClone(objs[fid].attrs.talentos || []), it = lista[i];
+  if (+it.usos) { if ((+it.usados || 0) >= +it.usos) return avisar(`${it.n}: sem usos.`); it.usados = (+it.usados || 0) + 1; enviar({ op:'change', id:fid, props:{ attrs:{ talentos:lista } } }); }
+  rolarComo(fid, `/em usa ${it.n}`);
 }
 function atalhosEu(fid, a) {                            // atalhos embaixo do mapa: ataques, percepção e um d20 com vantagem
   const at = $('atalhos'), botao = (txt, fn) => { const b = el('button', '', txt); b.type = 'button'; b.onclick = fn; return b; };
@@ -2282,6 +2320,7 @@ function atalhosEu(fid, a) {                            // atalhos embaixo do ma
     await rolarComo(fid, `/r ${d20De(a)}${/^[+-]/.test(acertoAtq(a, atq)) ? '' : '+'}${acertoAtq(a, atq)} ${atq.n}`);
     if (atq.d) await rolarComo(fid, `/r ${atq.d} dano${atq.t ? ' ' + atq.t : ''} (${atq.n})`);
   }));
+  (a.talentos || []).forEach((t, i) => { if (t && t.n && t.ativa) at.appendChild(botao(t.n, () => usarTalento(fid, i))); });
   at.append(botao('Percepção', () => rolarComo(fid, `/r ${d20De(a)}+@{sab_mod}${['', '+@{prof}', '+@{prof}+@{prof}'][+a.per_percepcao || 0] || ''} Percepção`)),
     botao('d20 com vantagem', () => rolarComo(fid, '/r 2d20kh1 vantagem')));
 }

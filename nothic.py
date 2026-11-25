@@ -313,8 +313,25 @@ def postar(quem, props):
     aplicar({'op': 'add', 'type': 'msg', 'id': mid, 'props': {'who': quem[1], 'ts': int(time.time() * 1000), **props}})
 
 
+CAMPOS_MAGIA = {'n': 80, 'nivel': 30, 'escola': 30, 'tempo': 60, 'alcance': 60, 'comp': 160, 'dur': 60, 'cd': 60, 'desc': 4000}
+
+
+def cartao_magia(quem, corpo):
+    """O cartão de magia do Roll20: nome, círculo, tempo, alcance… e a descrição inteira, numa mensagem só."""
+    m = corpo['magia']
+    card = {k: str(m[k])[:lim] for k, lim in CAMPOS_MAGIA.items() if m.get(k) not in (None, '')}
+    card.update({k: True for k in ('conc', 'ritual') if m.get(k)})
+    if not card.get('n'):
+        raise ValueError('magia sem nome')
+    _, ficha = substituir('', quem, corpo.get('ficha'))
+    extra = {'to': sorted({MESTRE[1], quem[1]})} if corpo.get('priv') else {}
+    return postar(quem, {'kind': 'magia', 'magia': card, **extra, **({'como': ficha.get('name') or '?'} if ficha else {})})
+
+
 def chat(quem, corpo):
     """Interpreta uma linha do chat e posta a mensagem. Levanta ValueError/Proibido."""
+    if isinstance(corpo.get('magia'), dict):
+        return cartao_magia(quem, corpo)
     texto = str(corpo.get('text') or '').strip()
     if not texto or len(texto) > 500:
         raise ValueError('mensagem vazia ou longa demais')
@@ -666,9 +683,14 @@ def teste():
     e = evento(ana); assert e['props']['kind'] == 'emote', e   # a Ana não recebeu o sussurro nem o /gr
     assert evento(mestre)['props']['kind'] == 'emote', 'o mestre não vê sussurro entre jogadores'
     evento(bia)
+    cod = req('POST', '/chat' + ANA, json.dumps({'magia': {'n': 'Escudo', 'nivel': '1º círculo', 'desc': 'x' * 5000, 'hack': 1}}))[0]
+    assert cod == 200
+    e = evento(ana)['props']; assert e['kind'] == 'magia' and len(e['magia']['desc']) == 4000 and 'hack' not in e['magia'], e
+    evento(bia); evento(mestre)
+    assert req('POST', '/chat' + ANA, json.dumps({'magia': {'desc': 'sem nome'}}))[0] == 400
     assert falar('/w Ninguem oi', ANA)[0] == 400 and falar('/r abc', ANA)[0] == 400 and falar('/xyz', ANA)[0] == 400
     snap = evento(conectar(ANA))['objs']
-    assert [o['kind'] for o in snap.values() if o['type'] == 'msg'] == ['say', 'roll', 'whisper', 'emote']
+    assert [o['kind'] for o in snap.values() if o['type'] == 'msg'] == ['say', 'roll', 'whisper', 'emote', 'magia']
 
     # iniciativa: a Ana rola para o próprio token, não para o goblin
     assert falar('/init +2', ANA, token='t1')[0] == 200
